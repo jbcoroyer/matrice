@@ -1,14 +1,14 @@
-# Le Projectionniste
+# Filmable
 
-Revue de cinéma personnelle, composée à partir de ses notes Letterboxd et des données TMDB.
-Version « vrai site » du prototype HTML : Next.js 15, rendu serveur des fiches, clé TMDB
-cachée côté serveur, URLs partageables.
+Journal de cinéma, critiques, listes, collection et recommandations calées sur tes goûts,
+avec import Letterboxd. Next.js 15, rendu serveur des fiches, clé TMDB cachée côté serveur,
+Supabase pour les comptes et les données. Direction artistique : voir `design/`.
 
 ## Rubriques
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil : rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
+| `/decouvrir` | Accueil : ton film de la semaine (carrousel), rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
 | `/watchlist` | Ta watchlist, filtres et tris |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
@@ -16,8 +16,9 @@ cachée côté serveur, URLs partageables.
 | `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
 | `/collection` | Tes exemplaires (format, édition, état, notes) ou tes films vus, en mur d'affiches ou en étagères ; filtres, statistiques, partage public |
 | `/c/[code]` | Collection partagée, lisible sans compte |
-| `/film/[id]` | Fiche : indice et « ce qui joue », watchlist / vu / favori / note, journal du film, top 5, où le voir, bande-annonce, distribution, films proches |
+| `/film/[id]` | Fiche : indice, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques, films proches |
 | `/personne/[id]` | Biographie et filmographie classée par ton indice |
+| `/studio/[id]` | Studio : logo et films, triés par popularité, date ou note |
 | `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
 | Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal (`/journal`), Paramètres (`/parametres`), déconnexion |
 
@@ -95,5 +96,4 @@ lib/            client/serveur TMDB, prédiction, recommandations, humeurs, impo
 supabase/       migrations SQL
 ```
 
-Données et affiches : TMDB. Plateformes : JustWatch via TMDB. Ce produit utilise l'API TMDB
-sans être approuvé ni certifié par TMDB.
+Données et images : TMDB. Ce produit utilise l'API TMDB sans être approuvé ni certifié par TMDB.

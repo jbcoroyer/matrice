@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
 import { useProfile } from "@/components/ProfileProvider";
-import { ErrorLine, MineToggle, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
 import { BackLink } from "@/components/Rail";
-import { filterMine } from "@/lib/hooks";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
 
@@ -30,11 +29,10 @@ function Populaires() {
     setTotal(Math.min(pages[0].total_pages, 20));
     setPage(p + 2);
     const have = new Set(prev.map((m) => m.id));
-    let fresh: Ranked[] = pages
+    const fresh: Ranked[] = pages
       .flatMap((x) => x.results)
       .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true))
       .map((m) => ({ ...m, _pred: d.predict(m).v, _note: d.seen.has(m.id) ? "Déjà vu" : undefined }));
-    if (d.onlyMine) fresh = await filterMine(fresh, d.platforms);
     return [...prev, ...fresh];
   };
 
@@ -49,7 +47,7 @@ function Populaires() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src, d.onlyMine, d.profile]);
+  }, [src, d.profile]);
 
   return (
     <section className="section">
@@ -63,7 +61,6 @@ function Populaires() {
             </button>
           ))}
         </div>
-        <MineToggle />
       </div>
       {error ? (
         <ErrorLine error={error} />

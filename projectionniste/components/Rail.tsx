@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import type { Ranked } from "@/lib/types";
 import { FilmCard } from "./FilmCard";
+import { duo } from "./ui";
 
 /** Rangée horizontale d'affiches, avec lien « Tout voir » et flèches sur ordinateur. */
 export function Rail({
@@ -28,11 +29,11 @@ export function Rail({
     <section className="rail-wrap">
       <div className="rail-head">
         <div>
-          <h2>{href ? <Link href={href}>{title}</Link> : title}</h2>
+          <h2>{href ? <Link href={href}>{duo(title)}</Link> : duo(title)}</h2>
           {sub ? <p>{sub}</p> : null}
         </div>
         <div className="rail-tools">
-          {href ? <Link href={href}>Tout voir</Link> : null}
+          {href ? <Link href={href}>Tout voir →</Link> : null}
           <button type="button" className="arrow" aria-label="Précédents" onClick={() => scroll(-1)}>
             ‹
           </button>
@@ -54,7 +55,7 @@ export function Rail({
       ) : list.length ? (
         <div className="rail" ref={ref}>
           {list.map((m) => (
-            <FilmCard key={m.id} m={m} showProviders={false} />
+            <FilmCard key={m.id} m={m} />
           ))}
         </div>
       ) : (

@@ -14,7 +14,7 @@ export function derive(profile: Profile | null, states: Map<number, FilmState>, 
     if (s.favorite) favorites.add(id);
     if (s.hidden) hidden.add(id);
   }
-  return { seen, rated, watchlist, favorites, hidden, titles, platforms: new Set<number>(profile?.settings.platforms ?? []) };
+  return { seen, rated, watchlist, favorites, hidden, titles };
 }
 
 export type Derived = ReturnType<typeof derive>;

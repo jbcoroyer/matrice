@@ -1,5 +1,4 @@
 // Client TMDB côté navigateur : passe par le proxy /api/tmdb (le jeton reste sur le serveur).
-import type { ProviderOffers } from "./types";
 
 export const IMG = "https://image.tmdb.org/t/p/";
 
@@ -65,39 +64,6 @@ export function tmdb<T = any>(path: string, params: Params = {}, { cache = true 
 
 export function clearMemo() {
   memo.clear();
-  providerCache.clear();
-}
-
-/* ---------- plateformes ---------- */
-
-const providerCache = new Map<number, Promise<ProviderOffers | null>>();
-
-export function providers(id: number): Promise<ProviderOffers | null> {
-  let p = providerCache.get(id);
-  if (!p) {
-    p = tmdb<{ results?: Record<string, ProviderOffers> }>(`movie/${id}/watch/providers`)
-      .then((r) => r.results?.FR ?? null)
-      .catch(() => null);
-    providerCache.set(id, p);
-  }
-  return p;
-}
-
-/** Abonnements, gratuits et avec pub : ce qu'on peut voir sans payer à l'acte. */
-export function streamable(fr: ProviderOffers | null | undefined) {
-  if (!fr) return [];
-  return [...(fr.flatrate ?? []), ...(fr.free ?? []), ...(fr.ads ?? [])];
-}
-
-/** Retire les doublons du type « Netflix » / « Netflix basic with Ads ». */
-export function dedupeProviders<T extends { provider_name: string }>(arr: T[] | undefined): T[] {
-  const k = new Set<string>();
-  return (arr ?? []).filter((p) => {
-    const n = p.provider_name.toLowerCase().split(/[\s+]/)[0];
-    if (k.has(n)) return false;
-    k.add(n);
-    return true;
-  });
 }
 
 export function img(path: string | null | undefined, size: "w92" | "w185" | "w342" | "w500" | "w780" | "w1280" | "original") {

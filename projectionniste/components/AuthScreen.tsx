@@ -1,8 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createAccount, sendReset, signIn, signUp } from "@/lib/auth";
+import { img, tmdb } from "@/lib/tmdb";
+import type { Movie, Paged } from "@/lib/types";
 import { useProfile } from "./ProfileProvider";
 import { ErrorLine } from "./ui";
 
@@ -54,62 +56,89 @@ export function AuthScreen() {
   };
 
   return (
-    <section className="auth">
-      <h1>Le Projectionniste</h1>
-      <p className="lede">
-        Ton journal de cinéma, tes notes, ta watchlist et ta collection, avec des recommandations calées sur tes goûts. Importe ton historique
-        Letterboxd en une fois.
-      </p>
-      {guest && !empty ? (
-        <p className="note">
-          Ce navigateur contient des données enregistrées sans compte. Crée ton compte ici pour les conserver : elles lui seront rattachées.
-        </p>
-      ) : null}
-      <div className="seg" role="tablist">
-        <button type="button" role="tab" aria-pressed={mode === "signin"} onClick={() => setMode("signin")}>
-          Se connecter
-        </button>
-        <button type="button" role="tab" aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
-          Créer un compte
-        </button>
-      </div>
-      <form className="auth-form" onSubmit={submit}>
-        <Field label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        <Field
-          label={mode === "signup" ? "Mot de passe (8 caractères minimum)" : "Mot de passe"}
-          type="password"
-          autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          minLength={mode === "signup" ? 8 : undefined}
-          required
-          value={pw}
-          onChange={(e) => setPw(e.target.value)}
-        />
-        {error ? <ErrorLine error={error} /> : null}
-        {info ? <p className="status">{info}</p> : null}
-        <div className="row-actions">
-          <button type="submit" className="btn primary" disabled={busy}>
-            {busy ? "Un instant…" : mode === "signin" ? "Se connecter" : "Créer mon compte"}
-          </button>
-          {mode === "signin" ? (
-            <button
-              type="button"
-              className="link-btn"
-              onClick={async () => {
-                if (!email) return setError(new Error("Indique ton email ci-dessus."));
-                try {
-                  await sendReset(sb!, email);
-                  setInfo("Si un compte existe pour cette adresse, un email de réinitialisation vient de partir.");
-                } catch (err) {
-                  setError(err);
-                }
-              }}
-            >
-              Mot de passe oublié
-            </button>
-          ) : null}
+    <section className="auth-scene">
+      <PosterWall />
+      <div className="wrap auth">
+        <div className="auth-pitch">
+          <h1>
+            Film<span>able</span>
+          </h1>
+          <p>
+            Ton journal de cinéma, tes critiques, tes listes et ta collection, avec des recommandations calées sur tes goûts. Importe ton
+            historique Letterboxd en une fois.
+          </p>
         </div>
-      </form>
+        <div className="auth-card">
+          {guest && !empty ? (
+            <p className="note">
+              Ce navigateur contient des données enregistrées sans compte. Crée ton compte ici pour les conserver : elles lui seront rattachées.
+            </p>
+          ) : null}
+          <div className="seg" role="tablist">
+            <button type="button" role="tab" aria-pressed={mode === "signin"} onClick={() => setMode("signin")}>
+              Se connecter
+            </button>
+            <button type="button" role="tab" aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
+              Créer un compte
+            </button>
+          </div>
+          <form className="auth-form" onSubmit={submit}>
+            <Field label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Field
+              label={mode === "signup" ? "Mot de passe (8 caractères minimum)" : "Mot de passe"}
+              type="password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              minLength={mode === "signup" ? 8 : undefined}
+              required
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+            />
+            {error ? <ErrorLine error={error} /> : null}
+            {info ? <p className="status">{info}</p> : null}
+            <div className="row-actions">
+              <button type="submit" className="btn primary" disabled={busy}>
+                {busy ? "Un instant…" : mode === "signin" ? "Se connecter" : "Créer mon compte"}
+              </button>
+              {mode === "signin" ? (
+                <button
+                  type="button"
+                  className="link-btn quiet"
+                  onClick={async () => {
+                    if (!email) return setError(new Error("Indique ton email ci-dessus."));
+                    try {
+                      await sendReset(sb!, email);
+                      setInfo("Si un compte existe pour cette adresse, un email de réinitialisation vient de partir.");
+                    } catch (err) {
+                      setError(err);
+                    }
+                  }}
+                >
+                  Mot de passe oublié
+                </button>
+              ) : null}
+            </div>
+          </form>
+        </div>
+      </div>
     </section>
+  );
+}
+
+/** Mur d'affiches des films du moment, en fond de l'écran d'accueil. */
+function PosterWall() {
+  const [posters, setPosters] = useState<string[]>([]);
+  useEffect(() => {
+    Promise.all([1, 2].map((page) => tmdb<Paged<Movie>>("trending/movie/week", { page })))
+      .then((ps) => setPosters(ps.flatMap((p) => p.results).map((m) => m.poster_path).filter((x): x is string => !!x).slice(0, 32)))
+      .catch(() => {});
+  }, []);
+  return (
+    <div className="auth-wall" aria-hidden>
+      {posters.map((p) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img key={p} src={img(p, "w185")} alt="" />
+      ))}
+    </div>
   );
 }
 

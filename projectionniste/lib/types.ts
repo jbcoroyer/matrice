@@ -23,19 +23,15 @@ export type CastMember = { id: number; name: string; character?: string; profile
 export type CrewMember = { id: number; name: string; job: string; department?: string; profile_path?: string | null };
 export type Credits = { cast: CastMember[]; crew: CrewMember[] };
 
-export type Video = { key: string; site: string; type: string; iso_639_1?: string; name?: string; official?: boolean };
-
-export type Provider = { provider_id: number; provider_name: string; logo_path: string; display_priority?: number };
-export type ProviderOffers = { link?: string; flatrate?: Provider[]; free?: Provider[]; ads?: Provider[]; rent?: Provider[]; buy?: Provider[] };
+export type Company = { id: number; name: string; logo_path: string | null; origin_country?: string };
 
 export type MovieDetail = Movie & {
   credits: Credits;
-  videos?: { results: Video[] };
+  production_companies?: Company[];
   recommendations?: { results: Movie[] };
   similar?: { results: Movie[] };
   external_ids?: { imdb_id?: string | null };
   release_dates?: { results: { iso_3166_1: string; release_dates: { certification: string; type: number; release_date: string }[] }[] };
-  "watch/providers"?: { results: Record<string, ProviderOffers> };
 };
 
 export type Paged<T> = { page: number; results: T[]; total_pages: number; total_results: number };
@@ -68,7 +64,7 @@ export type Affinity = {
 /** Goûts appris à partir des notes (import Letterboxd). */
 export type Taste = { mu: number; aff: Affinity };
 
-export type Settings = { platforms?: number[]; onlyMine?: boolean };
+export type Settings = Record<string, unknown>;
 
 /** Profil de l'utilisateur courant, tel que l'appli l'utilise. */
 export type Profile = {
@@ -80,6 +76,8 @@ export type Profile = {
   learned: boolean;
   settings: Settings;
   importedAt: string | null;
+  /** montre aux autres membres les films vus (section « Qui l'a vu ») */
+  showActivity: boolean;
   updatedAt: string;
 };
 

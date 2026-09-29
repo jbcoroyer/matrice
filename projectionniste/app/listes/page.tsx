@@ -37,7 +37,9 @@ function Lists() {
   return (
     <section className="section">
       <div className="page-head">
-        <h1>Mes listes</h1>
+        <h1>
+          Mes <span>listes</span>
+        </h1>
         <button type="button" className="btn primary" onClick={() => setCreating(true)}>
           + Nouvelle liste
         </button>

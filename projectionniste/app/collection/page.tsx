@@ -210,7 +210,7 @@ function Collection() {
       </div>
 
       <div className="coll-bar">
-        <div className="choice" role="radiogroup" aria-label="Afficher">
+        <div className="seg" role="radiogroup" aria-label="Afficher">
           <button type="button" role="radio" aria-checked={mode === "possedes"} onClick={() => (setMode("possedes"), setFormat(""))}>
             Mes exemplaires
           </button>
@@ -218,7 +218,7 @@ function Collection() {
             Films vus
           </button>
         </div>
-        <div className="choice" role="radiogroup" aria-label="Vue">
+        <div className="seg" role="radiogroup" aria-label="Vue">
           <button type="button" role="radio" aria-checked={view === "mur"} onClick={() => setView("mur")}>
             Mur d'affiches
           </button>
@@ -294,7 +294,7 @@ function Collection() {
           {mode === "possedes" ? (
             <>
               <p>Ta collection est vide.</p>
-              <p className="note">Ajoute tes DVD, Blu-ray, 4K… avec « + Ajouter un film », ou depuis la fiche d'un film (« + Ajouter à ma collection »).</p>
+              <p className="note">Ajoute tes DVD, Blu-ray, 4K… avec « + Ajouter un film », ou depuis la fiche d'un film (bouton disque, à côté de ta note).</p>
             </>
           ) : (
             <p>Aucun film vu pour l'instant.</p>

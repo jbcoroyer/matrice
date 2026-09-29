@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
-import { ErrorLine, MineToggle, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
 import { GENRE_OPTIONS } from "@/lib/genres";
 import { genreIds } from "@/lib/predict";
-import { useMineFilter, useWatchlistMovies } from "@/lib/hooks";
+import { useWatchlistMovies } from "@/lib/hooks";
 
 function Watchlist() {
   const wl = useWatchlistMovies();
@@ -20,14 +20,12 @@ function Watchlist() {
     if (sort === "old") l.sort((a, b) => (a.release_date || "9").localeCompare(b.release_date || "9"));
     return l;
   }, [wl.data, genre, sort]);
-  const mine = useMineFilter(sorted);
-  const error = wl.error || mine.error;
+  const error = wl.error;
 
   return (
     <section className="section">
       <SecHead as="h1" title="Watchlist" aside="Classée par ton indice" />
       <div className="filterbar">
-        <MineToggle />
         <label>
           Genre
           <select value={genre} onChange={(e) => setGenre(+e.target.value)}>
@@ -48,18 +46,18 @@ function Watchlist() {
             <option value="old">Plus anciens</option>
           </select>
         </label>
-        {mine.data ? <span className="count">{mine.data.length} films</span> : null}
+        {sorted ? <span className="count">{sorted.length} films</span> : null}
       </div>
       {error ? (
         <ErrorLine error={error} onRetry={wl.reload} />
-      ) : !mine.data ? (
+      ) : !sorted ? (
         <SkeletonGrid n={15} />
-      ) : mine.data.length ? (
-        <FilmGrid key={`${genre}|${sort}`} list={mine.data} />
+      ) : sorted.length ? (
+        <FilmGrid key={`${genre}|${sort}`} list={sorted} />
       ) : wl.data?.length ? (
-        <p className="status">Aucun film de ta watchlist ne correspond (filtre genre ou plateformes).</p>
+        <p className="status">Aucun film de ta watchlist ne correspond à ce genre.</p>
       ) : (
-        <p className="status">Ta watchlist est vide. Ajoute des films avec le bouton ＋ des affiches, ou importe ton Letterboxd dans Réglages.</p>
+        <p className="status">Ta watchlist est vide. Ajoute des films avec le bouton ＋ des affiches, ou importe ton Letterboxd dans Paramètres.</p>
       )}
     </section>
   );

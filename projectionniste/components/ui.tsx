@@ -12,6 +12,18 @@ export function Loader({ text }: { text: string }) {
   );
 }
 
+/** Titre en deux graisses : premier mot plein, la suite en léger (« **Pour** toi »). */
+export function duo(text: React.ReactNode) {
+  if (typeof text !== "string") return text;
+  const i = text.indexOf(" ");
+  if (i < 0) return text;
+  return (
+    <>
+      {text.slice(0, i)} <span>{text.slice(i + 1)}</span>
+    </>
+  );
+}
+
 export function SecHead({
   title,
   aside,
@@ -24,7 +36,7 @@ export function SecHead({
   const H = as;
   return (
     <div className="sec-head">
-      <H>{title}</H>
+      <H>{duo(title)}</H>
       {typeof aside === "string" ? <span className="aside">{aside}</span> : aside}
     </div>
   );
@@ -56,28 +68,6 @@ export function ErrorLine({ error, onRetry }: { error: unknown; onRetry?: () => 
         </button>
       ) : null}
     </p>
-  );
-}
-
-/** Case « Sur mes plateformes », partagée par toutes les rubriques. */
-export function MineToggle() {
-  const { onlyMine, platforms, updateSettings } = useProfile();
-  const enabled = platforms.size > 0;
-  return (
-    <label>
-      <input
-        type="checkbox"
-        checked={onlyMine}
-        disabled={!enabled}
-        onChange={(e) => updateSettings({ onlyMine: e.target.checked })}
-      />
-      Sur mes plateformes{" "}
-      {!enabled ? (
-        <em>
-          (<Link href="/parametres#plateformes">à choisir</Link>)
-        </em>
-      ) : null}
-    </label>
   );
 }
 

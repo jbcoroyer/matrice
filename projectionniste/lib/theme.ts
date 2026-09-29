@@ -3,23 +3,26 @@
 import { useEffect, useState } from "react";
 import { KEYS, store } from "./store";
 
-export type ThemeMode = "system" | "light" | "dark";
+export type ThemeMode = "dark" | "light" | "system";
 
-/** Thème : système (par défaut), clair ou sombre, mémorisé dans le navigateur. */
+/** Applique un mode : sombre (par défaut), clair, ou selon l'appareil. */
+function apply(m: ThemeMode) {
+  const light = m === "light" || (m === "system" && matchMedia("(prefers-color-scheme: light)").matches);
+  if (light) document.documentElement.dataset.theme = "light";
+  else delete document.documentElement.dataset.theme;
+}
+
+/** Thème mémorisé dans le navigateur ; Filmable est pensé sombre d'abord. */
 export function useTheme(): [ThemeMode, (m: ThemeMode) => void] {
-  const [mode, setMode] = useState<ThemeMode>("system");
+  const [mode, setMode] = useState<ThemeMode>("dark");
   useEffect(() => {
     const t = store.get<string | null>(KEYS.theme, null);
-    setMode(t === "light" || t === "dark" ? t : "system");
+    setMode(t === "light" || t === "system" ? t : "dark");
   }, []);
   const set = (m: ThemeMode) => {
-    if (m === "system") {
-      delete document.documentElement.dataset.theme;
-      store.del(KEYS.theme);
-    } else {
-      document.documentElement.dataset.theme = m;
-      store.set(KEYS.theme, m);
-    }
+    apply(m);
+    if (m === "dark") store.del(KEYS.theme);
+    else store.set(KEYS.theme, m);
     setMode(m);
   };
   return [mode, set];

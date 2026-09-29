@@ -1,29 +1,27 @@
 import type { Metadata, Viewport } from "next";
+import "@fontsource-variable/urbanist";
 import { AuthGate } from "@/components/AuthScreen";
 import { FooterStats, Toaster } from "@/components/Chrome";
-import { Masthead } from "@/components/Masthead";
+import { Masthead, TabBar } from "@/components/Masthead";
 import { ProfileProvider } from "@/components/ProfileProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Le Projectionniste", template: "%s · Le Projectionniste" },
-  description: "Journal de cinéma, watchlist et recommandations calées sur tes goûts, avec import Letterboxd.",
-  applicationName: "Le Projectionniste",
-  appleWebApp: { capable: true, title: "Projectionniste", statusBarStyle: "default" },
+  title: { default: "Filmable", template: "%s · Filmable" },
+  description: "Ton journal de cinéma, tes critiques, tes listes et des recommandations calées sur tes goûts, avec import Letterboxd.",
+  applicationName: "Filmable",
+  appleWebApp: { capable: true, title: "Filmable", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#141414" },
-  ],
+  themeColor: "#0c0c0e",
 };
 
-// Applique le thème choisi avant le premier rendu (pas de flash).
-const themeScript = `try{var t=JSON.parse(localStorage.getItem("projo.theme"));if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`;
+// Applique le thème choisi avant le premier rendu (pas de flash) : sombre par défaut.
+const themeScript = `try{var t=JSON.parse(localStorage.getItem("projo.theme"));if(t==="light"||(t==="system"&&matchMedia("(prefers-color-scheme: light)").matches))document.documentElement.dataset.theme="light"}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -42,14 +40,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AuthGate>{children}</AuthGate>
           </main>
           <footer className="wrap">
-           <div className="foot">
-            <span>
-              Données et affiches : <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a> (plateformes : JustWatch). Ce site utilise
-              l'API TMDB sans être approuvé ni certifié par TMDB.
-            </span>
-            <FooterStats />
-           </div>
+            <div className="foot">
+              <span>
+                <span className="brand">
+                  Film<span>able</span>
+                </span>
+                Données et images : <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a>. Filmable utilise l'API TMDB sans être
+                approuvé ni certifié par TMDB.
+              </span>
+              <FooterStats />
+            </div>
           </footer>
+          <TabBar />
           <Toaster />
         </ProfileProvider>
       </body>

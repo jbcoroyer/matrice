@@ -140,7 +140,7 @@ function Journal() {
             "Aucun visionnage ne correspond à ces filtres."
           ) : (
             <>
-              Ton journal est vide. Ouvre un film et clique sur « Enregistrer un visionnage », ou{" "}
+              Ton journal est vide. Ouvre un film et clique sur « Ajouter au journal », ou{" "}
               <Link className="link" href="/parametres#import">
                 importe ton Letterboxd
               </Link>

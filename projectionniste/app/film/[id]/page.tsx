@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { Poster } from "@/components/Poster";
-import { FilmRecs, ScoreBox, Trailer, WhereToWatch } from "@/components/FilmPersonal";
+import { FadeImg, Poster } from "@/components/Poster";
+import { FilmRecs, ScoreBox } from "@/components/FilmPersonal";
 import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
 import { FilmReviews } from "@/components/Reviews";
 import { SeenBadge } from "@/components/SeenBadge";
-import { SecHead } from "@/components/ui";
+import { TitleDuo } from "@/components/TitleDuo";
+import { FilmViewers } from "@/components/Viewers";
 import { GENRE_FR } from "@/lib/genres";
 import { runtime, truncate, yearOf } from "@/lib/format";
 import { img } from "@/lib/tmdb";
@@ -20,8 +21,7 @@ const getFilm = cache(async (id: string) => {
   if (!/^\d+$/.test(id)) return null;
   try {
     return await tmdbFetch<MovieDetail>(`movie/${id}`, {
-      append_to_response: "credits,videos,recommendations,similar,external_ids,release_dates,watch/providers",
-      include_video_language: "fr,en,null",
+      append_to_response: "credits,recommendations,similar,release_dates",
     });
   } catch (e) {
     if (e instanceof TmdbError && e.status === 404) return null;
@@ -46,17 +46,25 @@ export default async function FilmPage({ params }: Props) {
 
   const crew = m.credits?.crew ?? [];
   const cast = m.credits?.cast ?? [];
-  const dirs = crew.filter((x) => x.job === "Director");
-  const writers = [...new Map(crew.filter((x) => ["Screenplay", "Writer", "Novel", "Story"].includes(x.job)).map((x) => [x.id, x])).values()].slice(0, 3);
-  const dop = crew.find((x) => x.job === "Director of Photography");
-  const music = crew.find((x) => x.job === "Original Music Composer");
-  const editor = crew.find((x) => x.job === "Editor");
-  const vids = (m.videos?.results ?? []).filter((v) => v.site === "YouTube" && (v.type === "Trailer" || v.type === "Teaser"));
-  const trailer = vids.find((v) => v.type === "Trailer" && v.iso_639_1 === "fr") || vids.find((v) => v.type === "Trailer") || vids[0];
-  const cert = m.release_dates?.results.find((r) => r.iso_3166_1 === "FR")?.release_dates.map((d) => d.certification).find(Boolean);
-  const frRelease = m.release_dates?.results.find((r) => r.iso_3166_1 === "FR")?.release_dates.find((d) => d.type === 3)?.release_date;
-  const imdb = m.external_ids?.imdb_id;
-  const fr = m["watch/providers"]?.results?.FR ?? null;
+  const uniq = <T extends { id: number }>(l: T[]) => [...new Map(l.map((x) => [x.id, x])).values()];
+  const byJob = (...jobs: string[]) => uniq(crew.filter((x) => jobs.includes(x.job)));
+  const dirs = byJob("Director");
+  const writers = byJob("Screenplay", "Writer", "Novel", "Story").slice(0, 3);
+  const credits: [string, { id: number; name: string }[]][] = [
+    ["Réalisation", dirs],
+    ["Scénario", writers],
+    ["Image", byJob("Director of Photography").slice(0, 2)],
+    ["Montage", byJob("Editor").slice(0, 2)],
+    ["Musique", byJob("Original Music Composer", "Music").slice(0, 2)],
+    ["Décors", byJob("Production Design").slice(0, 1)],
+    ["Costumes", byJob("Costume Design").slice(0, 1)],
+    ["Production", byJob("Producer").slice(0, 3)],
+  ];
+  const studios = (m.production_companies ?? []).slice(0, 6);
+  const fr = m.release_dates?.results.find((r) => r.iso_3166_1 === "FR");
+  const cert = fr?.release_dates.map((d) => d.certification).find(Boolean);
+  const frRelease = fr?.release_dates.find((d) => d.type === 3)?.release_date;
+  const upcoming = frRelease && frRelease.slice(0, 10) > new Date().toISOString().slice(0, 10);
 
   const seenIds = new Set<number>([m.id]);
   const recs: Movie[] = [];
@@ -66,12 +74,6 @@ export default async function FilmPage({ params }: Props) {
       recs.push(r);
     }
 
-  const person = (p: { id: number; name: string }) => (
-    <Link key={p.id} href={`/personne/${p.id}`}>
-      {p.name}
-    </Link>
-  );
-  const join = (arr: React.ReactNode[]) => arr.flatMap((x, i) => (i ? [", ", x] : [x]));
   const film = {
     id: m.id,
     title: m.title,
@@ -83,122 +85,138 @@ export default async function FilmPage({ params }: Props) {
     runtime: m.runtime,
   };
   const scoreMovie: Movie = { id: m.id, title: m.title, genres: m.genres, vote_average: m.vote_average, vote_count: m.vote_count };
+  const person = (p: { id: number; name: string }) => (
+    <Link key={p.id} href={`/personne/${p.id}`}>
+      {p.name}
+    </Link>
+  );
+  const join = (arr: React.ReactNode[]) => arr.flatMap((x, i) => (i ? [", ", x] : [x]));
+  const meta = [
+    ...(m.genres ?? []).slice(0, 2).map((g) => GENRE_FR[g.id] || g.name),
+    yearOf(m),
+    runtime(m.runtime),
+    cert ? `Visa ${cert}` : "",
+    upcoming ? `En salles le ${new Date(frRelease!).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}` : "",
+  ].filter(Boolean);
+  const initials = (n: string) =>
+    n
+      .split(/\s+/)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join("");
 
   return (
     <article className="film">
-      <div>
-        <div className="film-grid">
-          <div className="poster-wrap">
+      <section className="film-hero">
+        <div className="film-backdrop">{m.backdrop_path ? <img src={img(m.backdrop_path, "w1280")} alt="" /> : null}</div>
+        <div className="wrap film-in">
+          <div className="film-poster">
             <Poster path={m.poster_path} title={m.title} size="w500" eager>
               <SeenBadge id={m.id} />
             </Poster>
-            <FilmPanel film={film} />
           </div>
           <div>
-            <h1>{m.title}</h1>
+            <div className="meta-line label">
+              {meta.map((x, i) => (
+                <span key={i} style={{ display: "contents" }}>
+                  {i ? <i className="sep" /> : null}
+                  <span>{x}</span>
+                </span>
+              ))}
+            </div>
+            <h1 className="film-title">
+              <TitleDuo title={m.title} />
+            </h1>
             {m.original_title && m.original_title !== m.title ? <div className="orig">{m.original_title}</div> : null}
-            <div className="facts">
-              {[
-                yearOf(m),
-                runtime(m.runtime),
-                (m.genres ?? []).map((g) => GENRE_FR[g.id] || g.name).join(", "),
-                cert ? `Visa ${cert}` : "",
-                (m.production_countries ?? []).map((c) => c.iso_3166_1).join(" / "),
-                frRelease && frRelease.slice(0, 10) > new Date().toISOString().slice(0, 10)
-                  ? `sortie en France le ${new Date(frRelease).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </div>
-            {m.tagline ? <p className="tagline-f">« {m.tagline} »</p> : null}
-            <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs }} />
-            {m.overview ? <p className="overview">{m.overview}</p> : <p className="note">Pas encore de résumé en français.</p>}
-            <FilmHistory film={film} />
-            <div className="credits">
-              {dirs.length ? (
-                <div>
-                  <small>Réalisation</small>
-                  {join(dirs.map(person))}
-                </div>
-              ) : null}
-              {writers.length ? (
-                <div>
-                  <small>Scénario</small>
-                  {join(writers.map(person))}
-                </div>
-              ) : null}
-              {dop ? (
-                <div>
-                  <small>Image</small>
-                  {person(dop)}
-                </div>
-              ) : null}
-              {editor ? (
-                <div>
-                  <small>Montage</small>
-                  {person(editor)}
-                </div>
-              ) : null}
-              {music ? (
-                <div>
-                  <small>Musique</small>
-                  {person(music)}
-                </div>
-              ) : null}
-            </div>
-            <WhereToWatch fr={fr} />
+            {dirs.length || cast.length ? (
+              <p className="film-by">
+                {dirs.length ? <>Un film de {join(dirs.map(person))}</> : null}
+                {dirs.length && cast.length ? " · " : null}
+                {cast.length ? <>avec {join(cast.slice(0, 3).map(person))}</> : null}
+              </p>
+            ) : null}
+            <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs.map((d) => ({ ...d, job: "Director" })) }} />
+            <FilmPanel film={film} />
           </div>
         </div>
+      </section>
 
-        {trailer ? (
-          <section className="section">
-            <SecHead
-              title="Bande-annonce"
-              aside={
-                <a className="link" href={`https://www.youtube.com/watch?v=${trailer.key}`} target="_blank" rel="noopener">
-                  Ouvrir sur YouTube
-                </a>
-              }
-            />
-            <Trailer videoKey={trailer.key} backdrop={m.backdrop_path} />
-          </section>
-        ) : null}
-
-        {cast.length ? (
-          <section className="section">
-            <SecHead title="Distribution" />
-            <ul className="cast">
-              {cast.slice(0, 18).map((c) => (
-                <li key={`${c.id}-${c.character}`}>
-                  <Link href={`/personne/${c.id}`}>{c.name}</Link>
-                  {c.character ? <span> · {c.character}</span> : null}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-
-        <FilmReviews tmdbId={m.id} />
-
-        <div className="ext">
-          {imdb ? (
-            <>
-              <a href={`https://www.imdb.com/title/${imdb}/`} target="_blank" rel="noopener">
-                IMDb
-              </a>
-              <a href={`https://letterboxd.com/imdb/${imdb}/`} target="_blank" rel="noopener">
-                Letterboxd
-              </a>
-            </>
-          ) : null}
-          <a href={`https://www.themoviedb.org/movie/${m.id}`} target="_blank" rel="noopener">
-            TMDB
-          </a>
+      <div className="film-body">
+        <div>
+          <h2 className="block-title">Synopsis</h2>
+          {m.tagline ? <p className="tagline-f">{m.tagline}</p> : null}
+          {m.overview ? <p className="overview">{m.overview}</p> : <p className="note">Pas encore de résumé en français.</p>}
         </div>
-
-        <FilmRecs title={m.title} list={recs} />
+        <FilmViewers tmdbId={m.id} />
       </div>
+
+      <FilmHistory film={film} />
+
+      {dirs.length || cast.length ? (
+        <section className="section">
+          <h2 className="block-title">
+            Casting <span>et réalisation</span>
+          </h2>
+          {dirs.length ? (
+            <div className="crew-row" style={{ marginBottom: 26 }}>
+              {dirs.map((d) => (
+                <Link key={d.id} href={`/personne/${d.id}`} className="crew">
+                  <span className="ph">{d.profile_path ? <FadeImg src={img(d.profile_path, "w185")} alt="" /> : initials(d.name)}</span>
+                  <span>
+                    <span className="n">{d.name}</span>
+                    <span className="r">Réalisation</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : null}
+          {cast.length ? (
+            <div className="people-rail">
+              {cast.slice(0, 20).map((c) => (
+                <Link key={`${c.id}-${c.character}`} href={`/personne/${c.id}`} className="person-card">
+                  <span className="ph">
+                    {c.profile_path ? <FadeImg src={img(c.profile_path, "w185")} alt="" /> : <span className="ini">{initials(c.name)}</span>}
+                  </span>
+                  <span className="n">{c.name}</span>
+                  {c.character ? <span className="r">{c.character}</span> : null}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {credits.some(([, l]) => l.length) || studios.length ? (
+        <section className="generique-sec">
+          <h2 className="block-title" style={{ justifyContent: "center" }}>
+            Générique
+          </h2>
+          {dirs.length ? <p className="label">Un film de {dirs.map((d) => d.name).join(" et ")}</p> : null}
+          <dl className="generique">
+            {credits
+              .filter(([, l]) => l.length)
+              .map(([role, l]) => (
+                <div key={role} style={{ display: "contents" }}>
+                  <dt>{role}</dt>
+                  <dd>{join(l.map(person))}</dd>
+                </div>
+              ))}
+          </dl>
+          {studios.length ? (
+            <div className="studios">
+              {studios.map((c) => (
+                <Link key={c.id} href={`/studio/${c.id}`} className="studio" title={c.name}>
+                  {c.logo_path ? <img src={img(c.logo_path, "w185")} alt={c.name} loading="lazy" /> : <span>{c.name}</span>}
+                </Link>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      <FilmReviews tmdbId={m.id} />
+
+      <FilmRecs title={m.title} list={recs} />
     </article>
   );
 }

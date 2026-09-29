@@ -24,7 +24,7 @@ function Columns({ values, labels, full, unit, caption }: { values: number[]; la
     <figure className="cols-fig">
       <div className="cols" role="img" aria-label={caption}>
         {values.map((v, i) => (
-          <div key={i} className="col" tabIndex={0} aria-label={`${full[i]} : ${pl(v, ...unit)}`}>
+          <div key={i} className={`col${i === peak && v ? " peak" : ""}`} tabIndex={0} aria-label={`${full[i]} : ${pl(v, ...unit)}`}>
             <span className="tip" aria-hidden>
               {full[i]} · <b>{pl(v, ...unit)}</b>
             </span>
@@ -141,7 +141,9 @@ function Bilan() {
   return (
     <section className="section bilan">
       <div className="page-head">
-        <h1>Ton année {year}</h1>
+        <h1>
+          Ton année <span>{year}</span>
+        </h1>
         <div className="year-nav">
           <button type="button" className="btn ghost" disabled={!prev} onClick={() => prev && setYear(prev)} aria-label="Année précédente">
             ←

@@ -1,31 +1,27 @@
 # Composants signature
 
-## La fiche « générique » (fiche film)
+## Fiche film (`app/film/[id]/page.tsx`)
 
-Composée comme une affiche Nouvelle Vague.
+- Image du film en fond pleine largeur, fondue vers le noir ; affiche arrondie posée dessus.
+- Libellés (genres · année · durée · visa), titre en deux graisses, « Un film de … · avec … »
+  (liens vers les personnes).
+- Barre de notes : pastille crème (ton indice ou ta note), TMDB, moyenne des membres, et ce qui
+  fait bouger l'indice.
+- Actions en pilules : Ajouter au journal, Vu, Watchlist, note en étoiles, coup de cœur, liste,
+  collection, menu « … » (top 5, partager, pas pour moi).
+- Synopsis + **Qui l'a vu** (membres, moyenne, notes ; chacun peut se masquer).
+- **Casting et réalisation** en photos, tout cliquable.
+- **Générique** : rôles alignés à droite, noms à gauche, comme un générique de fin ; logos des
+  **studios** (en blanc) qui mènent à `/studio/[id]`.
+- Critiques des membres, puis « Dans le même esprit ».
 
-- **Affiche** en grand, collée au bord gauche de l'écran (5 colonnes).
-- À droite, dans l'ordre d'une affiche :
-  - la ligne d'attaque en capitales condensées noires : « UN FILM DE KATSUHIRO ŌTOMO » ;
-  - le **titre** en rouge, `--t-poster`, qui remplit la colonne et peut déborder ;
-  - le **code technique** en mono : `1956 — 2 H 28 — FANTASTIQUE / HORREUR — VISA 12 — FR` ;
-  - l'**indice** dans un aplat noir (grand chiffre papier + « TON INDICE ») ;
-  - le **bloc générique** : AVEC … · SCÉNARIO … · IMAGE … · MUSIQUE …, en capitales
-    condensées, justifié, comme le bas d'une affiche. Chaque nom est un lien.
-- Sous l'ensemble, **barre d'actions** pleine largeur : boutons carrés en capitales
-  (VU, FAVORI, WATCHLIST, étoiles, JOURNAL, LISTE, COLLECTION) ; l'état actif est un
-  aplat rouge.
-- Puis le résumé en colonne de lecture, la bande-annonce, les critiques, les films
-  « dans le même esprit ».
-- Mobile : affiche pleine largeur ; le titre rouge chevauche son bas sur un aplat papier.
+## Film de la semaine (`app/decouvrir/page.tsx`)
 
-## Les bandeaux de section
+Carrousel : affiche centrale grande, voisines en retrait et inclinées ; fond d'ambiance tiré de
+l'affiche active ; texte à gauche (titre deux graisses, libellés, indice, résumé, raison),
+points de pagination, flèches clavier et glisser sur mobile.
 
-Chaque section de découverte s'ouvre sur un bandeau noir pleine largeur : titre en
-capitales condensées papier à gauche, compteur et « TOUT VOIR → » à droite. Les bandes
-d'affiches qui suivent sont serrées (8 px) et numérotées en mono.
+## Écran d'accueil (`components/AuthScreen.tsx`)
 
-## Le monogramme
-
-Un carré rouge avec un « P » papier en grotesque condensée noire ; à côté, « LE
-PROJECTIONNISTE » en petites capitales condensées (masqué sur mobile).
+Mur d'affiches du moment incliné et assombri, grand mot-marque « **Film**able », formulaire
+dans une carte en verre.

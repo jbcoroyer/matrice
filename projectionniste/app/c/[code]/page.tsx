@@ -81,7 +81,7 @@ export default function PublicCollection({ params }: { params: Promise<{ code: s
         ))}
       </ul>
       <p className="note" style={{ marginTop: 30 }}>
-        Partagé depuis Le Projectionniste.
+        Partagé depuis Filmable.
       </p>
     </>
   );

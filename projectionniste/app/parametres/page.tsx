@@ -6,49 +6,8 @@ import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, Loader } from "@/components/ui";
 import { setPassword, signOut } from "@/lib/auth";
 import { updateProfile } from "@/lib/db";
-import { useAsync } from "@/lib/hooks";
 import { importLetterboxd, type Progress } from "@/lib/letterboxd";
 import { useTheme, type ThemeMode } from "@/lib/theme";
-import { img, tmdb } from "@/lib/tmdb";
-import type { Provider } from "@/lib/types";
-
-function Platforms() {
-  const { platforms, updateSettings } = useProfile();
-  const [all, setAll] = useState(false);
-  const list = useAsync(
-    async () => {
-      const r = await tmdb<{ results: Provider[] & { display_priorities?: Record<string, number> }[] }>("watch/providers/movie", { watch_region: "FR" });
-      return (r.results as (Provider & { display_priorities?: Record<string, number> })[]).sort(
-        (a, b) => (a.display_priorities?.FR ?? 99) - (b.display_priorities?.FR ?? 99),
-      );
-    },
-    [],
-  );
-  const toggle = (id: number) => updateSettings({ platforms: platforms.has(id) ? [...platforms].filter((x) => x !== id) : [...platforms, id] });
-  if (list.error) return <ErrorLine error={list.error} onRetry={list.reload} />;
-  if (!list.data) return <Loader text="Chargement des plateformes…" />;
-  const shown = all ? list.data : list.data.filter((p, i) => i < 24 || platforms.has(p.provider_id));
-  return (
-    <>
-      <div className="plat-grid">
-        {shown.map((p) => (
-          <button key={p.provider_id} type="button" className="plat" aria-pressed={platforms.has(p.provider_id)} onClick={() => toggle(p.provider_id)}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img(p.logo_path, "w92")} alt="" loading="lazy" />
-            {p.provider_name}
-          </button>
-        ))}
-      </div>
-      {list.data.length > 24 ? (
-        <div className="row-actions">
-          <button type="button" className="link-btn" onClick={() => setAll((a) => !a)}>
-            {all ? "Moins de plateformes" : `Toutes les plateformes (${list.data.length})`}
-          </button>
-        </div>
-      ) : null}
-    </>
-  );
-}
 
 function LetterboxdImport() {
   const { sb, userId, reload, profile } = useProfile();
@@ -180,15 +139,46 @@ function ProfileName() {
   );
 }
 
+/** Visibilité dans « Qui l'a vu » sur les fiches de films. */
+function Activity() {
+  const { sb, userId, profile, reload, toast } = useProfile();
+  const [on, setOn] = useState(profile?.showActivity ?? true);
+  return (
+    <label className="switch-row">
+      <input
+        type="checkbox"
+        checked={on}
+        onChange={async (e) => {
+          const v = e.target.checked;
+          setOn(v);
+          try {
+            await updateProfile(sb!, userId!, { show_activity: v });
+            await reload();
+            toast(v ? "Les autres membres voient les films que tu as vus" : "Tes films vus sont masqués aux autres membres");
+          } catch (err) {
+            setOn(!v);
+            toast(`Échec : ${(err as Error).message}`);
+          }
+        }}
+      />
+      <span className="sw" aria-hidden />
+      <span>
+        Apparaître dans « Qui l'a vu »
+        <small>Les autres membres voient ton nom et ta note sur les fiches des films que tu as vus. Tes critiques publiques restent visibles dans tous les cas.</small>
+      </span>
+    </label>
+  );
+}
+
 function Appearance() {
   const [mode, setMode] = useTheme();
   const opts: { k: ThemeMode; l: string }[] = [
-    { k: "system", l: "Automatique" },
-    { k: "light", l: "Clair" },
     { k: "dark", l: "Sombre" },
+    { k: "light", l: "Clair" },
+    { k: "system", l: "Selon l'appareil" },
   ];
   return (
-    <div className="choice" role="radiogroup" aria-label="Thème">
+    <div className="seg" role="radiogroup" aria-label="Thème">
       {opts.map((o) => (
         <button key={o.k} type="button" role="radio" aria-checked={mode === o.k} onClick={() => setMode(o.k)}>
           {o.l}
@@ -247,7 +237,6 @@ function Password({ highlight }: { highlight?: boolean }) {
 
 const SECTIONS = [
   { id: "profil", l: "Profil" },
-  { id: "plateformes", l: "Plateformes" },
   { id: "import", l: "Import Letterboxd" },
   { id: "apparence", l: "Apparence" },
   { id: "ecartes", l: "Films écartés" },
@@ -297,8 +286,15 @@ function Settings() {
             <Password highlight />
           </section>
         ) : null}
-        {sec("profil", "Profil", null, <ProfileName />)}
-        {sec("plateformes", "Plateformes", "Coche tes abonnements : leurs logos passent en premier, et le filtre « Sur mes plateformes » s'appuie dessus.", <Platforms />)}
+        {sec(
+          "profil",
+          "Profil",
+          null,
+          <>
+            <ProfileName />
+            <Activity />
+          </>,
+        )}
         {sec("import", "Import Letterboxd", null, <LetterboxdImport />)}
         {sec("apparence", "Apparence", null, <Appearance />)}
         {sec("ecartes", "Films écartés", null, <Hidden />)}

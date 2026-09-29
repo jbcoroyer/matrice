@@ -13,7 +13,6 @@ export function ttlFor(path: string): number {
   if (path.startsWith("find/")) return 30 * 86400;
   if (path.startsWith("search/")) return 3600;
   if (/^(movie\/(now_playing|upcoming|popular|top_rated)|trending\/|discover\/)/.test(path)) return 3 * 3600;
-  if (path.endsWith("watch/providers")) return 12 * 3600;
   return 86400;
 }
 
@@ -54,7 +53,7 @@ export async function tmdbFetch<T = unknown>(path: string, params: Params = {}):
 const ALLOWED: RegExp[] = [
   /^configuration$/,
   /^movie\/\d+$/,
-  /^movie\/\d+\/(recommendations|similar|credits|watch\/providers|videos|release_dates|keywords)$/,
+  /^movie\/\d+\/(recommendations|similar|credits|release_dates|keywords)$/,
   /^movie\/(now_playing|upcoming|popular|top_rated)$/,
   /^trending\/movie\/(day|week)$/,
   /^discover\/movie$/,
@@ -62,7 +61,7 @@ const ALLOWED: RegExp[] = [
   /^find\/tt\d+$/,
   /^person\/\d+$/,
   /^person\/\d+\/movie_credits$/,
-  /^watch\/providers\/movie$/,
+  /^company\/\d+$/,
 ];
 
 export function isAllowed(path: string): boolean {

@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Le Projectionniste",
-    short_name: "Projectionniste",
-    description: "Recommandations de films d'après tes notes Letterboxd.",
+    name: "Filmable",
+    short_name: "Filmable",
+    description: "Ton journal de cinéma, tes critiques, tes listes et des recommandations calées sur tes goûts.",
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#161616",
+    background_color: "#0c0c0e",
+    theme_color: "#0c0c0e",
     lang: "fr",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FilmGrid } from "./FilmGrid";
 import { useProfile } from "./ProfileProvider";
-import { ErrorLine, MineToggle, SecHead, SkeletonGrid } from "./ui";
+import { ErrorLine, SecHead, SkeletonGrid } from "./ui";
 import { moodBySlug } from "@/lib/moods";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
@@ -20,13 +20,10 @@ export function MoodResults({ slug }: { slug: string }) {
   const [more, setMore] = useState(false);
   const [done, setDone] = useState(false);
   const ref = useRef<HTMLElement>(null);
-  const onlyMine = d.onlyMine;
-  const plat = [...d.platforms].join("|");
 
   const load = async (from: number, prev: Ranked[]) => {
     if (!mood) return;
     const q: Record<string, string | number> = await mood.q();
-    if (onlyMine) Object.assign(q, { with_watch_providers: plat, watch_region: "FR", with_watch_monetization_types: "flatrate|free|ads" });
     const pages = await Promise.all(
       Array.from({ length: BATCH }, (_, k) => tmdb<Paged<Movie>>("discover/movie", { ...q, page: from + k + 1 }).catch(() => null)),
     );
@@ -53,16 +50,13 @@ export function MoodResults({ slug }: { slug: string }) {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, onlyMine, plat, d.profile]);
+  }, [slug, d.profile]);
 
   if (!mood) return <p className="status err">Cette humeur n'existe pas.</p>;
 
   return (
     <section className="section" ref={ref}>
       <SecHead as="h1" title={mood.t} aside={mood.s} />
-      <div className="filterbar">
-        <MineToggle />
-      </div>
       {error ? (
         <ErrorLine error={error} />
       ) : !list ? (
@@ -84,7 +78,7 @@ export function MoodResults({ slug }: { slug: string }) {
           }
         />
       ) : (
-        <p className="status">Rien de neuf pour toi ici. Tu as peut-être déjà tout vu, ou le filtre plateformes est trop strict.</p>
+        <p className="status">Rien de neuf pour toi ici. Tu as peut-être déjà tout vu.</p>
       )}
     </section>
   );

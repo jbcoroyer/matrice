@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
-import { providers, streamable, tmdb } from "./tmdb";
+import { tmdb } from "./tmdb";
 import { buildRecs } from "./recs";
 import type { Movie, Ranked } from "./types";
 
@@ -29,13 +29,6 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], enabled = tru
   }, [...deps, tick, enabled]);
   const reload = useCallback(() => setTick((t) => t + 1), []);
   return { ...state, reload };
-}
-
-/** Garde les films visibles sur au moins une de mes plateformes (abonnement, gratuit, pub). */
-export async function filterMine<T extends Movie>(list: T[], platforms: Set<number>): Promise<T[]> {
-  if (!platforms.size) return list;
-  const frs = await Promise.all(list.map((m) => providers(m.id)));
-  return list.filter((_, i) => streamable(frs[i]).some((p) => platforms.has(p.provider_id)));
 }
 
 /** La sélection « Pour toi », recalculée quand l'historique change. */
@@ -67,17 +60,3 @@ export function useWatchlistMovies() {
   );
 }
 
-/** Applique le filtre « Sur mes plateformes » si coché. */
-export function useMineFilter(list: Ranked[] | undefined, force = false): Async<Ranked[]> {
-  const { onlyMine, platforms } = useProfile();
-  const on = (onlyMine || force) && platforms.size > 0;
-  const key = list ? list.map((m) => m.id).join(",") : "";
-  return useAsync<Ranked[]>(async () => (on ? filterMine(list!, platforms) : list!), [key, on, [...platforms].join(",")], !!list);
-}
-
-/** true si l'adresse contient ?mine=1 (liens « Sur tes plateformes » de Découvrir). */
-export function useMineParam() {
-  const [on, setOn] = useState(false);
-  useEffect(() => setOn(new URLSearchParams(location.search).get("mine") === "1"), []);
-  return on;
-}

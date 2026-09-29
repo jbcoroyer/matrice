@@ -73,11 +73,19 @@ export function ReviewMeta({ r }: { r: Review }) {
 
 /** Une critique dans une liste (fiche film). */
 export function ReviewCard({ r, liked, onLike, mine }: { r: Review; liked: boolean; onLike?: () => void; mine?: boolean }) {
+  const name = mine ? "Ta critique" : authorName(r.author);
   return (
     <li className="review-card">
-      <div className="line">
-        <b>{mine ? "Ta critique" : authorName(r.author)}</b>
-        <ReviewMeta r={r} />
+      <div className="who">
+        <span className={`face${mine ? " me" : ""}`} aria-hidden>
+          {authorName(r.author)[0]?.toUpperCase()}
+        </span>
+        <span>
+          <b>{name}</b>
+          {r.watched_on ? `vu le ${frDate(r.watched_on)}` : null}
+          {r.rewatch ? " · revu" : null}
+        </span>
+        <StarsText value={r.rating} />
       </div>
       <ReviewText text={r.review} spoilers={r.spoilers && !mine} />
       <div className="review-foot">
@@ -113,12 +121,12 @@ export function FilmReviews({ tmdbId }: { tmdbId: number }) {
   if (!reviews?.length) return null;
   return (
     <section className="section film-reviews">
-      <div className="sec-head">
-        <h2>
-          Critiques <span className="dim">· {reviews.length}</span>
+      <div className="block-title">
+        <h2 style={{ fontSize: "inherit" }}>
+          Critiques <span>des membres · {reviews.length}</span>
         </h2>
         {reviews.length > 1 ? (
-          <span className="seg" role="group" aria-label="Trier les critiques">
+          <span className="seg" role="group" aria-label="Trier les critiques" style={{ marginLeft: "auto" }}>
             <button type="button" aria-pressed={sort === "popular"} onClick={() => setSort("popular")}>
               Populaires
             </button>
@@ -128,7 +136,7 @@ export function FilmReviews({ tmdbId }: { tmdbId: number }) {
           </span>
         ) : null}
       </div>
-      <ul className="review-list">
+      <ul className="review-grid">
         {reviews.slice(0, shown).map((r) => (
           <ReviewCard key={r.id} r={r} liked={liked.has(r.id)} onLike={toggle && (() => toggle(r))} mine={r.user_id === userId} />
         ))}

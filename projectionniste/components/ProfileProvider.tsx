@@ -28,12 +28,10 @@ type Ctx = Derived & {
   setAccount: (a: Account) => void;
   /** aucun film enregistré : on propose l'import Letterboxd */
   empty: boolean;
-  onlyMine: boolean;
   states: Map<number, FilmState>;
   predict: (m: Movie, credits?: Credits | null) => Prediction;
   retry: () => void;
   reload: () => Promise<void>;
-  updateSettings: (patch: Settings) => void;
   toggleWatchlist: (m: FilmInput) => void;
   toggleFavorite: (m: FilmInput) => void;
   markSeen: (m: FilmInput, rating?: number) => void;
@@ -81,13 +79,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     async (uid: string) => {
       const [p, f] = await Promise.all([loadProfile(sb!, uid), loadFilmStates(sb!)]);
       markKnown(f.states.keys());
-      // reprend une fois les plateformes choisies avant le passage à Supabase
-      const legacy = store.get<{ platforms?: number[]; onlyMine?: boolean } | null>(KEYS.legacyPrefs, null);
-      if (legacy?.platforms?.length && !p.settings.platforms?.length) {
-        p.settings = { platforms: legacy.platforms, onlyMine: !!legacy.onlyMine };
-        updateProfile(sb!, uid, { settings: p.settings }).catch(() => {});
-      }
-      store.del(KEYS.legacyPrefs);
       setProfile(p);
       setStates(f.states);
       setTitles(f.titles);
@@ -208,19 +199,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     [patchFilm],
   );
 
-  const updateSettings = useCallback(
-    (patch: Settings) => {
-      if (!sb || !userId) return;
-      setProfile((p) => {
-        if (!p) return p;
-        const settings = { ...p.settings, ...patch };
-        updateProfile(sb, userId, { settings }).catch((e: Error) => toast(`Échec de l'enregistrement : ${e.message}`));
-        return { ...p, settings };
-      });
-    },
-    [sb, userId, toast],
-  );
-
   const derived = useMemo(() => derive(profile, states, titles), [profile, states, titles]);
 
   const value = useMemo<Ctx>(
@@ -234,12 +212,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       account,
       setAccount,
       empty: status === "ready" && states.size === 0,
-      onlyMine: !!profile?.settings.onlyMine && derived.platforms.size > 0,
       states,
       predict: (m, credits) => (profile ? predict(m, profile.aff, profile.mu, credits) : { v: 0, why: [] }),
       retry: () => setAttempt((a) => a + 1),
       reload,
-      updateSettings,
       toggleWatchlist,
       toggleFavorite,
       markSeen,
@@ -250,7 +226,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toasts,
       dismissToast,
     }),
-    [derived, status, error, profile, sb, userId, account, states, reload, updateSettings, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
+    [derived, status, error, profile, sb, userId, account, states, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

@@ -24,8 +24,6 @@ export const store = {
 };
 
 export const KEYS = {
-  /** anciennes préférences locales (avant Supabase), reprises une fois */
-  legacyPrefs: "projo.v2.prefs",
   recs: "projo.v3.recs",
   titleMap: "projo.v3.titlemap",
   theme: "projo.theme",

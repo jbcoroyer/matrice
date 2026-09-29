@@ -31,3 +31,12 @@ export function stars(r: number) {
   const full = Math.floor(r);
   return "★".repeat(full) + (r - full >= 0.5 ? "½" : "");
 }
+
+/** Sépare un titre en partie forte et partie légère : « Dune : Deuxième partie », « Blade Runner 2049 ». */
+export function splitTitle(t: string): [string, string] {
+  const colon = t.match(/^(.+?)\s*[:–—-]\s+(.+)$/);
+  if (colon) return [colon[1], colon[2]];
+  const num = t.match(/^(.+?)\s+(\d{1,4}|II|III|IV)$/);
+  if (num) return [num[1], num[2]];
+  return [t, ""];
+}

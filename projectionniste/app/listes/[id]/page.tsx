@@ -300,7 +300,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
                 <li key={it.tmdb_id}>
                   {ranked ? <span className="rank">{rank}</span> : null}
                   {status === "ready" ? (
-                    <FilmCard m={asMovie(it)} showProviders={false} />
+                    <FilmCard m={asMovie(it)} />
                   ) : (
                     <Link className="card" href={`/film/${it.tmdb_id}`}>
                       <Poster path={it.films?.poster_path} title={it.films?.title ?? ""} />

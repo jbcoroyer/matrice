@@ -1,29 +1,29 @@
-# Le Projectionniste — consignes pour Claude
+# Filmable — consignes pour Claude
 
 App Next.js 15 (App Router) + Supabase + proxy TMDB. Interface et contenus en français.
 
 ## Design : lire avant toute modification visuelle
 
 La direction artistique est fixée dans `design/` :
-- `design/ART_DIRECTION.md` — concept « Nouvelle Vague » (affiche, rouge-noir-papier), décisions validées ;
-- `design/DESIGN_SYSTEM.md` — typographie (Archivo condensée + Plex Mono), couleurs, géométrie, mouvement ;
-- `design/COMPONENTS.md` — composants signature (fiche « générique », bandeaux, monogramme).
+- `design/ART_DIRECTION.md` — « salle obscure » : sombre d'abord, accent crème, le film porte la couleur ;
+- `design/DESIGN_SYSTEM.md` — jetons, Urbanist, formes arrondies, mouvement ;
+- `design/COMPONENTS.md` — fiche film, film de la semaine, écran d'accueil ;
+- `design/references/` — références du propriétaire, avec ce qu'on en retient.
 
 Toute nouvelle page ou tout nouveau composant s'inscrit dans cette direction. Si une
 décision la contredit, la documenter dans ces fichiers d'abord.
 
-### Interdits (réflexes « UI générée »)
-Pas de hero centré titre + paragraphe + bouton ; pas de cartes à coins ronds en série ;
-pas de grilles « icône + titre + paragraphe » ; pas de pilules ; aucun arrondi ;
-pas de dégradé décoratif, de halo, de glassmorphism, d'ombre portée floue ; pas de mise en
-page symétrique par défaut ; pas d'animation sans raison liée au contenu ; pas de palette
-multicolore (trio fixe : papier, noir, rouge).
+### Interdits
+Pas de look « tableau de bord SaaS » : lueurs colorées, verre dépoli décoratif, dégradés
+d'interface, palette multicolore, icônes de couleur, cartes à ombre lourde en série, grilles
+« icône + titre + paragraphe ». Pas de notion de disponibilité (plateformes, où le voir) ni de
+bande-annonce : le propriétaire les a retirées. Pas de pictogramme à côté du nom.
 
 ### À faire à la place
-Composition d'affiche ; titres de films en grotesque condensée capitale rouge, très grands ;
-aplats noirs ou rouges au lieu de cartes ; bandeaux de section pleine largeur ; affiches
-grandes et serrées ; métadonnées en mono ; asymétrie voulue (affiche collée au bord) ;
-états de survol et de focus dessinés ; animations discrètes ; mobile composé pour lui-même.
+La couleur vient des images du film (fond, ambiance floutée) ; interface neutre ; un seul
+accent crème, rare ; hiérarchie par taille et opacité ; titres en deux graisses ; libellés
+en capitales espacées ; arrondis doux et pilules fines ; beaucoup d'air ; tout ce qui nomme
+une personne, un film ou un studio est cliquable ; mobile avec barre d'onglets flottante.
 
 ### Contrôle qualité visuel (obligatoire après un changement d'interface)
 1. Construire, lancer, capturer (Playwright) en 1280 px, 390 px et en mode sombre.

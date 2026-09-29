@@ -3,34 +3,32 @@
 import Link from "next/link";
 import { num1, yearOf } from "@/lib/format";
 import type { Ranked } from "@/lib/types";
-import { Check, Plus } from "./icons";
+import { Check, Plus, Star } from "./icons";
 import { Poster } from "./Poster";
-import { ProviderIcons } from "./ProviderIcons";
 import { useProfile } from "./ProfileProvider";
 
-export function FilmCard({ m, showProviders = true }: { m: Ranked; showProviders?: boolean }) {
+export function FilmCard({ m }: { m: Ranked }) {
   const { seen, watchlist, rated, predict, toggleWatchlist } = useProfile();
   const p = m._pred ?? predict(m).v;
   const inWl = watchlist.has(m.id);
   const isSeen = seen.has(m.id);
   const r = rated.get(m.id);
-  const badge = inWl ? <span className="badge">Watchlist</span> : isSeen ? <span className="badge">Vu{r ? ` · ${num1(r)}` : ""}</span> : null;
+  const badge = isSeen ? <span className="badge">Vu{r ? ` · ${num1(r)}` : ""}</span> : inWl ? <span className="badge">Watchlist</span> : null;
 
   return (
     <article className="card">
       <Link href={`/film/${m.id}`} prefetch={false}>
         <Poster path={m.poster_path} title={m.title}>
+          {p > 0 && !isSeen ? (
+            <span className="score-pill" title="Ton indice : la note que tu devrais lui donner">
+              <Star />
+              {num1(p)}
+            </span>
+          ) : null}
           {badge}
         </Poster>
         <h3>{m.title}</h3>
-        <div className="meta">
-          {yearOf(m)}
-          {p > 0 ? (
-            <>
-              {" · "}indice <b title="Ta note prédite, sur 5">{num1(p)}</b>
-            </>
-          ) : null}
-        </div>
+        <div className="meta">{yearOf(m)}</div>
         {m._note ? <div className="dir">{m._note}</div> : null}
         {m._because ? <div className="dir">Parce que tu as aimé {m._because}</div> : null}
       </Link>
@@ -46,7 +44,6 @@ export function FilmCard({ m, showProviders = true }: { m: Ranked; showProviders
           {inWl ? <Check /> : <Plus />}
         </button>
       ) : null}
-      {showProviders ? <ProviderIcons id={m.id} /> : null}
     </article>
   );
 }

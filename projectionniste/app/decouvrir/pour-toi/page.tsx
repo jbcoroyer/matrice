@@ -3,10 +3,10 @@
 import { useMemo, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
 import { useProfile } from "@/components/ProfileProvider";
-import { ErrorLine, MineToggle, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
 import { GENRE_OPTIONS } from "@/lib/genres";
 import { genreIds } from "@/lib/predict";
-import { useAsync, useMineFilter, useMineParam, useRecs } from "@/lib/hooks";
+import { useAsync, useRecs } from "@/lib/hooks";
 import { BackLink } from "@/components/Rail";
 import { MoodChips } from "@/components/MoodChips";
 import { clearRecs } from "@/lib/recs";
@@ -27,7 +27,6 @@ function PourToi() {
   const { profile } = useProfile();
   const [force, setForce] = useState(0);
   const recs = useRecs(force);
-  const forceMine = useMineParam();
   const [genre, setGenre] = useState(0);
   const [decade, setDecade] = useState("");
   const [maxRt, setMaxRt] = useState(0);
@@ -48,30 +47,27 @@ function PourToi() {
     return l;
   }, [recs.data, genre, decade, sort]);
 
-  const mine = useMineFilter(filtered, forceMine);
-
   // la durée n'est pas dans les résultats de recommandation : on la demande seulement si le filtre est actif
   const runtimeFiltered = useAsync<Ranked[]>(
     async () => {
-      const l = mine.data!.slice(0, 120);
+      const l = filtered!.slice(0, 120);
       const det = await Promise.all(l.map((m) => tmdb<Movie>(`movie/${m.id}`).catch(() => null)));
       return l.filter((_, i) => det[i]?.runtime && det[i]!.runtime! <= maxRt);
     },
-    [mine.data, maxRt],
-    !!mine.data && maxRt > 0,
+    [filtered, maxRt],
+    !!filtered && maxRt > 0,
   );
 
-  const final = maxRt ? runtimeFiltered.data : mine.data;
-  const loading = recs.loading || mine.loading || (maxRt > 0 && runtimeFiltered.loading);
-  const error = recs.error || mine.error || runtimeFiltered.error;
+  const final = maxRt ? runtimeFiltered.data : filtered;
+  const loading = recs.loading || (maxRt > 0 && runtimeFiltered.loading);
+  const error = recs.error || runtimeFiltered.error;
 
   return (
     <section className="section">
       <BackLink />
-      <SecHead as="h1" title={forceMine ? "Pour toi, sur tes plateformes" : "Pour toi"} aside="D'après les films que tu as le mieux notés" />
+      <SecHead as="h1" title="Pour toi" aside="D'après les films que tu as le mieux notés" />
       <MoodChips />
       <div className="filterbar">
-        <MineToggle />
         <label>
           Genre
           <select value={genre} onChange={(e) => setGenre(+e.target.value)}>
@@ -128,7 +124,7 @@ function PourToi() {
       ) : final.length ? (
         <FilmGrid key={`${genre}|${decade}|${maxRt}|${sort}|${profile?.updatedAt}`} list={final} />
       ) : (
-        <p className="status">Aucun film ne correspond. Retire un filtre ou coche d'autres plateformes.</p>
+        <p className="status">Aucun film ne correspond. Retire un filtre.</p>
       )}
     </section>
   );

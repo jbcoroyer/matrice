@@ -1,80 +1,41 @@
-# Direction artistique — « Nouvelle Vague »
+# Direction artistique — Filmable, « salle obscure »
 
-Décisions prises avec le propriétaire du projet (questionnaire du 29/09/2026) :
+Validée par le propriétaire du projet le 29/09/2026, à partir de ses références
+(`design/references/`) et d'une planche de style. Une première piste « Nouvelle Vague »
+(papier, rouge, capitales condensées) a été écartée : pas assez premium ni cinéma.
 
 | Question | Choix |
 |---|---|
-| Univers | Affiche / graphisme |
-| Famille d'affiches | **Nouvelle Vague** (affiches françaises des années 60) |
-| Couleur | **Rouge, noir, papier** — trio fixe |
-| Titres | **Grotesque condensée** en capitales |
-| Dominante | **Les affiches** (images d'abord) |
-| Ambiance | **Clair d'abord** ; le sombre existe, secondaire |
+| Nom | **Filmable** — mot-marque seul, « **Film**able » (gras + léger), pas de pictogramme |
+| Ambiance | **Sombre d'abord** ; le clair existe, secondaire |
+| Accent | **Crème / ivoire**, utilisé très rarement |
+| Typographie | **Sans-serif géométrique douce** (Urbanist) |
+| Formes | **Arrondis doux** (affiches 16–28 px, boutons et puces en pilule) |
+| Dominante | **Les affiches et les images du film** |
 | Mouvement | **Discret** |
-| Élément signature | **Fiche « générique »** |
-| Marque | **Monogramme « P »** |
-| Navigation | **Bandeau horizontal** |
+| Élément signature | **Fiche film** : image du film en fond, générique de fin, casting en photos |
 
-## Le concept
+## Principes (tirés des références)
 
-Chaque page est composée comme une affiche de film français des années 60 : un papier
-clair, un noir profond, un rouge franc, des titres en capitales serrées qui remplissent la
-largeur, et l'image du film en grand. Le ton est direct, un peu brut, jamais décoratif.
-Les principes viennent d'*À bout de souffle*, *Pierrot le fou*, *Les Quatre Cents Coups*,
-*Le Mépris* : rien n'est copié.
+1. **Le film porte la couleur.** L'interface est neutre (anthracite, ivoire, gris par opacité) ;
+   la couleur vient de l'image du film : fond panoramique sur la fiche, affiche floutée en
+   ambiance derrière le film de la semaine.
+2. **Un seul accent, crème**, réservé à : l'indice ou la note (pastille), l'action principale,
+   la sélection (onglet actif, point sous la rubrique, bascules).
+3. **Hiérarchie par la taille et l'opacité**, pas par des boîtes : texte à 100 %, 66 %, 45 %.
+   Filets de 1 px très discrets. Les blocs (qui l'a vu, critiques) sont à peine plus clairs.
+4. **Titres en deux graisses** : « **Pour** toi », « **Blade Runner** 2049 », « **Dune** Deuxième
+   partie ». Grands chiffres légers (bilan, portrait, moyenne des membres).
+5. **Petits libellés en capitales très espacées** pour les métadonnées (genres, année, durée).
+6. **Beaucoup d'air**, peu d'éléments par écran.
 
-Ce qui distingue immédiatement le site d'un template : les titres de films sont traités
-comme des titres d'affiche (énormes, en rouge, qui débordent) ; des aplats noirs et rouges
-remplacent les cartes ; le « bloc générique » (UN FILM DE… AVEC…) remplace les listes de
-métadonnées ; aucune ombre, aucun arrondi, aucun dégradé.
+## À éviter
 
-## Principes de composition
-
-1. **L'affiche d'abord.** Les affiches sont grandes, nettes, rectangulaires, serrées entre
-   elles (gouttière 8 px). Pas de boîte autour.
-2. **Le titre est une image.** Titres de films en grotesque condensée capitale, en rouge,
-   à une échelle qui domine la page. Un titre peut couper une colonne, chevaucher une image
-   ou une bande.
-3. **Aplats, pas de cartes.** Pour isoler une information, on utilise un aplat noir ou
-   rouge plein (le bandeau d'une section, l'indice, le compteur), jamais une carte à ombre.
-4. **Asymétrie voulue.** L'affiche d'une fiche est collée au bord gauche de l'écran ; le
-   texte occupe le reste. Les bandeaux de section vont de bord à bord.
-5. **Deux densités.** Pages d'affiche (fiche, Découvrir) aérées et spectaculaires ;
-   pages de registre (journal, listes, collection, paramètres) denses, en filets.
-
-## Grille
-
-- 12 colonnes, gouttière 24 px (8 px entre affiches), marge 32 px (16 px mobile), largeur
-  utile max 1360 px.
-- **Exceptions voulues** : l'affiche de la fiche sort de la marge gauche (bord à bord) ;
-  le titre de la fiche peut dépasser sa colonne ; les bandeaux de section sont pleine
-  largeur.
-
-## Couleur
-
-- Papier `#F4F1EA`, noir `#111110`, rouge `#D6231A` (contraste AA dans les deux sens).
-- Rouge : titres de films, état actif (vu, favori, watchlist cochés), sélection, focus,
-  un mot dans un titre de page. Noir : texte, aplats de bandeaux, indice.
-- Aucune autre teinte. Les graphiques sont en noir (valeur) et rouge (mise en avant).
-- Sombre (secondaire) : noir `#0F0F0E`, papier `#EEEAE1`, rouge `#F0453A`.
-
-## Images
-
-- Affiches 2:3, coins droits, sans ombre ; au survol : cadre rouge 4 px intérieur.
-- Fonds (backdrops) en bande panoramique pleine largeur, légèrement désaturés pour que le
-  rouge et le noir restent maîtres.
-
-## Mouvement (discret)
-
-- 120 ms pour les survols, 200 ms pour les apparitions ; courbe franche sans rebond.
-- Aucune animation déclenchée sans action de l'utilisateur, sauf le fondu d'une image qui
-  se charge. `prefers-reduced-motion` → tout est instantané.
+Lueurs colorées, verre dépoli décoratif, dégradés d'interface, palette multicolore, cartes à
+ombre lourde, icônes de couleur, tout ce qui fait « tableau de bord SaaS » (réf. 5 : structure
+oui, look non). Pas de notion de disponibilité (plateformes, où le voir) ni de bandes-annonces.
 
 ## Mobile
 
-- La fiche commence par l'affiche en pleine largeur ; le titre rouge chevauche son bas sur
-  un aplat papier ; le bloc générique passe dessous ; les actions forment une barre de
-  boutons carrés.
-- Découvrir : bandes d'affiches défilantes plus grandes (2,3 affiches visibles), bandeaux
-  de section pleine largeur.
-- Navigation : monogramme + rubriques sur une ligne défilante.
+Barre d'onglets flottante en bas (icônes fines, point crème sous l'onglet actif) ; Découvrir
+s'ouvre sur le carrousel d'affiches ; la fiche s'ouvre sur l'image du film et l'affiche.

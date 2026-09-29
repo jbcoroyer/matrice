@@ -57,16 +57,6 @@ export default async function PersonPage({ params }: Props) {
           <h1>{p.name}</h1>
           <div className="facts">{[DEPT[p.known_for_department || ""], life].filter(Boolean).join(" · ")}</div>
           {p.biography ? <Bio text={p.biography} lang={p.bioLang} /> : null}
-          <div className="ext">
-            {p.imdb_id ? (
-              <a href={`https://www.imdb.com/name/${p.imdb_id}/`} target="_blank" rel="noopener">
-                IMDb
-              </a>
-            ) : null}
-            <a href={`https://www.themoviedb.org/person/${p.id}`} target="_blank" rel="noopener">
-              TMDB
-            </a>
-          </div>
         </div>
       </section>
       <Filmography credits={p.credits} dept={p.known_for_department || "Acting"} name={p.name} />
