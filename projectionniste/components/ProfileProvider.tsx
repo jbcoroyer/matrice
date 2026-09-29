@@ -36,6 +36,8 @@ type Ctx = Derived & {
   markSeen: (m: FilmInput, rating?: number) => void;
   unmarkSeen: (m: FilmInput) => void;
   toggleHidden: (m: FilmInput) => void;
+  /** modifie l'état d'un film (utilisé par le journal) ; message facultatif avec annulation */
+  setFilmState: (m: FilmInput, patch: Partial<FilmState>, message?: string) => void;
   toast: (text: string, undo?: () => void) => void;
   toasts: Toast[];
   dismissToast: (id: number) => void;
@@ -215,11 +217,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       markSeen,
       unmarkSeen,
       toggleHidden,
+      setFilmState: patchFilm,
       toast,
       toasts,
       dismissToast,
     }),
-    [derived, status, error, profile, sb, userId, states, reload, updateSettings, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, toast, toasts, dismissToast],
+    [derived, status, error, profile, sb, userId, states, reload, updateSettings, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

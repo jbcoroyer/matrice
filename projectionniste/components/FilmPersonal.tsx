@@ -9,6 +9,7 @@ import { FilmGrid } from "./FilmGrid";
 import { Check, EyeOff, Heart, Play, Plus, Share } from "./icons";
 import { useProfile, type FilmInput } from "./ProfileProvider";
 import { SecHead } from "./ui";
+import { Stars } from "./Stars";
 
 /** Indice personnel, note TMDB et ce qui fait bouger l'indice. */
 export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits }) {
@@ -49,37 +50,6 @@ export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits })
         </div>
       ) : null}
     </div>
-  );
-}
-
-function Stars({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const [hover, setHover] = useState(0);
-  const shown = hover || value;
-  return (
-    <span className="stars" role="radiogroup" aria-label="Ta note" onMouseLeave={() => setHover(0)}>
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className="star">
-          <span aria-hidden="true">★</span>
-          <span className={`fill${shown >= i ? " full" : shown >= i - 0.5 ? " half" : ""}`} aria-hidden="true">
-            ★
-          </span>
-          {[i - 0.5, i].map((v) => (
-            <button
-              key={v}
-              type="button"
-              className={v % 1 ? "l" : "r"}
-              role="radio"
-              aria-checked={value === v}
-              aria-label={`${num1(v)} sur 5`}
-              onMouseEnter={() => setHover(v)}
-              onFocus={() => setHover(v)}
-              onBlur={() => setHover(0)}
-              onClick={() => onChange(v)}
-            />
-          ))}
-        </span>
-      ))}
-    </span>
   );
 }
 

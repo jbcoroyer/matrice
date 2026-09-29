@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Poster } from "@/components/Poster";
 import { FilmActions, FilmRecs, ScoreBox, Trailer, WhereToWatch } from "@/components/FilmPersonal";
+import { FilmDiary } from "@/components/FilmDiary";
 import { SeenBadge } from "@/components/SeenBadge";
 import { SecHead } from "@/components/ui";
 import { GENRE_FR } from "@/lib/genres";
@@ -70,6 +71,16 @@ export default async function FilmPage({ params }: Props) {
     </Link>
   );
   const join = (arr: React.ReactNode[]) => arr.flatMap((x, i) => (i ? [", ", x] : [x]));
+  const film = {
+    id: m.id,
+    title: m.title,
+    original_title: m.original_title,
+    release_date: m.release_date,
+    poster_path: m.poster_path,
+    backdrop_path: m.backdrop_path,
+    genre_ids: (m.genres ?? []).map((g) => g.id),
+    runtime: m.runtime,
+  };
   const scoreMovie: Movie = { id: m.id, title: m.title, genres: m.genres, vote_average: m.vote_average, vote_count: m.vote_count };
 
   return (
@@ -100,18 +111,8 @@ export default async function FilmPage({ params }: Props) {
             </div>
             {m.tagline ? <p className="tagline-f">« {m.tagline} »</p> : null}
             <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs }} />
-            <FilmActions
-              movie={{
-                id: m.id,
-                title: m.title,
-                original_title: m.original_title,
-                release_date: m.release_date,
-                poster_path: m.poster_path,
-                backdrop_path: m.backdrop_path,
-                genre_ids: (m.genres ?? []).map((g) => g.id),
-                runtime: m.runtime,
-              }}
-            />
+            <FilmActions movie={film} />
+            <FilmDiary film={film} />
             {m.overview ? <p className="overview">{m.overview}</p> : <p className="note">Pas encore de résumé en français.</p>}
             <div className="credits">
               {dirs.length ? (

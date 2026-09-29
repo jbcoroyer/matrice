@@ -11,6 +11,7 @@ const RUBRIQUES = [
   { href: "/pour-toi", label: "Pour toi" },
   { href: "/humeurs", label: "Humeurs" },
   { href: "/salles", label: "En salles" },
+  { href: "/journal", label: "Journal" },
   { href: "/watchlist", label: "Watchlist" },
   { href: "/portrait", label: "Portrait" },
 ];

@@ -8,6 +8,8 @@ import { genreFrFromName } from "@/lib/genres";
 import { num1 } from "@/lib/format";
 import { tmdb } from "@/lib/tmdb";
 import { useAsync } from "@/lib/hooks";
+import { loadTop } from "@/lib/diary";
+import { Poster } from "@/components/Poster";
 import type { Paged, Person } from "@/lib/types";
 
 const STEPS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
@@ -97,6 +99,35 @@ function top(o: Record<string, number>, n: number, dir: 1 | -1) {
     .slice(0, n);
 }
 
+function TopFive() {
+  const { sb, userId } = useProfile();
+  const top = useAsync(() => loadTop(sb!, userId!), [userId], !!sb && !!userId);
+  const slots = [1, 2, 3, 4, 5].map((n) => top.data?.find((t) => t.slot === n));
+  return (
+    <section className="section">
+      <SecHead title="Top 5" aside="Choisis-les depuis la fiche d'un film" />
+      <div className="grid top5">
+        {slots.map((t, i) =>
+          t ? (
+            <Link key={i} href={`/film/${t.tmdb_id}`} className="card">
+              <Poster path={t.films?.poster_path} title={t.films?.title ?? ""} />
+              <h3>
+                {i + 1}. {t.films?.title}
+              </h3>
+            </Link>
+          ) : (
+            <div key={i} className="card">
+              <div className="poster">
+                <div className="noimg">{i + 1}</div>
+              </div>
+            </div>
+          ),
+        )}
+      </div>
+    </section>
+  );
+}
+
 function Portrait() {
   const { profile, seen, rated, watchlist, titles } = useProfile();
   const ratings = useMemo(() => [...rated.values()], [rated]);
@@ -140,6 +171,8 @@ function Portrait() {
           </div>
         </div>
       </section>
+
+      <TopFive />
 
       {ratings.length ? (
         <section className="section">
