@@ -162,9 +162,11 @@ export default function Decouvrir() {
   const trending = useAsync<Ranked[]>(
     async () => {
       const ps = await Promise.all([1, 2].map((page) => tmdb<Paged<Movie>>("trending/movie/week", { page })));
+      // les pages de tendances peuvent se recouper : un film n'apparaît qu'une fois
+      const have = new Set<number>();
       return ps
         .flatMap((p) => p.results)
-        .filter((m) => m.poster_path)
+        .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true))
         .map((m) => ({ ...m, _pred: d.predict(m).v }))
         .slice(0, 24);
     },

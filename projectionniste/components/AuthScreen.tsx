@@ -129,7 +129,7 @@ function PosterWall() {
   const [posters, setPosters] = useState<string[]>([]);
   useEffect(() => {
     Promise.all([1, 2].map((page) => tmdb<Paged<Movie>>("trending/movie/week", { page })))
-      .then((ps) => setPosters(ps.flatMap((p) => p.results).map((m) => m.poster_path).filter((x): x is string => !!x).slice(0, 32)))
+      .then((ps) => setPosters([...new Set(ps.flatMap((p) => p.results).map((m) => m.poster_path).filter((x): x is string => !!x))].slice(0, 32)))
       .catch(() => {});
   }, []);
   return (

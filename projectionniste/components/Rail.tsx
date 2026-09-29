@@ -54,9 +54,11 @@ export function Rail({
         </div>
       ) : list.length ? (
         <div className="rail" ref={ref}>
-          {list.map((m) => (
-            <FilmCard key={m.id} m={m} />
-          ))}
+          {list
+            .filter((m, i) => list.findIndex((x) => x.id === m.id) === i)
+            .map((m) => (
+              <FilmCard key={m.id} m={m} />
+            ))}
         </div>
       ) : (
         <p className="status">{empty}</p>
