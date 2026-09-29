@@ -1,0 +1,222 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { num1 } from "@/lib/format";
+import { dedupeProviders, img, streamable } from "@/lib/tmdb";
+import type { Credits, Movie, Provider, ProviderOffers, Ranked } from "@/lib/types";
+import { FilmGrid } from "./FilmGrid";
+import { Check, EyeOff, Play, Plus, Share } from "./icons";
+import { useProfile } from "./ProfileProvider";
+import { SecHead } from "./ui";
+
+/** Indice personnel, note TMDB et ce qui fait bouger l'indice. */
+export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits }) {
+  const { status, predict, rated } = useProfile();
+  const pred = status === "ready" ? predict(movie, credits) : null;
+  const mine = rated.get(movie.id);
+  return (
+    <div className="scorebox">
+      <div>
+        <small>{mine ? "Ta note" : "Ton indice"}</small>
+        <b className="acc">{mine ? num1(mine) : pred ? num1(pred.v) : "…"}</b>
+        <small>{mine && pred ? `indice ${num1(pred.v)}` : "sur 5"}</small>
+      </div>
+      <div>
+        <small>TMDB</small>
+        <b>{num1(movie.vote_average || 0)}</b>
+        <small>{(movie.vote_count || 0).toLocaleString("fr-FR")} votes</small>
+      </div>
+      {pred && pred.why.length ? (
+        <div style={{ flex: 1, minWidth: 220 }}>
+          <small>Ce qui joue</small>
+          <div className="why-tags">
+            {pred.why.map((w) =>
+              w.id ? (
+                <Link key={w.n + w.r} className={`tag ${w.a > 0 ? "pos" : "neg"}`} href={`/personne/${w.id}`}>
+                  {w.a > 0 ? "+" : "−"} {w.n} <em style={{ opacity: 0.7 }}>{w.r}</em>
+                </Link>
+              ) : (
+                <span key={w.n + w.r} className={`tag ${w.a > 0 ? "pos" : "neg"}`}>
+                  {w.a > 0 ? "+" : "−"} {w.n} <em style={{ opacity: 0.7 }}>{w.r}</em>
+                </span>
+              ),
+            )}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Stars({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hover, setHover] = useState(0);
+  const shown = hover || value;
+  return (
+    <span className="stars" role="radiogroup" aria-label="Ta note" onMouseLeave={() => setHover(0)}>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <span key={i} className="star">
+          <span aria-hidden="true">★</span>
+          <span className={`fill${shown >= i ? " full" : shown >= i - 0.5 ? " half" : ""}`} aria-hidden="true">
+            ★
+          </span>
+          {[i - 0.5, i].map((v) => (
+            <button
+              key={v}
+              type="button"
+              className={v % 1 ? "l" : "r"}
+              role="radio"
+              aria-checked={value === v}
+              aria-label={`${num1(v)} sur 5`}
+              onMouseEnter={() => setHover(v)}
+              onFocus={() => setHover(v)}
+              onBlur={() => setHover(0)}
+              onClick={() => onChange(v)}
+            />
+          ))}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Watchlist, vu / note, pas pour moi, partager. */
+export function FilmActions({ movie }: { movie: Pick<Movie, "id" | "title"> }) {
+  const { watchlist, seen, rated, hidden, prefs, toggleWatchlist, markSeen, unmarkSeen, toggleHidden, toast } = useProfile();
+  const inWl = watchlist.has(movie.id);
+  const isSeen = seen.has(movie.id);
+  const localSeen = movie.id in prefs.seen;
+  const r = rated.get(movie.id) || 0;
+  const isHidden = hidden.has(movie.id);
+
+  const share = async () => {
+    const url = location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: movie.title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast("Lien copié");
+      }
+    } catch {}
+  };
+
+  return (
+    <>
+      <div className="film-actions">
+        {!isSeen ? (
+          <button type="button" className={`btn${inWl ? " on" : " primary"}`} aria-pressed={inWl} onClick={() => toggleWatchlist(movie)}>
+            {inWl ? <Check /> : <Plus />} {inWl ? "Dans ta watchlist" : "Ajouter à la watchlist"}
+          </button>
+        ) : null}
+        <button type="button" className={`btn${isSeen ? " on" : ""}`} aria-pressed={isSeen} disabled={isSeen && !localSeen} title={isSeen && !localSeen ? "Vu d'après ton historique Letterboxd" : undefined} onClick={() => (isSeen ? unmarkSeen(movie.id) : markSeen(movie))}>
+          <Check /> {isSeen ? "Vu" : "Je l'ai vu"}
+        </button>
+        {!isSeen ? (
+          <button type="button" className="btn ghost" aria-pressed={isHidden} onClick={() => toggleHidden(movie)}>
+            <EyeOff /> {isHidden ? "Proposer à nouveau" : "Pas pour moi"}
+          </button>
+        ) : null}
+        <button type="button" className="btn ghost" onClick={share}>
+          <Share /> Partager
+        </button>
+      </div>
+      {isSeen ? (
+        <div className="rate">
+          <span>{r ? "Ta note" : "Noter"}</span>
+          <Stars value={r} onChange={(v) => markSeen(movie, v)} />
+          {r && !localSeen ? <em>d'après Letterboxd</em> : null}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function ProvRow({ label, list, mine }: { label: string; list?: Provider[]; mine: Set<number> }) {
+  const arr = dedupeProviders(list);
+  if (!arr.length) return null;
+  return (
+    <div className="row">
+      <small>{label}</small>
+      <span className="provs prov-lg">
+        {arr.map((p) => (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={p.provider_id}
+            src={img(p.logo_path, "w92")}
+            alt={p.provider_name}
+            title={`${p.provider_name}${mine.has(p.provider_id) ? " (abonné)" : ""}`}
+            className={mine.has(p.provider_id) ? "mine" : undefined}
+          />
+        ))}
+      </span>
+    </div>
+  );
+}
+
+export function WhereToWatch({ fr }: { fr: ProviderOffers | null }) {
+  const { platforms } = useProfile();
+  const onMine = streamable(fr).some((p) => platforms.has(p.provider_id));
+  return (
+    <div className="where">
+      <h2>Où le voir en France</h2>
+      {fr ? (
+        <>
+          {platforms.size ? <p className="note" style={{ margin: "0 0 10px" }}>{onMine ? "Disponible sur une de tes plateformes." : "Pas sur tes plateformes pour l'instant."}</p> : null}
+          <ProvRow label="Abonnement" list={streamable(fr)} mine={platforms} />
+          <ProvRow label="Location" list={fr.rent} mine={platforms} />
+          <ProvRow label="Achat" list={fr.buy} mine={platforms} />
+          {fr.link ? (
+            <a className="link-btn" href={fr.link} target="_blank" rel="noopener">
+              Voir les offres
+            </a>
+          ) : null}
+        </>
+      ) : (
+        <p className="note" style={{ margin: 0 }}>
+          Aucune offre en France pour l'instant.
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function Trailer({ videoKey, backdrop }: { videoKey: string; backdrop?: string | null }) {
+  const [play, setPlay] = useState(false);
+  return (
+    <div
+      className="trailer"
+      style={!play && backdrop ? { backgroundImage: `linear-gradient(rgb(0 0 0 / .45),rgb(0 0 0 / .45)),url(${img(backdrop, "w1280")})` } : undefined}
+    >
+      {play ? (
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoKey)}?autoplay=1&rel=0`}
+          title="Bande-annonce"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowFullScreen
+        />
+      ) : (
+        <button type="button" className="btn primary play" onClick={() => setPlay(true)}>
+          <Play /> Lancer la bande-annonce
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** « Dans le même esprit » : recommandations + similaires, déjà-vus retirés, classés par indice. */
+export function FilmRecs({ title, list }: { title: string; list: Movie[] }) {
+  const { status, seen, hidden, predict } = useProfile();
+  if (status !== "ready") return null;
+  const recs: Ranked[] = list
+    .filter((m) => !seen.has(m.id) && !hidden.has(m.id))
+    .map((m) => ({ ...m, _pred: predict(m).v }))
+    .sort((a, b) => b._pred - a._pred)
+    .slice(0, 12);
+  if (!recs.length) return null;
+  return (
+    <section className="section">
+      <SecHead kicker="Dans le même esprit" title={<>Si tu aimes <i>{title}</i></>} aside="Déjà vus retirés" />
+      <FilmGrid list={recs} step={12} />
+    </section>
+  );
+}

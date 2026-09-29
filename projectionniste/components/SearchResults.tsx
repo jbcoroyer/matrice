@@ -1,0 +1,100 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { FilmGrid } from "./FilmGrid";
+import { FadeImg } from "./Poster";
+import { useProfile } from "./ProfileProvider";
+import { ErrorLine, SecHead, SkeletonGrid } from "./ui";
+import { img, tmdb } from "@/lib/tmdb";
+import type { Movie, Paged, Person, Ranked } from "@/lib/types";
+
+type PersonHit = Person & { known_for?: Movie[] };
+
+export function SearchResults({ q }: { q: string }) {
+  const { predict, status } = useProfile();
+  const [films, setFilms] = useState<Ranked[] | null>(null);
+  const [people, setPeople] = useState<PersonHit[]>([]);
+  const [error, setError] = useState<unknown>(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(1);
+  const [more, setMore] = useState(false);
+
+  const fetchPage = (p: number) =>
+    tmdb<Paged<Movie>>("search/movie", { query: q, include_adult: false, page: p }).then((r) => {
+      setTotal(r.total_pages);
+      setPage(p);
+      return (r.results || []).filter((m) => m.poster_path || (m.vote_count || 0) > 5);
+    });
+
+  useEffect(() => {
+    if (!q) return;
+    let alive = true;
+    fetchPage(1)
+      .then((l) => alive && setFilms(l.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))))
+      .catch((e) => alive && setError(e));
+    tmdb<Paged<PersonHit>>("search/person", { query: q, include_adult: false })
+      .then((r) => alive && setPeople((r.results || []).filter((p) => p.profile_path).slice(0, 8)))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  if (!q)
+    return (
+      <section className="section">
+        <SecHead as="h1" kicker="Recherche" title="Chercher un film" />
+        <p className="status">Tape un titre, un cinéaste ou une actrice dans la barre de recherche (raccourci : « / »).</p>
+      </section>
+    );
+
+  const list = films?.map((m) => (status === "ready" ? { ...m, _pred: predict(m).v } : m));
+
+  return (
+    <>
+      {people.length ? (
+        <section className="section">
+          <SecHead kicker="Personnes" title={<>Cinéastes <i>et interprètes</i></>} />
+          <div className="cast">
+            {people.map((p) => (
+              <Link key={p.id} href={`/personne/${p.id}`}>
+                <div className="ph">{p.profile_path ? <FadeImg src={img(p.profile_path, "w185")} alt={p.name} /> : null}</div>
+                <span className="n">{p.name}</span>
+                <span className="r">{(p.known_for || []).slice(0, 2).map((m) => m.title).filter(Boolean).join(", ")}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <section className="section">
+        <SecHead as="h1" kicker="Recherche" title={<>« {q} »</>} aside="Ouvre un film pour trouver ceux qui lui ressemblent" />
+        {error ? (
+          <ErrorLine error={error} />
+        ) : !list ? (
+          <SkeletonGrid n={10} />
+        ) : list.length ? (
+          <FilmGrid
+            list={list}
+            paged
+            loadingMore={more}
+            onMore={
+              page < total
+                ? () => {
+                    setMore(true);
+                    fetchPage(page + 1)
+                      .then((l) => setFilms((f) => [...(f ?? []), ...l.filter((m) => !f?.some((x) => x.id === m.id))]))
+                      .catch(setError)
+                      .finally(() => setMore(false));
+                  }
+                : undefined
+            }
+          />
+        ) : (
+          <p className="status">Aucun film trouvé pour « {q} ». Essaie le titre original ou anglais.</p>
+        )}
+      </section>
+    </>
+  );
+}
