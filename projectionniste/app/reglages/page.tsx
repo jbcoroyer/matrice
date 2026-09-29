@@ -153,12 +153,11 @@ export default function Page() {
           <Hidden />
           <h2>Ton compte</h2>
           <p className="note">
-            Pour l'instant, tes données sont rattachées à ce navigateur (session anonyme). Si tu effaces les données du site ou changes de navigateur,
-            tu ne les retrouveras pas : les comptes (email, Google) arrivent bientôt et permettront de les récupérer partout.
+            Sans compte, tes données sont liées à ce navigateur. <Link href="/compte">Crée un compte</Link> pour les retrouver sur tous tes appareils.
           </p>
           <h2>Entretien</h2>
           <p className="note">
-            La sélection « <Link href="/pour-toi">Pour toi</Link> » est recalculée chaque jour. Vider le cache force un recalcul immédiat.
+            La sélection « <Link href="/decouvrir">Pour toi</Link> » est recalculée chaque jour. Vider le cache force un recalcul immédiat.
           </p>
           <div className="row-actions">
             <button

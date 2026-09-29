@@ -13,7 +13,7 @@ export function MoodTiles({ current }: { current?: string }) {
   return (
     <div className="moods">
       {MOODS.map((m) => (
-        <Link key={m.slug} className="mood" href={`/humeurs/${m.slug}`} aria-current={current === m.slug ? "page" : undefined} scroll={false}>
+        <Link key={m.slug} className="mood" href={`/decouvrir/humeurs/${m.slug}`} aria-current={current === m.slug ? "page" : undefined} scroll={false}>
           <h3>{m.t}</h3>
           <p>{m.s}</p>
         </Link>

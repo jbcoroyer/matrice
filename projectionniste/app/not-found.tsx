@@ -11,8 +11,8 @@ export default function NotFound() {
         <Link className="btn primary" href="/">
           Retour à l'accueil
         </Link>
-        <Link className="btn" href="/pour-toi">
-          Ma sélection
+        <Link className="btn" href="/decouvrir">
+          Découvrir
         </Link>
       </div>
     </section>

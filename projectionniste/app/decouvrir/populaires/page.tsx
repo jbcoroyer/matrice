@@ -1,0 +1,98 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { FilmGrid } from "@/components/FilmGrid";
+import { useProfile } from "@/components/ProfileProvider";
+import { ErrorLine, MineToggle, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { filterMine } from "@/lib/hooks";
+import { tmdb } from "@/lib/tmdb";
+import type { Movie, Paged, Ranked } from "@/lib/types";
+
+type Source = "movie/popular" | "trending/movie/week" | "movie/top_rated";
+const SOURCES: { k: Source; l: string }[] = [
+  { k: "trending/movie/week", l: "Tendances de la semaine" },
+  { k: "movie/popular", l: "Les plus populaires" },
+  { k: "movie/top_rated", l: "Les mieux notés" },
+];
+
+function Populaires() {
+  const d = useProfile();
+  const [src, setSrc] = useState<Source>("trending/movie/week");
+  const [list, setList] = useState<Ranked[] | null>(null);
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(1);
+  const [more, setMore] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+
+  const load = async (p: number, prev: Ranked[]) => {
+    const pages = await Promise.all([p + 1, p + 2].map((n) => tmdb<Paged<Movie>>(src, { page: n, region: "FR" })));
+    setTotal(Math.min(pages[0].total_pages, 20));
+    setPage(p + 2);
+    const have = new Set(prev.map((m) => m.id));
+    let fresh: Ranked[] = pages
+      .flatMap((x) => x.results)
+      .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true))
+      .map((m) => ({ ...m, _pred: d.predict(m).v, _note: d.seen.has(m.id) ? "Déjà vu" : undefined }));
+    if (d.onlyMine) fresh = await filterMine(fresh, d.platforms);
+    return [...prev, ...fresh];
+  };
+
+  useEffect(() => {
+    let alive = true;
+    setList(null);
+    setError(null);
+    load(0, [])
+      .then((l) => alive && setList(l))
+      .catch((e) => alive && setError(e));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src, d.onlyMine, d.profile]);
+
+  return (
+    <section className="section">
+      <SecHead title={SOURCES.find((s) => s.k === src)!.l} aside="Ordre TMDB, avec ton indice" />
+      <div className="filterbar">
+        <div className="seg" role="group" aria-label="Classement">
+          {SOURCES.map((s) => (
+            <button key={s.k} type="button" aria-pressed={src === s.k} onClick={() => setSrc(s.k)}>
+              {s.l}
+            </button>
+          ))}
+        </div>
+        <MineToggle />
+      </div>
+      {error ? (
+        <ErrorLine error={error} />
+      ) : !list ? (
+        <SkeletonGrid n={18} />
+      ) : (
+        <FilmGrid
+          key={src}
+          list={list}
+          paged
+          loadingMore={more}
+          onMore={
+            page < total
+              ? () => {
+                  setMore(true);
+                  load(page, list)
+                    .then(setList, setError)
+                    .finally(() => setMore(false));
+                }
+              : undefined
+          }
+        />
+      )}
+    </section>
+  );
+}
+
+export default function Page() {
+  return (
+    <ProfileGate>
+      <Populaires />
+    </ProfileGate>
+  );
+}

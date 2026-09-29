@@ -22,7 +22,7 @@ export default async function Page({ params }: Props) {
   return (
     <div>
       <section className="section">
-        <SecHead as="h1" title="Humeurs" aside="Choisis une ambiance : la recherche se fait en direct sur TMDB" />
+        <SecHead title="Humeurs" aside="Choisis une ambiance : la recherche se fait en direct sur TMDB" />
         <MoodTiles current={slug} />
       </section>
       <ProfileGate>

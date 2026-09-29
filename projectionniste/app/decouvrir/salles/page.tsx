@@ -36,7 +36,7 @@ function Salles() {
   return (
     <>
       <section className="section">
-        <SecHead as="h1" title="En salles" aside="En France, classé par ton indice" />
+        <SecHead title="En salles" aside="En France, classé par ton indice" />
         {now.error ? <ErrorLine error={now.error} onRetry={now.reload} /> : now.data ? <FilmGrid list={now.data} step={20} /> : <SkeletonGrid n={10} />}
       </section>
       <section className="section">

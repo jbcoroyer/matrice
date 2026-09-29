@@ -8,16 +8,12 @@ cachée côté serveur, URLs partageables.
 
 | URL | Contenu |
 |---|---|
-| `/` | Accueil : ta sélection, les films en salles, ta watchlist, les humeurs |
-| `/pour-toi` | Recommandations tirées de tes films les mieux notés ; filtres genre, époque, durée, plateformes, tri |
-| `/humeurs`, `/humeurs/[slug]` | 12 humeurs (noir coréen, animation japonaise, pépites méconnues…) interrogées en direct, pagination |
-| `/salles` | À l'affiche en France (classé par ton indice) et prochaines sorties |
-| `/watchlist` | Ta watchlist Letterboxd + ajouts faits dans le site, filtres et tris |
-| `/film/[id]` | Fiche : indice personnel et « ce qui joue », où le voir (tes plateformes en évidence), bande-annonce, distribution, films proches |
-| `/personne/[id]` | Biographie et filmographie classée par ton indice (« tu en as vu 7 sur 12 ») |
-| `/portrait` | Tes statistiques : distribution des notes, affinités réalisateurs / interprètes / genres, panthéon |
-| `/recherche?q=` | Films et personnes ; la barre du haut propose des suggestions instantanées (raccourci `/`) |
-| `/reglages` | Plateformes, import Letterboxd (.zip), films écartés |
+| `/decouvrir` | Accueil. Onglets : Pour toi (recommandations, filtres), Humeurs, En salles (et prochaines sorties), Populaires (tendances, populaires, mieux notés) |
+| `/watchlist` | Ta watchlist, filtres et tris |
+| `/film/[id]` | Fiche : indice et « ce qui joue », watchlist / vu / favori / note, journal du film, top 5, où le voir, bande-annonce, distribution, films proches |
+| `/personne/[id]` | Biographie et filmographie classée par ton indice |
+| `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
+| Menu profil (icône en haut à droite) | Portrait (`/portrait`), Journal (`/journal`), Réglages (`/reglages`), Compte (`/compte`), thème |
 
 Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur chaque affiche), le mettre en favori,
 le marquer vu et le noter (demi-étoiles), ou l'écarter (« Pas pour moi »). Chaque action peut
@@ -29,7 +25,7 @@ le marquer vu et le noter (demi-étoiles), ou l'écarter (« Pas pour moi »). C
 cd projectionniste
 cp .env.example .env.local   # TMDB_TOKEN + NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 npm install
-npm run dev                  # http://localhost:3000
+npm run dev                  # http://localhost:3000 (port fixe)
 ```
 
 Le jeton TMDB (« jeton d'accès en lecture », commence par `eyJ`) se trouve sur
@@ -44,11 +40,14 @@ réponses en cache.
 3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/`.
 
 Chaque visiteur reçoit une session anonyme ; ses données (états des films, journal, critiques,
-listes, collection, réglages, goûts appris) sont en base, protégées par RLS. Les comptes (email,
-Google) viendront convertir ces sessions sans perte.
+listes, collection, réglages, goûts appris) sont en base, protégées par RLS. Sans compte, cette
+session est liée au navigateur **et à l'adresse** (localhost:3000 et localhost:3001 sont deux
+profils). Créer un compte (menu profil → Compte : email + mot de passe) rattache les données
+existantes au compte ; on se connecte ensuite de n'importe où.
 
-Tant que les comptes n'existent pas, la session est liée au navigateur : effacer les données du
-site ou changer de navigateur (ou passer de localhost au site en ligne) repart d'un profil vide.
+Dans Supabase, Authentication → URL Configuration : Site URL `http://localhost:3000` (puis l'URL
+du site en ligne) et `http://localhost:3000/**` dans Redirect URLs, pour les liens de confirmation
+et de réinitialisation du mot de passe.
 
 ## Déployer (Vercel)
 

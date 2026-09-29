@@ -2,7 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { EMPTY_STATE, ensureSession, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
+import { EMPTY_STATE, ensureSession, type Account, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
 import { predict, type Prediction } from "@/lib/predict";
 import { derive, type Derived } from "@/lib/profile";
 import { clearRecs } from "@/lib/recs";
@@ -23,6 +23,8 @@ type Ctx = Derived & {
   profile: Profile | null;
   sb: SupabaseClient | null;
   userId: string | null;
+  account: Account | null;
+  setAccount: (a: Account) => void;
   /** aucun film enregistré : on propose l'import Letterboxd */
   empty: boolean;
   onlyMine: boolean;
@@ -55,7 +57,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const sb = supabase();
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
+  const userId = account?.id ?? null;
   const [profile, setProfile] = useState<Profile | null>(null);
   const [states, setStates] = useState<Map<number, FilmState>>(new Map());
   const [titles, setTitles] = useState<Record<number, string>>({});
@@ -99,10 +102,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setStatus("loading");
     setError(null);
     (async () => {
-      const uid = await ensureSession(sb);
+      const acc = await ensureSession(sb);
       if (!alive) return;
-      setUserId(uid);
-      await loadAll(uid);
+      setAccount(acc);
+      await loadAll(acc.id);
       if (alive) setStatus("ready");
     })().catch((e: Error) => {
       if (!alive) return;
@@ -205,6 +208,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       profile,
       sb,
       userId,
+      account,
+      setAccount,
       empty: status === "ready" && states.size === 0,
       onlyMine: !!profile?.settings.onlyMine && derived.platforms.size > 0,
       states,
@@ -222,7 +227,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toasts,
       dismissToast,
     }),
-    [derived, status, error, profile, sb, userId, states, reload, updateSettings, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
+    [derived, status, error, profile, sb, userId, account, states, reload, updateSettings, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <div>
       <section className="section">
-        <SecHead as="h1" title="Humeurs" aside="Choisis une ambiance : la recherche se fait en direct sur TMDB" />
+        <SecHead title="Humeurs" aside="Choisis une ambiance : la recherche se fait en direct sur TMDB" />
         <MoodTiles />
       </section>
     </div>

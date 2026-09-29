@@ -64,7 +64,7 @@ function PourToi() {
 
   return (
     <section className="section">
-      <SecHead as="h1" title="Pour toi" aside="Tiré des films que tu as notés 4,5 ou 5" />
+      <SecHead title="Pour toi" aside="Tiré des films que tu as notés 4,5 ou 5" />
       <div className="filterbar">
         <MineToggle />
         <label>
