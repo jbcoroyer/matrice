@@ -4,22 +4,17 @@ import Link from "next/link";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <section className="section view">
+    <section className="section">
       <div className="sec-head">
-        <div>
-          <div className="kicker">Incident de projection</div>
-          <h1>
-            La pellicule <i>a sauté</i>
-          </h1>
-        </div>
+        <h1>Une erreur est survenue</h1>
       </div>
-      <p className="status err">{error.message || "Une erreur est survenue."}</p>
+      <p className="status err">{error.message || "Quelque chose s'est mal passé."}</p>
       <div className="row-actions">
         <button type="button" className="btn primary" onClick={reset}>
           Réessayer
         </button>
         <Link className="btn" href="/">
-          Retour à la une
+          Retour à l'accueil
         </Link>
       </div>
     </section>

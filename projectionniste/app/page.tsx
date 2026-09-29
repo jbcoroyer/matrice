@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { FilmGrid } from "@/components/FilmGrid";
-import { Hero } from "@/components/Hero";
 import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
 import { useAsync, useRecs, useWatchlistMovies } from "@/lib/hooks";
@@ -11,14 +10,10 @@ import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
 
 function More({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link className="link-btn" href={href}>
-      {children}
-    </Link>
-  );
+  return <Link href={href}>{children}</Link>;
 }
 
-function Une() {
+function Accueil() {
   const d = useProfile();
   const recs = useRecs();
   const salles = useAsync<Ranked[]>(
@@ -28,69 +23,61 @@ function Une() {
         .filter((m) => m.poster_path && !d.seen.has(m.id))
         .map((m) => ({ ...m, _pred: d.predict(m).v }))
         .sort((a, b) => b._pred - a._pred)
-        .slice(0, 5);
+        .slice(0, 6);
     },
     [d.profile],
   );
   const wl = useWatchlistMovies();
 
-  const list = recs.data ?? [];
-  const strong = list.slice(0, 30).filter((m) => m.backdrop_path && (m.vote_count || 0) >= 1500);
-  const heroes = (strong.length ? strong : list.filter((m) => m.backdrop_path)).slice(0, 5);
-  const heroSet = new Set(heroes.map((m) => m.id));
-
   return (
     <>
-      {recs.loading && !recs.data ? <div className="hero sk" style={{ minHeight: 420 }} aria-hidden="true" /> : heroes.length ? <Hero films={heroes} /> : null}
-
       <section className="section">
-        <SecHead kicker="Sélection personnelle" title={<>Pour toi, <i>cette semaine</i></>} aside={<More href="/pour-toi">Toute la sélection</More>} />
+        <SecHead title="Pour toi" aside={<More href="/pour-toi">Tout voir →</More>} />
         {recs.error ? (
           <ErrorLine error={recs.error} onRetry={recs.reload} />
         ) : recs.data ? (
-          list.length ? (
-            <FilmGrid list={list.filter((m) => !heroSet.has(m.id)).slice(0, 10)} lead step={10} />
+          recs.data.length ? (
+            <FilmGrid list={recs.data.slice(0, 12)} step={12} />
           ) : (
             <p className="status">
-              La sélection est vide : il faut quelques films bien notés pour la composer. <Link className="link-btn" href="/reglages">Importer mon Letterboxd</Link>
+              Pas assez de films notés pour proposer quoi que ce soit. <Link className="link" href="/reglages">Importer mon Letterboxd</Link>
             </p>
           )
         ) : (
-          <SkeletonGrid n={10} lead />
+          <SkeletonGrid n={12} />
         )}
       </section>
 
       <section className="section">
-        <SecHead kicker="À l'affiche" title={<>En salles <i>en France</i></>} aside={<More href="/salles">Tout le programme</More>} />
-        {salles.error ? <ErrorLine error={salles.error} onRetry={salles.reload} /> : salles.data ? <FilmGrid list={salles.data} step={5} /> : <SkeletonGrid n={5} />}
+        <SecHead title="En salles" aside={<More href="/salles">Tout le programme →</More>} />
+        {salles.error ? <ErrorLine error={salles.error} onRetry={salles.reload} /> : salles.data ? <FilmGrid list={salles.data} step={6} /> : <SkeletonGrid n={6} />}
       </section>
 
       <section className="section">
-        <SecHead kicker="Selon l'envie" title={<>Humeurs <i>du soir</i></>} aside={<More href="/humeurs">Toutes les humeurs</More>} />
+        <SecHead title="Watchlist" aside={<More href="/watchlist">Tout voir →</More>} />
+        {wl.error ? (
+          <ErrorLine error={wl.error} onRetry={wl.reload} />
+        ) : wl.data ? (
+          wl.data.length ? (
+            <FilmGrid list={wl.data.slice(0, 6)} step={6} />
+          ) : (
+            <p className="status">Ta watchlist est vide. Le bouton + sur une affiche y ajoute un film.</p>
+          )
+        ) : (
+          <SkeletonGrid n={6} />
+        )}
+      </section>
+
+      <section className="section">
+        <SecHead title="Humeurs" aside={<More href="/humeurs">Toutes →</More>} />
         <div className="moods">
-          {MOODS.slice(0, 4).map((m) => (
+          {MOODS.slice(0, 6).map((m) => (
             <Link key={m.slug} className="mood" href={`/humeurs/${m.slug}`}>
-              <div className="kicker">{m.k}</div>
               <h3>{m.t}</h3>
               <p>{m.s}</p>
             </Link>
           ))}
         </div>
-      </section>
-
-      <section className="section">
-        <SecHead kicker="Ta liste" title={<>Watchlist, <i>à rattraper</i></>} aside={<More href="/watchlist">Toute la watchlist</More>} />
-        {wl.error ? (
-          <ErrorLine error={wl.error} onRetry={wl.reload} />
-        ) : wl.data ? (
-          wl.data.length ? (
-            <FilmGrid list={wl.data.slice(0, 5)} step={5} />
-          ) : (
-            <p className="status">Ta watchlist est vide. Ajoute des films avec le bouton ＋ des affiches.</p>
-          )
-        ) : (
-          <SkeletonGrid n={5} />
-        )}
       </section>
     </>
   );
@@ -98,10 +85,8 @@ function Une() {
 
 export default function Page() {
   return (
-    <div className="view">
-      <ProfileGate>
-        <Une />
-      </ProfileGate>
-    </div>
+    <ProfileGate>
+      <Accueil />
+    </ProfileGate>
   );
 }

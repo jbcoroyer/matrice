@@ -15,34 +15,37 @@ export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits })
   const { status, predict, rated } = useProfile();
   const pred = status === "ready" ? predict(movie, credits) : null;
   const mine = rated.get(movie.id);
+  const value = mine ?? pred?.v;
   return (
-    <div className="scorebox">
+    <div className="score">
       <div>
-        <small>{mine ? "Ta note" : "Ton indice"}</small>
-        <b className="acc">{mine ? num1(mine) : pred ? num1(pred.v) : "…"}</b>
-        <small>{mine && pred ? `indice ${num1(pred.v)}` : "sur 5"}</small>
+        <span className="big">{value != null ? num1(value) : "…"}</span>
+        <span className="of">/5</span>
+        <strong>{mine ? "Ta note" : "Ton indice"}</strong>
+        {mine && pred ? <span className="sub"> (indice prédit : {num1(pred.v)})</span> : null}
       </div>
-      <div>
-        <small>TMDB</small>
-        <b>{num1(movie.vote_average || 0)}</b>
-        <small>{(movie.vote_count || 0).toLocaleString("fr-FR")} votes</small>
+      <div className="sub">
+        TMDB {num1(movie.vote_average || 0)} · {(movie.vote_count || 0).toLocaleString("fr-FR")} votes
       </div>
       {pred && pred.why.length ? (
-        <div style={{ flex: 1, minWidth: 220 }}>
-          <small>Ce qui joue</small>
-          <div className="why-tags">
-            {pred.why.map((w) =>
-              w.id ? (
-                <Link key={w.n + w.r} className={`tag ${w.a > 0 ? "pos" : "neg"}`} href={`/personne/${w.id}`}>
-                  {w.a > 0 ? "+" : "−"} {w.n} <em style={{ opacity: 0.7 }}>{w.r}</em>
-                </Link>
-              ) : (
-                <span key={w.n + w.r} className={`tag ${w.a > 0 ? "pos" : "neg"}`}>
-                  {w.a > 0 ? "+" : "−"} {w.n} <em style={{ opacity: 0.7 }}>{w.r}</em>
-                </span>
-              ),
-            )}
-          </div>
+        <div className="why">
+          {pred.why.map((w) => {
+            const cls = w.a > 0 ? "pos" : "neg";
+            const body = (
+              <>
+                {w.a > 0 ? "+" : "−"} {w.n} <em>{w.r}</em>
+              </>
+            );
+            return w.id ? (
+              <Link key={w.n + w.r} className={cls} href={`/personne/${w.id}`}>
+                {body}
+              </Link>
+            ) : (
+              <span key={w.n + w.r} className={cls}>
+                {body}
+              </span>
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -215,7 +218,7 @@ export function FilmRecs({ title, list }: { title: string; list: Movie[] }) {
   if (!recs.length) return null;
   return (
     <section className="section">
-      <SecHead kicker="Dans le même esprit" title={<>Si tu aimes <i>{title}</i></>} aside="Déjà vus retirés" />
+      <SecHead title={`Dans le même esprit que ${title}`} aside="Films déjà vus exclus" />
       <FilmGrid list={recs} step={12} />
     </section>
   );

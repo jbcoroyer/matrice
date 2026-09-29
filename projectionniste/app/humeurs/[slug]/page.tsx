@@ -20,9 +20,9 @@ export default async function Page({ params }: Props) {
   const { slug } = await params;
   if (!moodBySlug(slug)) notFound();
   return (
-    <div className="view">
+    <div>
       <section className="section">
-        <SecHead as="h1" kicker="Selon l'envie" title={<>Humeurs <i>du soir</i></>} aside="Chaque humeur interroge TMDB en direct, puis classe par ton indice" />
+        <SecHead as="h1" title="Humeurs" aside="Choisis une ambiance : la recherche se fait en direct sur TMDB" />
         <MoodTiles current={slug} />
       </section>
       <ProfileGate>

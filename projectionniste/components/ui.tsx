@@ -13,12 +13,10 @@ export function Loader({ text }: { text: string }) {
 }
 
 export function SecHead({
-  kicker,
   title,
   aside,
   as = "h2",
 }: {
-  kicker?: string;
   title: React.ReactNode;
   aside?: React.ReactNode;
   as?: "h1" | "h2";
@@ -26,20 +24,17 @@ export function SecHead({
   const H = as;
   return (
     <div className="sec-head">
-      <div>
-        {kicker ? <div className="kicker">{kicker}</div> : null}
-        <H>{title}</H>
-      </div>
+      <H>{title}</H>
       {typeof aside === "string" ? <span className="aside">{aside}</span> : aside}
     </div>
   );
 }
 
-export function SkeletonGrid({ n = 10, lead }: { n?: number; lead?: boolean }) {
+export function SkeletonGrid({ n = 10 }: { n?: number }) {
   return (
-    <div className={`grid${lead ? " lead" : ""}`} aria-busy="true" aria-label="Chargement">
+    <div className="grid" aria-busy="true" aria-label="Chargement">
       {Array.from({ length: n }, (_, i) => (
-        <div key={i} className="card" style={{ animationDelay: `${i * 30}ms` }}>
+        <div key={i} className="card">
           <div className="poster sk" />
           <div className="sk sk-line w40" />
           <div className="sk sk-line w80" />
@@ -93,22 +88,16 @@ export function ProfileGate({ children }: { children: React.ReactNode }) {
   if (status === "error")
     return (
       <section className="gate">
-        <div className="kicker">Première ouverture</div>
-        <h2>
-          L'historique n'a pas pu être <i>lu</i>
-        </h2>
+        <h2>L'historique n'a pas pu être lu</h2>
         <ErrorLine error={new Error(error || "")} onRetry={retry} />
       </section>
     );
   if (status === "mapping" && progress && progress.total > 1)
     return (
       <section className="gate">
-        <div className="kicker">Première ouverture</div>
-        <h2>
-          Lecture de ton <i>historique</i>
-        </h2>
+        <h2>Lecture de ton historique</h2>
         <p className="note">
-          Je relie tes {progress.total.toLocaleString("fr-FR")} films Letterboxd à leurs fiches TMDB. Cela prend une vingtaine de secondes, une seule fois.
+          Première visite : on relie tes {progress.total.toLocaleString("fr-FR")} films Letterboxd à leurs fiches TMDB. Une vingtaine de secondes, une seule fois.
         </p>
         <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}>
           <i style={{ width: `${(progress.done / progress.total) * 100}%` }} />
@@ -118,5 +107,5 @@ export function ProfileGate({ children }: { children: React.ReactNode }) {
         </p>
       </section>
     );
-  return <SkeletonGrid n={10} lead />;
+  return <SkeletonGrid n={10} />;
 }

@@ -48,15 +48,14 @@ export default async function PersonPage({ params }: Props) {
   const life = [p.birthday ? `Né·e le ${frDate(p.birthday)}` : "", p.place_of_birth || "", p.deathday ? `mort·e le ${frDate(p.deathday)}` : ""].filter(Boolean).join(" · ");
 
   return (
-    <div className="view">
+    <div>
       <section className="person-head">
         <div className="poster-wrap">
           <Poster path={p.profile_path} title={p.name} size="w500" eager />
         </div>
         <div>
-          <div className="kicker">{DEPT[p.known_for_department || ""] || "Cinéma"}</div>
           <h1>{p.name}</h1>
-          {life ? <div className="facts">{life}</div> : null}
+          <div className="facts">{[DEPT[p.known_for_department || ""], life].filter(Boolean).join(" · ")}</div>
           {p.biography ? <Bio text={p.biography} lang={p.bioLang} /> : null}
           <div className="ext">
             {p.imdb_id ? (

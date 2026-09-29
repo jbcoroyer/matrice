@@ -43,7 +43,7 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
     for (const c of b[tab]) {
       if (!c.release_date && !c.poster_path) continue;
       const prev = byId.get(c.id);
-      const note = tab === "Acting" ? c.character : JOB_FR[c.job || ""] || c.job;
+      const note = tab === "Acting" ? c.character : tab === "Directing" ? undefined : JOB_FR[c.job || ""] || c.job;
       if (prev) {
         if (note && prev._note && !prev._note.includes(note)) prev._note += ` · ${note}`;
         continue;
@@ -65,7 +65,7 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
 
   return (
     <section className="section">
-      <SecHead kicker="Filmographie" title={<>Les films <i>de {name}</i></>} />
+      <SecHead title="Filmographie" />
       {status === "ready" && all.size ? (
         <p className="tally">
           Tu en as vu <b>{seenCount}</b> sur {all.size}.{" "}

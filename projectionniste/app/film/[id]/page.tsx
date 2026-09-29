@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
-import { FadeImg, Poster } from "@/components/Poster";
+import { Poster } from "@/components/Poster";
 import { FilmActions, FilmRecs, ScoreBox, Trailer, WhereToWatch } from "@/components/FilmPersonal";
 import { SeenBadge } from "@/components/SeenBadge";
 import { SecHead } from "@/components/ui";
@@ -73,27 +73,30 @@ export default async function FilmPage({ params }: Props) {
   const scoreMovie: Movie = { id: m.id, title: m.title, genres: m.genres, vote_average: m.vote_average, vote_count: m.vote_count };
 
   return (
-    <article className="film view">
-      {m.backdrop_path ? <div className="film-back" style={{ backgroundImage: `url(${img(m.backdrop_path, "w1280")})` }} /> : null}
-      <div className={`film-inner${m.backdrop_path ? "" : " nobg"}`}>
-        <div className="ov-grid">
+    <article className="film">
+      <div>
+        <div className="film-grid">
           <div className="poster-wrap">
             <Poster path={m.poster_path} title={m.title} size="w500" eager>
               <SeenBadge id={m.id} />
             </Poster>
           </div>
           <div>
-            <div className="kicker">{(m.genres ?? []).map((g) => GENRE_FR[g.id] || g.name).join(" · ")}</div>
             <h1>{m.title}</h1>
             {m.original_title && m.original_title !== m.title ? <div className="orig">{m.original_title}</div> : null}
             <div className="facts">
-              <span>{yearOf(m)}</span>
-              {m.runtime ? <span>{runtime(m.runtime)}</span> : null}
-              {cert ? <span>Visa {cert}</span> : null}
-              {m.production_countries?.length ? <span>{m.production_countries.map((c) => c.iso_3166_1).join(" / ")}</span> : null}
-              {frRelease && frRelease.slice(0, 10) > new Date().toISOString().slice(0, 10) ? (
-                <span>Sortie en France le {new Date(frRelease).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</span>
-              ) : null}
+              {[
+                yearOf(m),
+                runtime(m.runtime),
+                (m.genres ?? []).map((g) => GENRE_FR[g.id] || g.name).join(", "),
+                cert ? `Visa ${cert}` : "",
+                (m.production_countries ?? []).map((c) => c.iso_3166_1).join(" / "),
+                frRelease && frRelease.slice(0, 10) > new Date().toISOString().slice(0, 10)
+                  ? `sortie en France le ${new Date(frRelease).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}`
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </div>
             {m.tagline ? <p className="tagline-f">« {m.tagline} »</p> : null}
             <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs }} />
@@ -138,9 +141,9 @@ export default async function FilmPage({ params }: Props) {
         {trailer ? (
           <section className="section">
             <SecHead
-              title={<>Bande-<i>annonce</i></>}
+              title="Bande-annonce"
               aside={
-                <a className="link-btn" href={`https://www.youtube.com/watch?v=${trailer.key}`} target="_blank" rel="noopener">
+                <a className="link" href={`https://www.youtube.com/watch?v=${trailer.key}`} target="_blank" rel="noopener">
                   Ouvrir sur YouTube
                 </a>
               }
@@ -152,15 +155,14 @@ export default async function FilmPage({ params }: Props) {
         {cast.length ? (
           <section className="section">
             <SecHead title="Distribution" />
-            <div className="cast">
-              {cast.slice(0, 16).map((c) => (
-                <Link key={`${c.id}-${c.character}`} href={`/personne/${c.id}`}>
-                  <div className="ph">{c.profile_path ? <FadeImg src={img(c.profile_path, "w185")} alt={c.name} /> : null}</div>
-                  <span className="n">{c.name}</span>
-                  <span className="r">{c.character}</span>
-                </Link>
+            <ul className="cast">
+              {cast.slice(0, 18).map((c) => (
+                <li key={`${c.id}-${c.character}`}>
+                  <Link href={`/personne/${c.id}`}>{c.name}</Link>
+                  {c.character ? <span> · {c.character}</span> : null}
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         ) : null}
 

@@ -116,7 +116,7 @@ function Portrait() {
   return (
     <>
       <section className="section">
-        <SecHead as="h1" kicker="Portrait du spectateur" title={<>Ce que disent <i>tes notes</i></>} aside={profile!.source === "seed" ? "D'après le profil livré avec le site" : `Import Letterboxd du ${new Date(profile!.updatedAt).toLocaleDateString("fr-FR")}`} />
+        <SecHead as="h1" title="Portrait" aside={profile!.source === "seed" ? "D'après le profil livré avec le site" : `Import Letterboxd du ${new Date(profile!.updatedAt).toLocaleDateString("fr-FR")}`} />
         <div className="stats">
           <div>
             <span className="lbl">Films vus</span>
@@ -143,13 +143,13 @@ function Portrait() {
 
       {ratings.length ? (
         <section className="section">
-          <SecHead kicker="Distribution" title={<>Tes <i>notes</i></>} aside="Nombre de films par note ; survole une barre" />
+          <SecHead title="Tes notes" aside="Nombre de films par note" />
           <Histogram ratings={ratings} />
         </section>
       ) : null}
 
       <section className="section">
-        <SecHead kicker="Affinités" title={<>Ce qui te <i>parle</i></>} aside="Écart à ta note moyenne, lissé : plus la barre est longue, plus l'effet est net" />
+        <SecHead title="Ce que tu aimes" aside="Écart à ta note moyenne, lissé" />
         <div className="aff-cols">
           <div>
             <h3 className="lbl">Réalisateurs qui te réussissent</h3>
@@ -172,7 +172,7 @@ function Portrait() {
 
       {fives.length ? (
         <section className="section">
-          <SecHead kicker="Panthéon" title={<>Tes <i>5 étoiles</i></>} aside={fives.length > 12 ? `12 sur ${fives.length}` : undefined} />
+          <SecHead title="Tes 5 étoiles" aside={fives.length > 12 ? `12 sur ${fives.length}` : undefined} />
           <p className="tally">
             {(favs.data ?? fives.slice(0, 12).map((id) => ({ id, title: titles[id] || "…", release_date: "" }))).map((m, i, arr) => (
               <span key={m.id}>
@@ -190,7 +190,7 @@ function Portrait() {
 
 export default function Page() {
   return (
-    <div className="view">
+    <div>
       <ProfileGate>
         <Portrait />
       </ProfileGate>

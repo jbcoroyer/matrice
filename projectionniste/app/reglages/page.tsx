@@ -193,7 +193,7 @@ export default function Page() {
   return (
     <div className="view">
       <section className="section">
-        <SecHead as="h1" kicker="Coulisses" title="Réglages" aside="Tout est enregistré dans ce navigateur" />
+        <SecHead as="h1" title="Réglages" aside="Tout est enregistré dans ce navigateur" />
         <div className="settings">
           <div>
             <h2>Mes plateformes</h2>

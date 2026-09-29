@@ -14,7 +14,6 @@ export function MoodTiles({ current }: { current?: string }) {
     <div className="moods">
       {MOODS.map((m) => (
         <Link key={m.slug} className="mood" href={`/humeurs/${m.slug}`} aria-current={current === m.slug ? "page" : undefined} scroll={false}>
-          <div className="kicker">{m.k}</div>
           <h3>{m.t}</h3>
           <p>{m.s}</p>
         </Link>
@@ -78,7 +77,7 @@ export function MoodResults({ slug }: { slug: string }) {
 
   return (
     <section className="section" ref={ref}>
-      <SecHead kicker={mood.k} title={mood.t} aside={<div className="filterbar" style={{ margin: 0 }}><MineToggle /></div>} />
+      <SecHead title={mood.t} aside={<div className="filterbar" style={{ margin: 0 }}><MineToggle /></div>} />
       {error ? (
         <ErrorLine error={error} />
       ) : !list ? (

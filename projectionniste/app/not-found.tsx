@@ -2,19 +2,14 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section className="section view">
+    <section className="section">
       <div className="sec-head">
-        <div>
-          <div className="kicker">Bobine introuvable</div>
-          <h1>
-            Cette page <i>n'est pas à l'affiche</i>
-          </h1>
-        </div>
+        <h1>Page introuvable</h1>
       </div>
-      <p className="lede">Le film ou la page demandée n'existe pas, ou plus. La cabine de projection vous propose autre chose.</p>
+      <p className="lede">Ce film ou cette page n'existe pas, ou plus.</p>
       <div className="row-actions">
         <Link className="btn primary" href="/">
-          Retour à la une
+          Retour à l'accueil
         </Link>
         <Link className="btn" href="/pour-toi">
           Ma sélection

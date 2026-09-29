@@ -6,9 +6,9 @@ export const metadata: Metadata = { title: "Humeurs" };
 
 export default function Page() {
   return (
-    <div className="view">
+    <div>
       <section className="section">
-        <SecHead as="h1" kicker="Selon l'envie" title={<>Humeurs <i>du soir</i></>} aside="Chaque humeur interroge TMDB en direct, puis classe par ton indice" />
+        <SecHead as="h1" title="Humeurs" aside="Choisis une ambiance : la recherche se fait en direct sur TMDB" />
         <MoodTiles />
       </section>
     </div>

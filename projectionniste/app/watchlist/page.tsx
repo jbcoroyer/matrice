@@ -25,7 +25,7 @@ function Watchlist() {
 
   return (
     <section className="section">
-      <SecHead as="h1" kicker="Ta liste Letterboxd" title="Watchlist" aside="Classée par ton indice, avec les plateformes où la voir" />
+      <SecHead as="h1" title="Watchlist" aside="Classée par ton indice" />
       <div className="filterbar">
         <MineToggle />
         <label>
@@ -67,7 +67,7 @@ function Watchlist() {
 
 export default function Page() {
   return (
-    <div className="view">
+    <div>
       <ProfileGate>
         <Watchlist />
       </ProfileGate>

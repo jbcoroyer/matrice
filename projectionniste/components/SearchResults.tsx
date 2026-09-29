@@ -45,7 +45,7 @@ export function SearchResults({ q }: { q: string }) {
   if (!q)
     return (
       <section className="section">
-        <SecHead as="h1" kicker="Recherche" title="Chercher un film" />
+        <SecHead as="h1" title="Recherche" />
         <p className="status">Tape un titre, un cinéaste ou une actrice dans la barre de recherche (raccourci : « / »).</p>
       </section>
     );
@@ -56,20 +56,24 @@ export function SearchResults({ q }: { q: string }) {
     <>
       {people.length ? (
         <section className="section">
-          <SecHead kicker="Personnes" title={<>Cinéastes <i>et interprètes</i></>} />
-          <div className="cast">
+          <SecHead title="Personnes" />
+          <ul className="people">
             {people.map((p) => (
-              <Link key={p.id} href={`/personne/${p.id}`}>
-                <div className="ph">{p.profile_path ? <FadeImg src={img(p.profile_path, "w185")} alt={p.name} /> : null}</div>
-                <span className="n">{p.name}</span>
-                <span className="r">{(p.known_for || []).slice(0, 2).map((m) => m.title).filter(Boolean).join(", ")}</span>
-              </Link>
+              <li key={p.id}>
+                <Link href={`/personne/${p.id}`}>
+                  <span className="ph">{p.profile_path ? <FadeImg src={img(p.profile_path, "w92")} alt="" /> : null}</span>
+                  <span>
+                    <span className="n">{p.name}</span>
+                    <span className="r">{(p.known_for || []).slice(0, 2).map((m) => m.title).filter(Boolean).join(", ")}</span>
+                  </span>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       ) : null}
       <section className="section">
-        <SecHead as="h1" kicker="Recherche" title={<>« {q} »</>} aside="Ouvre un film pour trouver ceux qui lui ressemblent" />
+        <SecHead as="h1" title={`Films : « ${q} »`} />
         {error ? (
           <ErrorLine error={error} />
         ) : !list ? (

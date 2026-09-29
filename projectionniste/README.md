@@ -8,7 +8,7 @@ cachée côté serveur, URLs partageables.
 
 | URL | Contenu |
 |---|---|
-| `/` | À la une : carrousel des meilleures pistes du jour, sélection, salles, humeurs, watchlist |
+| `/` | Accueil : ta sélection, les films en salles, ta watchlist, les humeurs |
 | `/pour-toi` | Recommandations tirées de tes films les mieux notés ; filtres genre, époque, durée, plateformes, tri |
 | `/humeurs`, `/humeurs/[slug]` | 12 humeurs (noir coréen, animation japonaise, pépites méconnues…) interrogées en direct, pagination |
 | `/salles` | À l'affiche en France (classé par ton indice) et prochaines sorties |

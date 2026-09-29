@@ -12,14 +12,12 @@ import { FilmCard } from "./FilmCard";
  */
 export function FilmGrid({
   list,
-  lead,
   step = 30,
   paged,
   onMore,
   loadingMore,
 }: {
   list: Ranked[];
-  lead?: boolean;
   step?: number;
   paged?: boolean;
   onMore?: () => void;
@@ -30,9 +28,9 @@ export function FilmGrid({
   const canLocal = !paged && shown < list.length;
   return (
     <>
-      <div className={`grid${lead ? " lead" : ""}`}>
-        {visible.map((m, i) => (
-          <FilmCard key={m.id} m={m} i={i} />
+      <div className="grid">
+        {visible.map((m) => (
+          <FilmCard key={m.id} m={m} />
         ))}
       </div>
       {canLocal || onMore ? (

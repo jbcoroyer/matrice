@@ -36,11 +36,11 @@ function Salles() {
   return (
     <>
       <section className="section">
-        <SecHead as="h1" kicker="À l'affiche" title={<>En salles <i>cette semaine</i></>} aside="Programme France, classé par ton indice" />
+        <SecHead as="h1" title="En salles" aside="En France, classé par ton indice" />
         {now.error ? <ErrorLine error={now.error} onRetry={now.reload} /> : now.data ? <FilmGrid list={now.data} step={20} /> : <SkeletonGrid n={10} />}
       </section>
       <section className="section">
-        <SecHead kicker="Bientôt" title={<>Prochaines <i>sorties</i></>} aside="Par date de sortie en France" />
+        <SecHead title="Prochaines sorties" aside="Par date de sortie en France" />
         {soon.error ? (
           <ErrorLine error={soon.error} onRetry={soon.reload} />
         ) : soon.data ? (
@@ -59,7 +59,7 @@ function Salles() {
 
 export default function Page() {
   return (
-    <div className="view">
+    <div>
       <ProfileGate>
         <Salles />
       </ProfileGate>
