@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
 import { clearTopSlot, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
-import { formatLabel, itemsForFilm, type CollectionItem } from "@/lib/collection";
+import { addWant, formatLabel, isWanted, itemsForFilm, removeWant, type CollectionItem } from "@/lib/collection";
 import { listsWithFilm } from "@/lib/lists";
 import { CopyDialog } from "./CopyDialog";
 import { DiaryList } from "./DiaryEntries";
@@ -25,11 +25,30 @@ export function FilmPanel({ film }: { film: FilmInput }) {
   const [copy, setCopy] = useState<CollectionItem | "new" | null>(null);
   const [inLists, setInLists] = useState(0);
   const [listing, setListing] = useState(false);
+  const [wanted, setWanted] = useState(false);
   const more = useRef<HTMLDetailsElement>(null);
   const loadCopies = useCallback(() => {
     if (d.sb) itemsForFilm(d.sb, film.id).then(setCopies, () => {});
   }, [d.sb, film.id]);
   useEffect(loadCopies, [loadCopies]);
+  useEffect(() => {
+    if (d.sb) isWanted(d.sb, film.id).then(setWanted, () => {});
+  }, [d.sb, film.id]);
+
+  const toggleWanted = async () => {
+    if (!d.sb || !d.userId) return;
+    const on = !wanted;
+    setWanted(on);
+    closeMore();
+    try {
+      if (on) await addWant(d.sb, d.userId, filmRow(film));
+      else await removeWant(d.sb, film.id);
+      d.toast(on ? `« ${film.title} » ajouté à tes envies (à posséder en disque)` : `« ${film.title} » retiré de tes envies`);
+    } catch (e) {
+      setWanted(!on);
+      d.toast(`Échec : ${(e as Error).message}`);
+    }
+  };
   useEffect(() => {
     if (d.sb && d.userId) listsWithFilm(d.sb, d.userId, film.id).then((s) => setInLists(s.size), () => {});
   }, [d.sb, d.userId, film.id]);
@@ -95,7 +114,14 @@ export function FilmPanel({ film }: { film: FilmInput }) {
         <button type="button" className="btn icon" aria-label="Ajouter à une liste" title="Ajouter à une liste" onClick={() => setListing(true)}>
           <List />
         </button>
-        <button type="button" className="btn icon" aria-label="Ajouter à ma collection" title="Ajouter à ma collection" onClick={() => setCopy("new")}>
+        <button
+          type="button"
+          className="btn icon"
+          aria-pressed={copies.length > 0}
+          aria-label={copies.length ? "Ajouter un autre exemplaire à ma collection" : "Ajouter à ma collection"}
+          title={copies.length ? "Tu possèdes ce film : ajouter un autre exemplaire" : "Ajouter à ma collection"}
+          onClick={() => setCopy("new")}
+        >
           <Disc />
         </button>
         <details className="more-menu" ref={more}>
@@ -127,6 +153,11 @@ export function FilmPanel({ film }: { film: FilmInput }) {
             >
               Partager le film <Share />
             </button>
+            {!copies.length ? (
+              <button type="button" onClick={toggleWanted}>
+                {wanted ? "Retirer de mes envies" : "Envie de l'avoir en disque"}
+              </button>
+            ) : null}
             {!isSeen ? (
               <button
                 type="button"
@@ -168,7 +199,13 @@ export function FilmPanel({ film }: { film: FilmInput }) {
         </div>
       ) : null}
       {listing ? <AddToListDialog film={film} onClose={() => setListing(false)} onChange={setInLists} /> : null}
-      {copy ? <CopyDialog film={film} item={copy === "new" ? undefined : copy} onClose={() => setCopy(null)} onSaved={loadCopies} /> : null}
+      {copy ? <CopyDialog film={film} item={copy === "new" ? undefined : copy} onClose={() => setCopy(null)}
+          onSaved={() => {
+            loadCopies();
+            // le film est maintenant possédé : il quitte la liste d'envies
+            if (wanted && d.sb) removeWant(d.sb, film.id).then(() => setWanted(false), () => {});
+          }}
+        /> : null}
       {logging ? <LogDialog film={film} onClose={() => setLogging(false)} onSaved={() => diaryChanged(film.id)} /> : null}
     </>
   );

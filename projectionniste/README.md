@@ -14,8 +14,9 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
 | `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
 | `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
-| `/collection` | Tes exemplaires (format, édition, état, notes) ou tes films vus, en mur d'affiches ou en étagères ; filtres, statistiques, partage public |
-| `/c/[code]` | Collection partagée, lisible sans compte |
+| `/collection` | Ta cinémathèque physique : cartes de collection (format, édition, éditeur, n° d'édition, scellé, état, prêt, photo), vues Vitrine / Étagère / Classeur (séries à compléter), envies, filtres « jamais vus », scellés, éditions limitées ; import CSV, partage public |
+| `/c/[code]` | Cinémathèque partagée, lisible sans compte (jamais tes films vus ni tes prêts) |
+| `/journal` | Journal daté ; onglet « Films vus » avec tous les films marqués comme vus |
 | `/film/[id]` | Fiche : indice, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques, films proches |
 | `/personne/[id]` | Biographie et filmographie classée par ton indice |
 | `/studio/[id]` | Studio : logo et films, triés par popularité, date ou note |
@@ -55,7 +56,10 @@ par RLS. Une ancienne session anonyme avec des données peut être transformée 
 
 Ce qui est public : le nom affiché, le pseudo, la bio et l'avatar du profil ; les critiques
 publiques (une entrée du journal avec critique, sauf si « Critique privée » est cochée), leurs
-« j'aime » et commentaires ; les listes publiques ; la collection si son partage est activé.
+« j'aime » et commentaires ; les listes publiques ; la cinémathèque si son partage est activé (jamais les films vus, les prêts
+ni les dates d'achat). Les photos d'exemplaires sont stockées dans un dossier par utilisateur du
+bucket `collection-photos` : seul leur propriétaire peut les ajouter ou les supprimer, et elles ne
+s'affichent publiquement que si le partage des notes et photos est activé.
 Les réglages et goûts appris ne sont lisibles que par leur propriétaire (fonction `my_profile`).
 
 Dans Supabase, Authentication → URL Configuration : Site URL `http://localhost:3000` (puis l'URL

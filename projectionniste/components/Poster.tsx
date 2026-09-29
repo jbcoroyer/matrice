@@ -32,17 +32,25 @@ export function Poster({
   title,
   size = "w342",
   eager,
+  owned,
   children,
 }: {
   path?: string | null;
   title: string;
   size?: "w185" | "w342" | "w500";
   eager?: boolean;
+  /** libellé de la languette « possédé en physique » (ex. 4K UHD) */
+  owned?: string | null;
   children?: React.ReactNode;
 }) {
   return (
-    <div className="poster">
+    <div className={`poster${owned ? " owned" : ""}`}>
       {path ? <FadeImg src={img(path, size)} alt={`Affiche de ${title}`} eager={eager} /> : <div className="noimg">{title}</div>}
+      {owned ? (
+        <span className="own-tab" title={`Dans ta collection : ${owned}`}>
+          {owned}
+        </span>
+      ) : null}
       {children}
     </div>
   );

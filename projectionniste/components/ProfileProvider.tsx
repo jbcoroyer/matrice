@@ -2,6 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { listOwned, type Format } from "@/lib/collection";
 import { currentAccount, EMPTY_STATE, type Account, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
 import { predict, type Prediction } from "@/lib/predict";
 import { derive, type Derived } from "@/lib/profile";
@@ -29,6 +30,9 @@ type Ctx = Derived & {
   /** aucun film enregistré : on propose l'import Letterboxd */
   empty: boolean;
   states: Map<number, FilmState>;
+  /** films possédés en physique : formats des exemplaires, le plus prestigieux d'abord */
+  owned: Map<number, Format[]>;
+  refreshOwned: () => void;
   predict: (m: Movie, credits?: Credits | null) => Prediction;
   retry: () => void;
   reload: () => Promise<void>;
@@ -63,6 +67,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [states, setStates] = useState<Map<number, FilmState>>(new Map());
   const [titles, setTitles] = useState<Record<number, string>>({});
+  const [owned, setOwned] = useState<Map<number, Format[]>>(new Map());
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [attempt, setAttempt] = useState(0);
   const statesRef = useRef(states);
@@ -77,11 +82,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const loadAll = useCallback(
     async (uid: string) => {
-      const [p, f] = await Promise.all([loadProfile(sb!, uid), loadFilmStates(sb!)]);
+      const [p, f, o] = await Promise.all([loadProfile(sb!, uid), loadFilmStates(sb!), listOwned(sb!).catch(() => new Map<number, Format[]>())]);
       markKnown(f.states.keys());
       setProfile(p);
       setStates(f.states);
       setTitles(f.titles);
+      setOwned(o);
     },
     [sb],
   );
@@ -103,6 +109,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         setProfile(null);
         setStates(new Map());
         setTitles({});
+        setOwned(new Map());
         setStatus("signedOut");
         return;
       }
@@ -129,6 +136,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (changed) setAttempt((x) => x + 1);
     });
     return () => data.subscription.unsubscribe();
+  }, [sb]);
+
+  const refreshOwned = useCallback(() => {
+    if (sb) listOwned(sb).then(setOwned, () => {});
   }, [sb]);
 
   const reload = useCallback(async () => {
@@ -213,6 +224,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       setAccount,
       empty: status === "ready" && states.size === 0,
       states,
+      owned,
+      refreshOwned,
       predict: (m, credits) => (profile ? predict(m, profile.aff, profile.mu, credits) : { v: 0, why: [] }),
       retry: () => setAttempt((a) => a + 1),
       reload,
@@ -226,7 +239,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toasts,
       dismissToast,
     }),
-    [derived, status, error, profile, sb, userId, account, states, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
+    [derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

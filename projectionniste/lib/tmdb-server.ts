@@ -62,6 +62,7 @@ const ALLOWED: RegExp[] = [
   /^person\/\d+$/,
   /^person\/\d+\/movie_credits$/,
   /^company\/\d+$/,
+  /^collection\/\d+$/,
 ];
 
 export function isAllowed(path: string): boolean {

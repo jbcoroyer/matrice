@@ -170,6 +170,19 @@ function Portrait() {
             <b>{watchlist.size.toLocaleString("fr-FR")}</b>
           </div>
         </div>
+        <p className="note" style={{ marginTop: 16 }}>
+          <Link className="link" href="/journal?onglet=vus">
+            Tous tes films vus
+          </Link>
+          {" · "}
+          <Link className="link" href="/journal">
+            Ton journal
+          </Link>
+          {" · "}
+          <Link className="link" href="/collection">
+            Ta cinémathèque
+          </Link>
+        </p>
       </section>
 
       <TopFive />

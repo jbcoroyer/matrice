@@ -35,6 +35,15 @@ Lueurs colorées, verre dépoli décoratif, dégradés d'interface, palette mult
 ombre lourde, icônes de couleur, tout ce qui fait « tableau de bord SaaS » (réf. 5 : structure
 oui, look non). Pas de notion de disponibilité (plateformes, où le voir) ni de bandes-annonces.
 
+## Exception validée : la carte de collection
+
+La cinémathèque (collection physique) utilise des **cartes** dont le cadre est une matière :
+noir mat, **argent satiné**, **or crème** (foil discret, reflet crème qui suit le curseur). C'est un
+objet, pas un dégradé d'interface : ces finitions n'existent que sur les cartes, les dos de
+boîtier et les poches du classeur, et restent identiques en thème clair. Pas d'arc-en-ciel
+holographique, pas de halo coloré. Validée le 29/09/2026 sur planche (`design/collection/`) ; le
+détail est dans `COMPONENTS.md`.
+
 ## Mobile
 
 Barre d'onglets flottante en bas (icônes fines, point crème sous l'onglet actif) ; Découvrir

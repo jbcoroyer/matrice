@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { DiaryList } from "@/components/DiaryEntries";
 import { useProfile } from "@/components/ProfileProvider";
+import { WatchedFilms } from "@/components/WatchedFilms";
 import { ErrorLine, Loader, ProfileGate, SecHead } from "@/components/ui";
 import { diaryIndex, listEntries, type DiaryEntry, type DiaryFilter } from "@/lib/diary";
 
@@ -19,8 +20,10 @@ function Journal() {
   const { sb, userId } = useProfile();
   // filtres de départ venus d'un lien (bilan de l'année) : ?etiquette=…&annee=…
   const [filter, setFilter] = useState<DiaryFilter | null>(null);
+  const [tab, setTab] = useState<"journal" | "vus">("journal");
   useEffect(() => {
     const q = new URLSearchParams(location.search);
+    if (q.get("onglet") === "vus") setTab("vus");
     setFilter({ tag: q.get("etiquette") || undefined, year: +(q.get("annee") || 0) || undefined });
   }, []);
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
@@ -84,6 +87,20 @@ function Journal() {
           ) : undefined
         }
       />
+      <div className="tabs-row">
+        <div className="seg" role="radiogroup" aria-label="Affichage">
+          <button type="button" role="radio" aria-checked={tab === "journal"} onClick={() => setTab("journal")}>
+            Journal
+          </button>
+          <button type="button" role="radio" aria-checked={tab === "vus"} onClick={() => setTab("vus")}>
+            Films vus
+          </button>
+        </div>
+      </div>
+      {tab === "vus" ? (
+        <WatchedFilms />
+      ) : (
+        <>
       <div className="filterbar">
         <label>
           Année
@@ -173,6 +190,8 @@ function Journal() {
               </button>
             </div>
           ) : null}
+        </>
+      )}
         </>
       )}
     </section>

@@ -19,6 +19,10 @@ d'interface, palette multicolore, icônes de couleur, cartes à ombre lourde en 
 « icône + titre + paragraphe ». Pas de notion de disponibilité (plateformes, où le voir) ni de
 bande-annonce : le propriétaire les a retirées. Pas de pictogramme à côté du nom.
 
+Seule exception : la matière des cartes de collection (argent, or crème), documentée dans
+`design/ART_DIRECTION.md`. Un film **vu** (pastille œil) et un film **possédé** (languette crème,
+carte) ne se confondent jamais.
+
 ### À faire à la place
 La couleur vient des images du film (fond, ambiance floutée) ; interface neutre ; un seul
 accent crème, rare ; hiérarchie par taille et opacité ; titres en deux graisses ; libellés
