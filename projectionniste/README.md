@@ -8,12 +8,14 @@ cachée côté serveur, URLs partageables.
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil. Onglets : Pour toi (recommandations, filtres), Humeurs, En salles (et prochaines sorties), Populaires (tendances, populaires, mieux notés) |
+| `/decouvrir` | Accueil : rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
 | `/watchlist` | Ta watchlist, filtres et tris |
+| `/collection` | Tes exemplaires (format, édition, état, notes) ou tes films vus, en mur d'affiches ou en étagères ; filtres, statistiques, partage public |
+| `/c/[code]` | Collection partagée, lisible sans compte |
 | `/film/[id]` | Fiche : indice et « ce qui joue », watchlist / vu / favori / note, journal du film, top 5, où le voir, bande-annonce, distribution, films proches |
 | `/personne/[id]` | Biographie et filmographie classée par ton indice |
 | `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
-| Menu profil (icône en haut à droite) | Portrait (`/portrait`), Journal (`/journal`), Réglages (`/reglages`), Compte (`/compte`), thème |
+| Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal (`/journal`), Paramètres (`/parametres`), déconnexion |
 
 Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur chaque affiche), le mettre en favori,
 le marquer vu et le noter (demi-étoiles), ou l'écarter (« Pas pour moi »). Chaque action peut

@@ -9,6 +9,7 @@ import { SearchBox } from "./SearchBox";
 const RUBRIQUES = [
   { href: "/decouvrir", label: "Découvrir" },
   { href: "/watchlist", label: "Watchlist" },
+  { href: "/collection", label: "Collection" },
 ];
 
 function isCurrent(path: string, href: string) {

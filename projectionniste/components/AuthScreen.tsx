@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { createAccount, sendReset, signIn, signUp } from "@/lib/auth";
 import { useProfile } from "./ProfileProvider";
@@ -115,6 +116,9 @@ export function AuthScreen() {
 /** Tout le site passe par ici : sans compte connecté, on affiche l'écran de connexion. */
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { status, error, retry } = useProfile();
+  const path = usePathname();
+  // pages publiques : collection partagée
+  if (path.startsWith("/c/")) return <>{children}</>;
   if (status === "signedOut" || status === "guest") return <AuthScreen />;
   if (status === "error")
     return (

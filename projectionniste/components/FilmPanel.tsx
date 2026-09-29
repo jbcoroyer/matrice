@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { filmRow } from "@/lib/db";
 import { clearTopSlot, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
+import { formatLabel, itemsForFilm, type CollectionItem } from "@/lib/collection";
+import { CopyDialog } from "./CopyDialog";
 import { DiaryList } from "./DiaryEntries";
 import { Bookmark, Eye, Heart } from "./icons";
 import { LogDialog } from "./LogDialog";
@@ -17,6 +19,12 @@ export function FilmPanel({ film }: { film: FilmInput }) {
   const d = useProfile();
   const [logging, setLogging] = useState(false);
   const [top, setTop] = useState<TopFilm[]>([]);
+  const [copies, setCopies] = useState<CollectionItem[]>([]);
+  const [copy, setCopy] = useState<CollectionItem | "new" | null>(null);
+  const loadCopies = useCallback(() => {
+    if (d.sb) itemsForFilm(d.sb, film.id).then(setCopies, () => {});
+  }, [d.sb, film.id]);
+  useEffect(loadCopies, [loadCopies]);
   const isSeen = d.seen.has(film.id);
   const isFav = d.favorites.has(film.id);
   const inWl = d.watchlist.has(film.id);
@@ -73,6 +81,18 @@ export function FilmPanel({ film }: { film: FilmInput }) {
       <button type="button" className="panel-main" onClick={() => setLogging(true)}>
         Ajouter au journal…
       </button>
+      <div className="panel-copies">
+        {copies.length ? <span className="panel-label">Dans ta collection</span> : null}
+        {copies.map((c) => (
+          <button key={c.id} type="button" className="copy" onClick={() => setCopy(c)} title="Modifier cet exemplaire">
+            <b>{formatLabel(c.format)}</b>
+            {c.edition ? <span>{c.edition}</span> : null}
+          </button>
+        ))}
+        <button type="button" className="link-btn quiet" onClick={() => setCopy("new")}>
+          {copies.length ? "+ Un autre exemplaire" : "+ Ajouter à ma collection"}
+        </button>
+      </div>
       <div className="panel-more">
         <label>
           Top 5
@@ -98,6 +118,7 @@ export function FilmPanel({ film }: { film: FilmInput }) {
           Partager
         </button>
       </div>
+      {copy ? <CopyDialog film={film} item={copy === "new" ? undefined : copy} onClose={() => setCopy(null)} onSaved={loadCopies} /> : null}
       {logging ? <LogDialog film={film} onClose={() => setLogging(false)} onSaved={() => diaryChanged(film.id)} /> : null}
     </div>
   );

@@ -351,6 +351,47 @@ button.chip:hover { border-color: var(--ink-3); color: var(--ink) }
 .link-btn.quiet:hover { color: var(--ink); text-decoration: underline }
 @media (max-width: 720px) { .film-grid .poster-wrap { width: auto !important; flex-direction: row; align-items: flex-start } .film-grid .poster-wrap .poster { width: 120px; flex: 0 0 120px } .panel { flex: 1 } }
 
+/* ---------- collection ---------- */
+.coll-bar { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 6px 0 14px }
+.coll-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 14px; color: var(--ink-2); margin: 0 0 12px }
+.coll-stats b { color: var(--ink) }
+.chip.on { background: var(--ink); border-color: var(--ink); color: var(--paper) }
+.filterbar .search-in { display: inline-block; width: 220px; margin: 0; padding: 5px 8px }
+.wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px }
+.tile { position: relative; display: block; text-decoration: none }
+.tile .poster { display: block }
+.tile .poster img { opacity: 1; transform: none }
+.tile:hover .poster { outline: 2px solid var(--ink); outline-offset: -2px }
+.tile .count { position: absolute; right: 4px; bottom: 4px; background: rgb(0 0 0 / 0.75); color: #fff; font-size: 11px; padding: 1px 5px; border-radius: 3px }
+.shelf { margin: 0 0 26px }
+.shelf h2 { font-size: 15px; padding-bottom: 6px; border-bottom: 3px solid var(--rule); margin-bottom: 10px }
+.shelf-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px 22px }
+.shelf-list li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: start }
+.shelf-info { display: flex; flex-direction: column; gap: 2px; font-size: 14px; min-width: 0 }
+.shelf-info .t { font-weight: 600; text-decoration: none }
+.shelf-info .t:hover { text-decoration: underline }
+.copy-line { background: none; border: 0; padding: 0; text-align: left; font-size: 13px; color: var(--ink-2); cursor: pointer }
+.copy-line:hover { color: var(--ink); text-decoration: underline }
+.copy-line.static { cursor: default; text-decoration: none }
+.empty { padding: 30px 0 }
+.share { position: relative }
+.share-box { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; width: min(420px, calc(100vw - 28px)); background: var(--paper); border: 1px solid var(--ink-3); border-radius: 6px; padding: 14px; box-shadow: 0 6px 20px rgb(0 0 0 / 0.16) }
+.share-link { display: flex; gap: 6px; margin: 4px 0 10px }
+.share-link .input { margin: 0 }
+.formats { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px }
+.formats button { padding: 5px 11px; border: 1px solid var(--rule); border-radius: 999px; background: none; cursor: pointer; font-size: 13px; color: var(--ink-2) }
+.formats button[aria-checked="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper) }
+.pick-list { list-style: none; margin: 10px 0 0; padding: 0; max-height: 50vh; overflow-y: auto }
+.pick-list button { display: flex; gap: 10px; align-items: center; width: 100%; background: none; border: 0; padding: 6px; text-align: left; cursor: pointer; border-radius: 4px; font-size: 14px }
+.pick-list button:hover { background: var(--paper-2) }
+.pick-list .thumb { width: 32px; height: 48px; flex: 0 0 32px; background: var(--paper-2); overflow: hidden; border-radius: 2px }
+.pick-list .thumb img { width: 100%; height: 100%; object-fit: cover }
+.panel-copies { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-bottom: 1px solid var(--rule) }
+.panel-label { font-size: 12px; color: var(--ink-3) }
+.panel-copies .copy { display: flex; flex-direction: column; background: var(--paper-2); border: 0; border-radius: 4px; padding: 5px 8px; text-align: left; cursor: pointer; font-size: 13px }
+.panel-copies .copy span { color: var(--ink-3); font-size: 12px }
+.panel-copies .copy:hover { outline: 1px solid var(--ink-3) }
+
 /* ---------- paramètres ---------- */
 .settings-page { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 40px; margin-top: 26px }
 .settings-page h1 { font-size: 26px; margin-bottom: 8px }
