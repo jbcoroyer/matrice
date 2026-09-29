@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Poster } from "@/components/Poster";
-import { FilmActions, FilmRecs, ScoreBox, Trailer, WhereToWatch } from "@/components/FilmPersonal";
-import { FilmDiary } from "@/components/FilmDiary";
+import { FilmRecs, ScoreBox, Trailer, WhereToWatch } from "@/components/FilmPersonal";
+import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
 import { SeenBadge } from "@/components/SeenBadge";
 import { SecHead } from "@/components/ui";
 import { GENRE_FR } from "@/lib/genres";
@@ -91,6 +91,7 @@ export default async function FilmPage({ params }: Props) {
             <Poster path={m.poster_path} title={m.title} size="w500" eager>
               <SeenBadge id={m.id} />
             </Poster>
+            <FilmPanel film={film} />
           </div>
           <div>
             <h1>{m.title}</h1>
@@ -111,9 +112,8 @@ export default async function FilmPage({ params }: Props) {
             </div>
             {m.tagline ? <p className="tagline-f">« {m.tagline} »</p> : null}
             <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs }} />
-            <FilmActions movie={film} />
-            <FilmDiary film={film} />
             {m.overview ? <p className="overview">{m.overview}</p> : <p className="note">Pas encore de résumé en français.</p>}
+            <FilmHistory film={film} />
             <div className="credits">
               {dirs.length ? (
                 <div>

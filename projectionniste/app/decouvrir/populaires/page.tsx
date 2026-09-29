@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
 import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, MineToggle, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { BackLink } from "@/components/Rail";
 import { filterMine } from "@/lib/hooks";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
@@ -52,7 +53,8 @@ function Populaires() {
 
   return (
     <section className="section">
-      <SecHead title={SOURCES.find((s) => s.k === src)!.l} aside="Ordre TMDB, avec ton indice" />
+      <BackLink />
+      <SecHead as="h1" title="Tendances" aside="Classement TMDB, avec ton indice" />
       <div className="filterbar">
         <div className="seg" role="group" aria-label="Classement">
           {SOURCES.map((s) => (

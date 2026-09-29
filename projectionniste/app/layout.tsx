@@ -7,7 +7,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Le Projectionniste", template: "%s · Le Projectionniste" },
-  description: "Recommandations de films d'après tes notes Letterboxd, films en salles, plateformes et watchlist.",
+  description: "Journal de cinéma, watchlist et recommandations calées sur tes goûts, avec import Letterboxd.",
   applicationName: "Le Projectionniste",
   appleWebApp: { capable: true, title: "Projectionniste", statusBarStyle: "default" },
 };

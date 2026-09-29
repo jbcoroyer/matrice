@@ -6,10 +6,9 @@ import { num1 } from "@/lib/format";
 import { dedupeProviders, img, streamable } from "@/lib/tmdb";
 import type { Credits, Movie, Provider, ProviderOffers, Ranked } from "@/lib/types";
 import { FilmGrid } from "./FilmGrid";
-import { Check, EyeOff, Heart, Play, Plus, Share } from "./icons";
-import { useProfile, type FilmInput } from "./ProfileProvider";
+import { Play } from "./icons";
+import { useProfile } from "./ProfileProvider";
 import { SecHead } from "./ui";
-import { Stars } from "./Stars";
 
 /** Indice personnel, note TMDB et ce qui fait bouger l'indice. */
 export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits }) {
@@ -50,57 +49,6 @@ export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits })
         </div>
       ) : null}
     </div>
-  );
-}
-
-/** Watchlist, vu / note, favori, pas pour moi, partager. */
-export function FilmActions({ movie }: { movie: FilmInput }) {
-  const { watchlist, seen, rated, hidden, favorites, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, toast } = useProfile();
-  const inWl = watchlist.has(movie.id);
-  const isSeen = seen.has(movie.id);
-  const isFav = favorites.has(movie.id);
-  const r = rated.get(movie.id) || 0;
-  const isHidden = hidden.has(movie.id);
-
-  const share = async () => {
-    const url = location.href;
-    try {
-      if (navigator.share) await navigator.share({ title: movie.title, url });
-      else {
-        await navigator.clipboard.writeText(url);
-        toast("Lien copié");
-      }
-    } catch {}
-  };
-
-  return (
-    <>
-      <div className="film-actions">
-        {!isSeen ? (
-          <button type="button" className={`btn${inWl ? " on" : " primary"}`} aria-pressed={inWl} onClick={() => toggleWatchlist(movie)}>
-            {inWl ? <Check /> : <Plus />} {inWl ? "Dans ta watchlist" : "Ajouter à la watchlist"}
-          </button>
-        ) : null}
-        <button type="button" className={`btn${isSeen ? " on" : ""}`} aria-pressed={isSeen} onClick={() => (isSeen ? unmarkSeen(movie) : markSeen(movie))}>
-          <Check /> {isSeen ? "Vu" : "Je l'ai vu"}
-        </button>
-        <button type="button" className={`btn${isFav ? " on" : " ghost"}`} aria-pressed={isFav} onClick={() => toggleFavorite(movie)}>
-          <Heart /> {isFav ? "Favori" : "Ajouter aux favoris"}
-        </button>
-        {!isSeen ? (
-          <button type="button" className="btn ghost" aria-pressed={isHidden} onClick={() => toggleHidden(movie)}>
-            <EyeOff /> {isHidden ? "Proposer à nouveau" : "Pas pour moi"}
-          </button>
-        ) : null}
-        <button type="button" className="btn ghost" onClick={share}>
-          <Share /> Partager
-        </button>
-      </div>
-      <div className="rate">
-        <span>{r ? "Ta note" : "Noter"}</span>
-        <Stars value={r} onChange={(v) => markSeen(movie, v)} />
-      </div>
-    </>
   );
 }
 

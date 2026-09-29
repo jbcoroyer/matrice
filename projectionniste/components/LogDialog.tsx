@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
-import { deleteEntry, diaryIndex, saveEntry, type DiaryEntry } from "@/lib/diary";
+import { deleteEntry, diaryIndex, entriesForFilm, saveEntry, type DiaryEntry } from "@/lib/diary";
 import { today } from "@/lib/format";
 import { useProfile, type FilmInput } from "./ProfileProvider";
 import { Stars } from "./Stars";
@@ -25,7 +25,7 @@ export function LogDialog({
   const ref = useRef<HTMLDialogElement>(null);
   const [date, setDate] = useState(entry ? entry.watched_on || "" : today());
   const [rating, setRating] = useState<number>(entry ? entry.rating || 0 : rated.get(film.id) || 0);
-  const [rewatch, setRewatch] = useState(entry ? entry.rewatch : seen.has(film.id));
+  const [rewatch, setRewatch] = useState(entry ? entry.rewatch : false);
   const [liked, setLiked] = useState(entry ? entry.liked : favorites.has(film.id));
   const [review, setReview] = useState(entry?.review || "");
   const [spoilers, setSpoilers] = useState(entry?.spoilers || false);
@@ -38,6 +38,11 @@ export function LogDialog({
 
   useEffect(() => {
     ref.current?.showModal();
+    // revisionnage pré-coché seulement si ce film a déjà une entrée dans le journal
+    if (!entry && sb && seen.has(film.id))
+      entriesForFilm(sb, film.id)
+        .then((l) => l.length && setRewatch(true))
+        .catch(() => {});
     if (!tagCache && sb)
       diaryIndex(sb)
         .then((i) => setKnown((tagCache = i.tags.map(([t]) => t))))

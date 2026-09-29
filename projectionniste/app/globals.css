@@ -302,12 +302,78 @@ button.chip:hover { border-color: var(--ink-3); color: var(--ink) }
 .dialog-actions { display: flex; gap: 8px; align-items: center; margin-top: 16px }
 .btn.danger { color: var(--low) }
 
-/* ---------- onglets Découvrir ---------- */
-.tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--rule); margin-top: 22px; overflow-x: auto; scrollbar-width: none }
-.tabs a { padding: 8px 0 7px; font-size: 15px; color: var(--ink-2); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap }
-.tabs a:hover { color: var(--ink) }
-.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600 }
-.tabs + .section, .tabs + div > .section { margin-top: 22px }
+/* ---------- Découvrir : rangées ---------- */
+.page-head { display: flex; justify-content: space-between; align-items: center; gap: 8px 20px; flex-wrap: wrap; margin: 26px 0 8px }
+.page-head h1 { font-size: 26px }
+.page-head .filterbar { margin: 0 }
+.rail-wrap { margin: 22px 0 34px }
+.rail-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 12px }
+.rail-head h2 { font-size: 19px }
+.rail-head h2 a { text-decoration: none }
+.rail-head h2 a:hover { text-decoration: underline }
+.rail-head p { margin: 2px 0 0; font-size: 13px; color: var(--ink-3) }
+.rail-tools { display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap }
+.rail-tools a { color: var(--ink-2); margin-right: 6px }
+.arrow { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule); background: var(--paper); cursor: pointer; font-size: 18px; line-height: 1; color: var(--ink-2) }
+.arrow:hover { border-color: var(--ink-3); color: var(--ink) }
+@media (hover: none), (max-width: 700px) { .arrow { display: none } }
+.rail { display: grid; grid-auto-flow: column; grid-auto-columns: 150px; gap: 14px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 4px }
+.rail::-webkit-scrollbar { display: none }
+.rail > .card { scroll-snap-align: start }
+@media (max-width: 520px) { .rail { grid-auto-columns: 124px; gap: 10px } }
+.back { display: inline-block; margin-top: 22px; font-size: 14px; color: var(--ink-2); text-decoration: none }
+.back:hover { color: var(--ink); text-decoration: underline }
+.mood-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 14px 0 6px; font-size: 14px }
+.mchip { padding: 4px 11px; border: 1px solid var(--rule); border-radius: 999px; text-decoration: none; color: var(--ink-2); font-size: 13px; white-space: nowrap }
+.mchip:hover { border-color: var(--ink-3); color: var(--ink) }
+.mchip[aria-current="page"] { background: var(--ink); border-color: var(--ink); color: var(--paper) }
+.hint { margin-top: -10px }
+
+/* ---------- fiche : bloc d'actions ---------- */
+.film-grid .poster-wrap { display: flex; flex-direction: column; gap: 12px }
+.panel { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; font-size: 14px }
+.panel-toggles { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--rule) }
+.panel-toggles button { background: none; border: 0; padding: 10px 4px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--ink-3); font-size: 12px }
+.panel-toggles button + button { border-left: 1px solid var(--rule) }
+.panel-toggles button svg { width: 22px; height: 22px }
+.panel-toggles button:hover:not(:disabled) { color: var(--ink); background: var(--paper-2) }
+.panel-toggles button[aria-pressed="true"] { color: var(--ink) }
+.panel-toggles button[aria-pressed="true"] svg { fill: currentColor }
+.panel-toggles button:nth-child(2)[aria-pressed="true"] { color: var(--low) }
+.panel-toggles button:disabled { opacity: 0.4; cursor: default }
+.panel-rate { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px; border-bottom: 1px solid var(--rule); color: var(--ink-3); font-size: 12px }
+.panel-main { display: block; width: 100%; padding: 11px; border: 0; border-bottom: 1px solid var(--rule); background: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink) }
+.panel-main:hover { background: var(--paper-2) }
+.panel-more { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; font-size: 13px; color: var(--ink-2) }
+.panel-more label { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.panel-more select { background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 3px 4px; max-width: 120px; font-size: 13px }
+.link-btn.quiet { color: var(--ink-2); text-decoration: none; text-align: left; font-size: 13px }
+.link-btn.quiet:hover { color: var(--ink); text-decoration: underline }
+@media (max-width: 720px) { .film-grid .poster-wrap { width: auto !important; flex-direction: row; align-items: flex-start } .film-grid .poster-wrap .poster { width: 120px; flex: 0 0 120px } .panel { flex: 1 } }
+
+/* ---------- paramètres ---------- */
+.settings-page { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 40px; margin-top: 26px }
+.settings-page h1 { font-size: 26px; margin-bottom: 8px }
+.set-nav { position: sticky; top: 72px; align-self: start; display: flex; flex-direction: column; gap: 2px; padding-top: 44px }
+.set-nav a { padding: 6px 10px; border-radius: 4px; font-size: 14px; color: var(--ink-2); text-decoration: none }
+.set-nav a:hover { background: var(--paper-2); color: var(--ink) }
+.set-nav a[aria-current="true"] { background: var(--paper-2); color: var(--ink); font-weight: 600 }
+.set-body { max-width: 720px; min-width: 0 }
+.set-sec { padding: 22px 0; border-bottom: 1px solid var(--rule); scroll-margin-top: 70px }
+.set-sec:last-child { border-bottom: 0 }
+.set-sec h2 { font-size: 17px; margin-bottom: 6px }
+.set-sec.callout { border: 1px solid var(--ink-3); border-radius: 6px; padding: 16px; margin: 12px 0 }
+.steps { margin: 0 0 10px; padding-left: 20px; font-size: 14px; line-height: 1.7 }
+.steps a { color: var(--accent) }
+.choice { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden }
+.choice button { background: none; border: 0; padding: 7px 16px; cursor: pointer; font-size: 14px; color: var(--ink-2) }
+.choice button + button { border-left: 1px solid var(--rule) }
+.choice button[aria-checked="true"] { background: var(--ink); color: var(--paper) }
+.inline-form { display: flex; flex-direction: column; gap: 8px; max-width: 380px }
+.inline-form .btn { align-self: flex-start }
+.kv { display: flex; gap: 12px; font-size: 14px; margin: 0 0 12px }
+.kv span { color: var(--ink-3); width: 60px }
+@media (max-width: 760px) { .settings-page { grid-template-columns: minmax(0, 1fr); gap: 0 } .set-nav { position: static; flex-direction: row; overflow-x: auto; padding-top: 0; gap: 4px; border-bottom: 1px solid var(--rule); padding-bottom: 8px } .set-nav a { white-space: nowrap } }
 
 /* ---------- menu profil ---------- */
 .pmenu { position: relative }
@@ -318,6 +384,8 @@ button.chip:hover { border-color: var(--ink-3); color: var(--ink) }
 .pmenu-head span { font-size: 12px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis }
 .pmenu-list a, .pmenu-list button { padding: 7px 14px; font-size: 14px; text-decoration: none; background: none; border: 0; text-align: left; cursor: pointer; color: var(--ink) }
 .pmenu-list a:hover, .pmenu-list button:hover { background: var(--paper-2) }
+.pmenu-list a[aria-current="page"] { font-weight: 600 }
+.pmenu-list hr { border: 0; border-top: 1px solid var(--rule); margin: 4px 0 }
 
 /* ---------- compte ---------- */
 .auth { max-width: 460px; margin: 48px auto 0 }

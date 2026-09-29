@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { KEYS, store } from "@/lib/store";
 import { useProfile } from "./ProfileProvider";
 import { SearchBox } from "./SearchBox";
 
@@ -16,27 +15,11 @@ function isCurrent(path: string, href: string) {
   return path === href || path.startsWith(href + "/");
 }
 
-function useDarkTheme() {
-  const [dark, setDark] = useState<boolean | null>(null);
-  useEffect(() => {
-    const t = document.documentElement.dataset.theme;
-    setDark(t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
-  }, []);
-  const flip = () => {
-    const next = dark ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    store.set(KEYS.theme, next);
-    setDark(!dark);
-  };
-  return [dark, flip] as const;
-}
-
-/** Icône profil : portrait, journal, réglages, compte, thème. */
+/** Icône profil : mon profil, journal, paramètres, déconnexion. */
 function ProfileMenu() {
   const path = usePathname();
-  const { profile, account } = useProfile();
+  const { profile, account, sb } = useProfile();
   const [open, setOpen] = useState(false);
-  const [dark, flipTheme] = useDarkTheme();
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => setOpen(false), [path]);
@@ -54,39 +37,37 @@ function ProfileMenu() {
   }, [open]);
 
   const name = profile?.owner || account?.email?.split("@")[0] || "";
-  const initial = name ? name[0].toUpperCase() : "";
-  const mine = ["/portrait", "/journal", "/reglages", "/compte"].includes(path);
+  const mine = ["/portrait", "/journal", "/parametres"].includes(path);
+  const item = (href: string, label: string) => (
+    <Link role="menuitem" href={href} aria-current={path === href ? "page" : undefined}>
+      {label}
+    </Link>
+  );
 
   return (
     <div className="pmenu" ref={box}>
       <button type="button" className={`avatar${mine ? " on" : ""}`} aria-haspopup="menu" aria-expanded={open} aria-label="Mon profil" onClick={() => setOpen((o) => !o)}>
-        {initial || (
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
-          </svg>
-        )}
+        {name ? name[0].toUpperCase() : "?"}
       </button>
       {open ? (
         <div className="pmenu-list" role="menu">
           <div className="pmenu-head">
-            <b>{name || "Mon profil"}</b>
+            <b>{name}</b>
             <span>{account?.email}</span>
           </div>
-          <Link role="menuitem" href="/portrait">
-            Portrait
-          </Link>
-          <Link role="menuitem" href="/journal">
-            Journal
-          </Link>
-          <Link role="menuitem" href="/reglages">
-            Réglages
-          </Link>
-          <Link role="menuitem" href="/compte">
-            Compte
-          </Link>
-          <button type="button" role="menuitem" onClick={flipTheme}>
-            {dark ? "Thème clair" : "Thème sombre"}
+          {item("/portrait", "Mon profil")}
+          {item("/journal", "Journal")}
+          {item("/parametres", "Paramètres")}
+          <hr />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={async () => {
+              await sb?.auth.signOut();
+              location.href = "/";
+            }}
+          >
+            Se déconnecter
           </button>
         </div>
       ) : null}

@@ -1,140 +1,62 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { FilmGrid } from "@/components/FilmGrid";
+import Link from "next/link";
 import { useProfile } from "@/components/ProfileProvider";
-import { ErrorLine, MineToggle, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
-import { GENRE_OPTIONS } from "@/lib/genres";
-import { genreIds } from "@/lib/predict";
-import { useAsync, useMineFilter, useRecs } from "@/lib/hooks";
-import { clearRecs } from "@/lib/recs";
+import { Rail } from "@/components/Rail";
+import { EmptyInvite, MineToggle } from "@/components/ui";
+import { filterMine, useAsync, useRecs } from "@/lib/hooks";
 import { tmdb } from "@/lib/tmdb";
-import type { Movie, Ranked } from "@/lib/types";
+import type { Movie, Paged, Ranked } from "@/lib/types";
 
-const DECADES = [
-  { v: "", l: "Toutes" },
-  { v: "2020", l: "Années 2020" },
-  { v: "2010", l: "Années 2010" },
-  { v: "2000", l: "Années 2000" },
-  { v: "1990", l: "Années 1990" },
-  { v: "1980", l: "Années 1980" },
-  { v: "old", l: "Avant 1980" },
-];
+export default function Decouvrir() {
+  const d = useProfile();
+  const recs = useRecs();
+  const plat = [...d.platforms].join();
 
-function PourToi() {
-  const { profile } = useProfile();
-  const [force, setForce] = useState(0);
-  const recs = useRecs(force);
-  const [genre, setGenre] = useState(0);
-  const [decade, setDecade] = useState("");
-  const [maxRt, setMaxRt] = useState(0);
-  const [sort, setSort] = useState<"score" | "pred" | "recent">("score");
-
-  const filtered = useMemo(() => {
-    if (!recs.data) return undefined;
-    let l = recs.data.slice();
-    if (genre) l = l.filter((m) => genreIds(m).includes(genre));
-    if (decade) {
-      l = l.filter((m) => {
-        const y = +(m.release_date || "0").slice(0, 4);
-        return decade === "old" ? y < 1980 : y >= +decade && y < +decade + 10;
-      });
-    }
-    if (sort === "pred") l.sort((a, b) => (b._pred ?? 0) - (a._pred ?? 0));
-    if (sort === "recent") l.sort((a, b) => (b.release_date || "").localeCompare(a.release_date || ""));
-    return l;
-  }, [recs.data, genre, decade, sort]);
-
-  const mine = useMineFilter(filtered);
-
-  // la durée n'est pas dans les résultats de recommandation : on la demande seulement si le filtre est actif
-  const runtimeFiltered = useAsync<Ranked[]>(
+  const pourToi = useAsync<Ranked[]>(
+    async () => (d.onlyMine ? await filterMine((recs.data ?? []).slice(0, 100), d.platforms) : recs.data ?? []).slice(0, 24),
+    [recs.data, d.onlyMine, plat],
+    !!recs.data,
+  );
+  const trending = useAsync<Ranked[]>(
     async () => {
-      const l = mine.data!.slice(0, 120);
-      const det = await Promise.all(l.map((m) => tmdb<Movie>(`movie/${m.id}`).catch(() => null)));
-      return l.filter((_, i) => det[i]?.runtime && det[i]!.runtime! <= maxRt);
+      const ps = await Promise.all([1, 2].map((page) => tmdb<Paged<Movie>>("trending/movie/week", { page })));
+      let l: Ranked[] = ps
+        .flatMap((p) => p.results)
+        .filter((m) => m.poster_path)
+        .map((m) => ({ ...m, _pred: d.predict(m).v, _note: d.seen.has(m.id) ? "Déjà vu" : undefined }));
+      if (d.onlyMine) l = await filterMine(l, d.platforms);
+      return l.slice(0, 24);
     },
-    [mine.data, maxRt],
-    !!mine.data && maxRt > 0,
+    [d.profile, d.onlyMine, plat],
   );
 
-  const final = maxRt ? runtimeFiltered.data : mine.data;
-  const loading = recs.loading || mine.loading || (maxRt > 0 && runtimeFiltered.loading);
-  const error = recs.error || mine.error || runtimeFiltered.error;
-
   return (
-    <section className="section">
-      <SecHead title="Pour toi" aside="Tiré des films que tu as notés 4,5 ou 5" />
-      <div className="filterbar">
-        <MineToggle />
-        <label>
-          Genre
-          <select value={genre} onChange={(e) => setGenre(+e.target.value)}>
-            <option value={0}>Tous</option>
-            {GENRE_OPTIONS.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Époque
-          <select value={decade} onChange={(e) => setDecade(e.target.value)}>
-            {DECADES.map((d) => (
-              <option key={d.v} value={d.v}>
-                {d.l}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Durée
-          <select value={maxRt} onChange={(e) => setMaxRt(+e.target.value)}>
-            <option value={0}>Peu importe</option>
-            <option value={100}>Moins de 1 h 40</option>
-            <option value={130}>Moins de 2 h 10</option>
-          </select>
-        </label>
-        <label>
-          Tri
-          <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
-            <option value="score">Pertinence</option>
-            <option value="pred">Indice</option>
-            <option value="recent">Plus récents</option>
-          </select>
-        </label>
-        <button
-          type="button"
-          className="link-btn"
-          onClick={() => {
-            clearRecs();
-            setForce((f) => f + 1);
-          }}
-        >
-          Recalculer
-        </button>
-        {final ? <span className="count">{final.length} films</span> : null}
+    <>
+      <EmptyInvite />
+      <div className="page-head">
+        <h1>Découvrir</h1>
+        <div className="filterbar">
+          <MineToggle />
+        </div>
       </div>
-      {error ? (
-        <ErrorLine error={error} onRetry={recs.reload} />
-      ) : loading || !final ? (
-        <SkeletonGrid n={15} />
-      ) : final.length ? (
-        <FilmGrid key={`${genre}|${decade}|${maxRt}|${sort}|${profile?.updatedAt}`} list={final} />
-      ) : (
-        <p className="status">Aucun film ne correspond. Retire un filtre ou coche d'autres plateformes.</p>
-      )}
-    </section>
-  );
-}
-
-export default function Page() {
-  return (
-    <div>
-      <ProfileGate>
-        <PourToi />
-      </ProfileGate>
-    </div>
+      <Rail
+        title="Pour toi"
+        sub={d.rated.size ? "D'après les films que tu as le mieux notés" : "Note quelques films pour affiner la sélection"}
+        href="/decouvrir/pour-toi"
+        list={pourToi.data}
+        loading={!pourToi.data && !recs.error}
+        empty={
+          d.onlyMine ? (
+            "Aucune recommandation disponible sur tes plateformes pour l'instant."
+          ) : (
+            <>
+              Rien à proposer pour l'instant. <Link href="/parametres#import">Importe ton Letterboxd</Link> ou note quelques films.
+            </>
+          )
+        }
+      />
+      <Rail title="Tendances de la semaine" sub="Ce que tout le monde regarde, avec ton indice" href="/decouvrir/populaires" list={trending.data} loading={!trending.data} />
+    </>
   );
 }

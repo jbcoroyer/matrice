@@ -21,7 +21,7 @@ function authError(e: { message: string; code?: string }): never {
  */
 export async function createAccount(sb: SupabaseClient, email: string, password: string): Promise<Account> {
   if (password.length < 8) throw new DbError("Mot de passe trop court (8 caractères minimum).");
-  const { data, error } = await sb.auth.updateUser({ email: email.trim(), password }, { emailRedirectTo: location.origin + "/compte" });
+  const { data, error } = await sb.auth.updateUser({ email: email.trim(), password }, { emailRedirectTo: location.origin + "/decouvrir" });
   if (error) authError(error);
   return accountOf(data.user!);
 }
@@ -47,7 +47,7 @@ export async function signOut(sb: SupabaseClient) {
 }
 
 export async function sendReset(sb: SupabaseClient, email: string) {
-  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin + "/compte?reset=1" });
+  const { error } = await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo: location.origin + "/parametres?reset=1" });
   if (error) authError(error);
 }
 

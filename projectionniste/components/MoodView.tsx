@@ -1,26 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { FilmGrid } from "./FilmGrid";
 import { useProfile } from "./ProfileProvider";
 import { ErrorLine, MineToggle, SecHead, SkeletonGrid } from "./ui";
-import { moodBySlug, MOODS } from "@/lib/moods";
+import { moodBySlug } from "@/lib/moods";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
-
-export function MoodTiles({ current }: { current?: string }) {
-  return (
-    <div className="moods">
-      {MOODS.map((m) => (
-        <Link key={m.slug} className="mood" href={`/decouvrir/humeurs/${m.slug}`} aria-current={current === m.slug ? "page" : undefined} scroll={false}>
-          <h3>{m.t}</h3>
-          <p>{m.s}</p>
-        </Link>
-      ))}
-    </div>
-  );
-}
 
 const BATCH = 4;
 
@@ -69,15 +55,14 @@ export function MoodResults({ slug }: { slug: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, onlyMine, plat, d.profile]);
 
-  useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [slug]);
-
   if (!mood) return <p className="status err">Cette humeur n'existe pas.</p>;
 
   return (
     <section className="section" ref={ref}>
-      <SecHead title={mood.t} aside={<div className="filterbar" style={{ margin: 0 }}><MineToggle /></div>} />
+      <SecHead as="h1" title={mood.t} aside={mood.s} />
+      <div className="filterbar">
+        <MineToggle />
+      </div>
       {error ? (
         <ErrorLine error={error} />
       ) : !list ? (

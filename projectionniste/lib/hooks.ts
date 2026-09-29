@@ -68,8 +68,16 @@ export function useWatchlistMovies() {
 }
 
 /** Applique le filtre « Sur mes plateformes » si coché. */
-export function useMineFilter(list: Ranked[] | undefined): Async<Ranked[]> {
-  const { onlyMine: on, platforms } = useProfile();
+export function useMineFilter(list: Ranked[] | undefined, force = false): Async<Ranked[]> {
+  const { onlyMine, platforms } = useProfile();
+  const on = (onlyMine || force) && platforms.size > 0;
   const key = list ? list.map((m) => m.id).join(",") : "";
   return useAsync<Ranked[]>(async () => (on ? filterMine(list!, platforms) : list!), [key, on, [...platforms].join(",")], !!list);
+}
+
+/** true si l'adresse contient ?mine=1 (liens « Sur tes plateformes » de Découvrir). */
+export function useMineParam() {
+  const [on, setOn] = useState(false);
+  useEffect(() => setOn(new URLSearchParams(location.search).get("mine") === "1"), []);
+  return on;
 }

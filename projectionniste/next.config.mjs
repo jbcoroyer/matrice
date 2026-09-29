@@ -4,10 +4,14 @@ const nextConfig = {
   poweredByHeader: false,
   async redirects() {
     return [
-      { source: "/pour-toi", destination: "/decouvrir", permanent: true },
-      { source: "/humeurs", destination: "/decouvrir/humeurs", permanent: true },
+      { source: "/pour-toi", destination: "/decouvrir/pour-toi", permanent: true },
+      { source: "/humeurs", destination: "/decouvrir/pour-toi", permanent: true },
       { source: "/humeurs/:slug", destination: "/decouvrir/humeurs/:slug", permanent: true },
-      { source: "/salles", destination: "/decouvrir/salles", permanent: true },
+      { source: "/decouvrir/humeurs", destination: "/decouvrir/pour-toi", permanent: true },
+      { source: "/salles", destination: "/decouvrir", permanent: true },
+      { source: "/decouvrir/salles", destination: "/decouvrir", permanent: true },
+      { source: "/reglages", destination: "/parametres", permanent: true },
+      { source: "/compte", destination: "/parametres", permanent: true },
     ];
   },
 };

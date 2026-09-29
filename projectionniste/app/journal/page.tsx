@@ -117,7 +117,7 @@ function Journal() {
           ) : (
             <>
               Ton journal est vide. Ouvre un film et clique sur « Enregistrer un visionnage », ou{" "}
-              <Link className="link" href="/reglages#import">
+              <Link className="link" href="/parametres#import">
                 importe ton Letterboxd
               </Link>
               .

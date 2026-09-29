@@ -22,7 +22,7 @@ export function Stars({ value, onChange }: { value: number; onChange: (v: number
               className={v % 1 ? "l" : "r"}
               role="radio"
               aria-checked={value === v}
-              aria-label={`${num1(v)} sur 5`}
+              aria-label={`${String(v).replace(".", ",")} sur 5`}
               onMouseEnter={() => setHover(v)}
               onFocus={() => setHover(v)}
               onBlur={() => setHover(0)}

@@ -74,7 +74,7 @@ export function MineToggle() {
       Sur mes plateformes{" "}
       {!enabled ? (
         <em>
-          (<Link href="/reglages">à choisir</Link>)
+          (<Link href="/parametres#plateformes">à choisir</Link>)
         </em>
       ) : null}
     </label>
@@ -107,7 +107,7 @@ export function EmptyInvite() {
         l'indice se calent sur tes goûts. Sinon, commence simplement à marquer des films comme vus.
       </p>
       <div className="row-actions">
-        <Link className="btn primary" href="/reglages#import">
+        <Link className="btn primary" href="/parametres#import">
           Importer mon Letterboxd
         </Link>
       </div>
