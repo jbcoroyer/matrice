@@ -6,8 +6,8 @@ import { num1 } from "@/lib/format";
 import { dedupeProviders, img, streamable } from "@/lib/tmdb";
 import type { Credits, Movie, Provider, ProviderOffers, Ranked } from "@/lib/types";
 import { FilmGrid } from "./FilmGrid";
-import { Check, EyeOff, Play, Plus, Share } from "./icons";
-import { useProfile } from "./ProfileProvider";
+import { Check, EyeOff, Heart, Play, Plus, Share } from "./icons";
+import { useProfile, type FilmInput } from "./ProfileProvider";
 import { SecHead } from "./ui";
 
 /** Indice personnel, note TMDB et ce qui fait bouger l'indice. */
@@ -83,12 +83,12 @@ function Stars({ value, onChange }: { value: number; onChange: (v: number) => vo
   );
 }
 
-/** Watchlist, vu / note, pas pour moi, partager. */
-export function FilmActions({ movie }: { movie: Pick<Movie, "id" | "title"> }) {
-  const { watchlist, seen, rated, hidden, prefs, toggleWatchlist, markSeen, unmarkSeen, toggleHidden, toast } = useProfile();
+/** Watchlist, vu / note, favori, pas pour moi, partager. */
+export function FilmActions({ movie }: { movie: FilmInput }) {
+  const { watchlist, seen, rated, hidden, favorites, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, toast } = useProfile();
   const inWl = watchlist.has(movie.id);
   const isSeen = seen.has(movie.id);
-  const localSeen = movie.id in prefs.seen;
+  const isFav = favorites.has(movie.id);
   const r = rated.get(movie.id) || 0;
   const isHidden = hidden.has(movie.id);
 
@@ -111,8 +111,11 @@ export function FilmActions({ movie }: { movie: Pick<Movie, "id" | "title"> }) {
             {inWl ? <Check /> : <Plus />} {inWl ? "Dans ta watchlist" : "Ajouter à la watchlist"}
           </button>
         ) : null}
-        <button type="button" className={`btn${isSeen ? " on" : ""}`} aria-pressed={isSeen} disabled={isSeen && !localSeen} title={isSeen && !localSeen ? "Vu d'après ton historique Letterboxd" : undefined} onClick={() => (isSeen ? unmarkSeen(movie.id) : markSeen(movie))}>
+        <button type="button" className={`btn${isSeen ? " on" : ""}`} aria-pressed={isSeen} onClick={() => (isSeen ? unmarkSeen(movie) : markSeen(movie))}>
           <Check /> {isSeen ? "Vu" : "Je l'ai vu"}
+        </button>
+        <button type="button" className={`btn${isFav ? " on" : " ghost"}`} aria-pressed={isFav} onClick={() => toggleFavorite(movie)}>
+          <Heart /> {isFav ? "Favori" : "Ajouter aux favoris"}
         </button>
         {!isSeen ? (
           <button type="button" className="btn ghost" aria-pressed={isHidden} onClick={() => toggleHidden(movie)}>
@@ -123,13 +126,10 @@ export function FilmActions({ movie }: { movie: Pick<Movie, "id" | "title"> }) {
           <Share /> Partager
         </button>
       </div>
-      {isSeen ? (
-        <div className="rate">
-          <span>{r ? "Ta note" : "Noter"}</span>
-          <Stars value={r} onChange={(v) => markSeen(movie, v)} />
-          {r && !localSeen ? <em>d'après Letterboxd</em> : null}
-        </div>
-      ) : null}
+      <div className="rate">
+        <span>{r ? "Ta note" : "Noter"}</span>
+        <Stars value={r} onChange={(v) => markSeen(movie, v)} />
+      </div>
     </>
   );
 }

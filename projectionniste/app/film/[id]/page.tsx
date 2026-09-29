@@ -100,7 +100,18 @@ export default async function FilmPage({ params }: Props) {
             </div>
             {m.tagline ? <p className="tagline-f">« {m.tagline} »</p> : null}
             <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs }} />
-            <FilmActions movie={{ id: m.id, title: m.title }} />
+            <FilmActions
+              movie={{
+                id: m.id,
+                title: m.title,
+                original_title: m.original_title,
+                release_date: m.release_date,
+                poster_path: m.poster_path,
+                backdrop_path: m.backdrop_path,
+                genre_ids: (m.genres ?? []).map((g) => g.id),
+                runtime: m.runtime,
+              }}
+            />
             {m.overview ? <p className="overview">{m.overview}</p> : <p className="note">Pas encore de résumé en français.</p>}
             <div className="credits">
               {dirs.length ? (

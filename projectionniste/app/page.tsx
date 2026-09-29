@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FilmGrid } from "@/components/FilmGrid";
 import { useProfile } from "@/components/ProfileProvider";
-import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { EmptyInvite, ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
 import { useAsync, useRecs, useWatchlistMovies } from "@/lib/hooks";
 import { MOODS } from "@/lib/moods";
 import { tmdb } from "@/lib/tmdb";
@@ -31,6 +31,7 @@ function Accueil() {
 
   return (
     <>
+      <EmptyInvite />
       <section className="section">
         <SecHead title="Pour toi" aside={<More href="/pour-toi">Tout voir →</More>} />
         {recs.error ? (

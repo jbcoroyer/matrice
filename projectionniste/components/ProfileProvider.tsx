@@ -1,31 +1,41 @@
 "use client";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { EMPTY_STATE, ensureSession, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
 import { predict, type Prediction } from "@/lib/predict";
-import { derive, EMPTY_PREFS, loadPrefs, loadSeedProfile, loadStoredProfile, savePrefs, saveProfile, type Derived, type Progress } from "@/lib/profile";
+import { derive, type Derived } from "@/lib/profile";
 import { clearRecs } from "@/lib/recs";
 import { KEYS, store } from "@/lib/store";
-import type { Credits, Movie, Prefs, Profile } from "@/lib/types";
+import { supabase } from "@/lib/supabase";
+import type { Credits, FilmState, Movie, Profile, Settings } from "@/lib/types";
 
-type Status = "loading" | "mapping" | "ready" | "error";
+type Status = "loading" | "ready" | "error";
 
 type Toast = { id: number; text: string; undo?: () => void };
 
+/** Film tel qu'on le reçoit des pages (au minimum un id et un titre). */
+export type FilmInput = Partial<Movie> & { id: number; title: string };
+
 type Ctx = Derived & {
   status: Status;
-  progress: Progress | null;
   error: string | null;
   profile: Profile | null;
-  prefs: Prefs;
+  sb: SupabaseClient | null;
+  userId: string | null;
+  /** aucun film enregistré : on propose l'import Letterboxd */
+  empty: boolean;
+  onlyMine: boolean;
+  states: Map<number, FilmState>;
   predict: (m: Movie, credits?: Credits | null) => Prediction;
   retry: () => void;
-  setProfile: (p: Profile) => void;
-  resetToSeed: () => void;
-  updatePrefs: (fn: (p: Prefs) => Prefs) => void;
-  toggleWatchlist: (m: Pick<Movie, "id" | "title">) => void;
-  markSeen: (m: Pick<Movie, "id" | "title">, rating?: number) => void;
-  unmarkSeen: (id: number) => void;
-  toggleHidden: (m: Pick<Movie, "id" | "title">) => void;
+  reload: () => Promise<void>;
+  updateSettings: (patch: Settings) => void;
+  toggleWatchlist: (m: FilmInput) => void;
+  toggleFavorite: (m: FilmInput) => void;
+  markSeen: (m: FilmInput, rating?: number) => void;
+  unmarkSeen: (m: FilmInput) => void;
+  toggleHidden: (m: FilmInput) => void;
   toast: (text: string, undo?: () => void) => void;
   toasts: Toast[];
   dismissToast: (id: number) => void;
@@ -40,52 +50,17 @@ export function useProfile() {
 }
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
+  const sb = supabase();
   const [status, setStatus] = useState<Status>("loading");
-  const [progress, setProgress] = useState<Progress | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [profile, setProfileState] = useState<Profile | null>(null);
-  const [prefs, setPrefs] = useState<Prefs>(EMPTY_PREFS);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [states, setStates] = useState<Map<number, FilmState>>(new Map());
+  const [titles, setTitles] = useState<Record<number, string>>({});
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [attempt, setAttempt] = useState(0);
-  const prefsRef = useRef(prefs);
-  prefsRef.current = prefs;
-
-  useEffect(() => {
-    let alive = true;
-    setPrefs(loadPrefs());
-    const stored = loadStoredProfile();
-    if (stored) {
-      setProfileState(stored);
-      setStatus("ready");
-      return;
-    }
-    setStatus("mapping");
-    setError(null);
-    loadSeedProfile((p) => alive && setProgress(p))
-      .then((p) => {
-        if (!alive) return;
-        saveProfile(p);
-        setProfileState(p);
-        setStatus("ready");
-      })
-      .catch((e: Error) => {
-        if (!alive) return;
-        setError(e.message || "Impossible de lire l'historique.");
-        setStatus("error");
-      });
-    return () => {
-      alive = false;
-    };
-  }, [attempt]);
-
-  const derived = useMemo(() => derive(profile, prefs), [profile, prefs]);
-
-  const updatePrefs = useCallback((fn: (p: Prefs) => Prefs) => {
-    const next = fn(prefsRef.current);
-    prefsRef.current = next;
-    setPrefs(next);
-    savePrefs(next);
-  }, []);
+  const statesRef = useRef(states);
+  statesRef.current = states;
 
   const toast = useCallback((text: string, undo?: () => void) => {
     const id = Date.now() + Math.random();
@@ -94,82 +69,149 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, []);
   const dismissToast = useCallback((id: number) => setToasts((t) => t.filter((x) => x.id !== id)), []);
 
-  const withTitle = (p: Prefs, m: Pick<Movie, "id" | "title">) => (m.title ? { ...p.titles, [m.id]: m.title } : p.titles);
+  const loadAll = useCallback(
+    async (uid: string) => {
+      const [p, f] = await Promise.all([loadProfile(sb!, uid), loadFilmStates(sb!)]);
+      markKnown(f.states.keys());
+      // reprend une fois les plateformes choisies avant le passage à Supabase
+      const legacy = store.get<{ platforms?: number[]; onlyMine?: boolean } | null>(KEYS.legacyPrefs, null);
+      if (legacy?.platforms?.length && !p.settings.platforms?.length) {
+        p.settings = { platforms: legacy.platforms, onlyMine: !!legacy.onlyMine };
+        updateProfile(sb!, uid, { settings: p.settings }).catch(() => {});
+      }
+      store.del(KEYS.legacyPrefs);
+      setProfile(p);
+      setStates(f.states);
+      setTitles(f.titles);
+    },
+    [sb],
+  );
+
+  useEffect(() => {
+    if (!sb) {
+      setError("Supabase n'est pas configuré : ajoute NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY dans .env.local, puis relance le serveur.");
+      setStatus("error");
+      return;
+    }
+    let alive = true;
+    setStatus("loading");
+    setError(null);
+    (async () => {
+      const uid = await ensureSession(sb);
+      if (!alive) return;
+      setUserId(uid);
+      await loadAll(uid);
+      if (alive) setStatus("ready");
+    })().catch((e: Error) => {
+      if (!alive) return;
+      setError(e.message || "Impossible de charger tes données.");
+      setStatus("error");
+    });
+    return () => {
+      alive = false;
+    };
+  }, [sb, attempt, loadAll]);
+
+  const reload = useCallback(async () => {
+    if (!userId) return;
+    clearRecs();
+    await loadAll(userId);
+  }, [userId, loadAll]);
+
+  /** Modifie l'état d'un film : affichage immédiat, enregistrement en arrière-plan, retour arrière si échec. */
+  const patchFilm = useCallback(
+    (m: FilmInput, patch: Partial<FilmState>, message?: string) => {
+      if (!sb || !userId) return;
+      const before = statesRef.current.get(m.id) ?? EMPTY_STATE;
+      const apply = (next: FilmState) =>
+        setStates((prev) => {
+          const map = new Map(prev);
+          map.set(m.id, next);
+          return map;
+        });
+      apply({ ...before, ...patch });
+      setTitles((t) => (t[m.id] ? t : { ...t, [m.id]: m.title }));
+      const revert = () => {
+        apply(before);
+        const keys = Object.keys(patch) as (keyof FilmState)[];
+        saveFilmState(sb, userId, filmRow(m), Object.fromEntries(keys.map((k) => [k, before[k]]))).catch(() => {});
+      };
+      saveFilmState(sb, userId, filmRow(m), patch).then(
+        () => message && toast(message, revert),
+        (e: Error) => {
+          apply(before);
+          toast(`Échec de l'enregistrement : ${e.message}`);
+        },
+      );
+    },
+    [sb, userId, toast],
+  );
+
+  const cur = (id: number) => statesRef.current.get(id) ?? EMPTY_STATE;
 
   const toggleWatchlist = useCallback(
-    (m: Pick<Movie, "id" | "title">) => {
-      const before = prefsRef.current;
-      const inList = derive(profile, before).watchlist.has(m.id);
-      updatePrefs((p) =>
-        inList
-          ? { ...p, wlAdd: p.wlAdd.filter((x) => x !== m.id), wlDel: [...new Set([...p.wlDel, m.id])] }
-          : { ...p, wlDel: p.wlDel.filter((x) => x !== m.id), wlAdd: [...new Set([...p.wlAdd, m.id])], titles: withTitle(p, m) },
-      );
-      toast(inList ? `« ${m.title} » retiré de ta watchlist` : `« ${m.title} » ajouté à ta watchlist`, () => updatePrefs(() => before));
+    (m: FilmInput) => {
+      const on = !cur(m.id).watchlist;
+      patchFilm(m, { watchlist: on }, on ? `« ${m.title} » ajouté à ta watchlist` : `« ${m.title} » retiré de ta watchlist`);
     },
-    [profile, toast, updatePrefs],
+    [patchFilm],
   );
-
+  const toggleFavorite = useCallback(
+    (m: FilmInput) => {
+      const on = !cur(m.id).favorite;
+      patchFilm(m, { favorite: on }, on ? `« ${m.title} » ajouté à tes favoris` : `« ${m.title} » retiré de tes favoris`);
+    },
+    [patchFilm],
+  );
   const markSeen = useCallback(
-    (m: Pick<Movie, "id" | "title">, rating = 0) => {
-      const before = prefsRef.current;
-      updatePrefs((p) => ({ ...p, seen: { ...p.seen, [m.id]: rating }, titles: withTitle(p, m) }));
-      toast(rating ? `« ${m.title} » noté ${String(rating).replace(".", ",")}/5` : `« ${m.title} » marqué comme vu`, () => updatePrefs(() => before));
+    (m: FilmInput, rating?: number) => {
+      const patch: Partial<FilmState> = { watched: true, watchlist: false };
+      if (rating) patch.rating = rating;
+      patchFilm(m, patch, rating ? `« ${m.title} » noté ${String(rating).replace(".", ",")}/5` : `« ${m.title} » marqué comme vu`);
     },
-    [toast, updatePrefs],
+    [patchFilm],
   );
-
-  const unmarkSeen = useCallback(
-    (id: number) => {
-      const before = prefsRef.current;
-      updatePrefs((p) => {
-        const seen = { ...p.seen };
-        delete seen[id];
-        return { ...p, seen };
-      });
-      toast(`« ${before.titles[id] || "Ce film"} » n'est plus marqué comme vu`, () => updatePrefs(() => before));
-    },
-    [toast, updatePrefs],
-  );
-
+  const unmarkSeen = useCallback((m: FilmInput) => patchFilm(m, { watched: false, rating: null }, `« ${m.title} » n'est plus marqué comme vu`), [patchFilm]);
   const toggleHidden = useCallback(
-    (m: Pick<Movie, "id" | "title">) => {
-      const before = prefsRef.current;
-      const hidden = before.hidden.includes(m.id);
-      updatePrefs((p) => ({ ...p, hidden: hidden ? p.hidden.filter((x) => x !== m.id) : [...p.hidden, m.id], titles: withTitle(p, m) }));
-      toast(hidden ? `« ${m.title} » revient dans tes sélections` : `« ${m.title} » ne sera plus proposé`, () => updatePrefs(() => before));
+    (m: FilmInput) => {
+      const on = !cur(m.id).hidden;
+      patchFilm(m, { hidden: on }, on ? `« ${m.title} » ne sera plus proposé` : `« ${m.title} » revient dans tes sélections`);
     },
-    [toast, updatePrefs],
+    [patchFilm],
   );
 
-  const setProfile = useCallback((p: Profile) => {
-    saveProfile(p);
-    clearRecs();
-    setProfileState(p);
-    setStatus("ready");
-  }, []);
+  const updateSettings = useCallback(
+    (patch: Settings) => {
+      if (!sb || !userId) return;
+      setProfile((p) => {
+        if (!p) return p;
+        const settings = { ...p.settings, ...patch };
+        updateProfile(sb, userId, { settings }).catch((e: Error) => toast(`Échec de l'enregistrement : ${e.message}`));
+        return { ...p, settings };
+      });
+    },
+    [sb, userId, toast],
+  );
 
-  const resetToSeed = useCallback(() => {
-    store.del(KEYS.profile);
-    clearRecs();
-    setProfileState(null);
-    setAttempt((a) => a + 1);
-  }, []);
+  const derived = useMemo(() => derive(profile, states, titles), [profile, states, titles]);
 
   const value = useMemo<Ctx>(
     () => ({
       ...derived,
       status,
-      progress,
       error,
       profile,
-      prefs,
+      sb,
+      userId,
+      empty: status === "ready" && states.size === 0,
+      onlyMine: !!profile?.settings.onlyMine && derived.platforms.size > 0,
+      states,
       predict: (m, credits) => (profile ? predict(m, profile.aff, profile.mu, credits) : { v: 0, why: [] }),
       retry: () => setAttempt((a) => a + 1),
-      setProfile,
-      resetToSeed,
-      updatePrefs,
+      reload,
+      updateSettings,
       toggleWatchlist,
+      toggleFavorite,
       markSeen,
       unmarkSeen,
       toggleHidden,
@@ -177,7 +219,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toasts,
       dismissToast,
     }),
-    [derived, status, progress, error, profile, prefs, setProfile, resetToSeed, updatePrefs, toggleWatchlist, markSeen, unmarkSeen, toggleHidden, toast, toasts, dismissToast],
+    [derived, status, error, profile, sb, userId, states, reload, updateSettings, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

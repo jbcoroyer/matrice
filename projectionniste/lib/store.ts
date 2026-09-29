@@ -24,10 +24,9 @@ export const store = {
 };
 
 export const KEYS = {
-  profile: "projo.v2.profile",
-  prefs: "projo.v2.prefs",
-  recs: "projo.v2.recs",
-  imdbMap: "projo.v2.imdbmap",
-  titleMap: "projo.v2.titlemap",
+  /** anciennes préférences locales (avant Supabase), reprises une fois */
+  legacyPrefs: "projo.v2.prefs",
+  recs: "projo.v3.recs",
+  titleMap: "projo.v3.titlemap",
   theme: "projo.theme",
 } as const;

@@ -34,7 +34,7 @@ export function MoodResults({ slug }: { slug: string }) {
   const [more, setMore] = useState(false);
   const [done, setDone] = useState(false);
   const ref = useRef<HTMLElement>(null);
-  const onlyMine = d.prefs.onlyMine && d.platforms.size > 0;
+  const onlyMine = d.onlyMine;
   const plat = [...d.platforms].join("|");
 
   const load = async (from: number, prev: Ranked[]) => {

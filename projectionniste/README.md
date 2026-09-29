@@ -17,9 +17,9 @@ cachée côté serveur, URLs partageables.
 | `/personne/[id]` | Biographie et filmographie classée par ton indice (« tu en as vu 7 sur 12 ») |
 | `/portrait` | Tes statistiques : distribution des notes, affinités réalisateurs / interprètes / genres, panthéon |
 | `/recherche?q=` | Films et personnes ; la barre du haut propose des suggestions instantanées (raccourci `/`) |
-| `/reglages` | Plateformes, import Letterboxd (.zip), sauvegarde / restauration, films écartés |
+| `/reglages` | Plateformes, import Letterboxd (.zip), films écartés |
 
-Dans le site, on peut ajouter / retirer un film de la watchlist (bouton ＋ sur chaque affiche),
+Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur chaque affiche), le mettre en favori,
 le marquer vu et le noter (demi-étoiles), ou l'écarter (« Pas pour moi »). Chaque action peut
 être annulée depuis la notification.
 
@@ -27,7 +27,7 @@ le marquer vu et le noter (demi-étoiles), ou l'écarter (« Pas pour moi »). C
 
 ```bash
 cd projectionniste
-cp .env.example .env.local   # puis colle ton jeton TMDB dans TMDB_TOKEN
+cp .env.example .env.local   # TMDB_TOKEN + NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 npm install
 npm run dev                  # http://localhost:3000
 ```
@@ -37,22 +37,31 @@ Le jeton TMDB (« jeton d'accès en lecture », commence par `eyJ`) se trouve su
 requêtes passent par `/api/tmdb/…`, qui n'accepte qu'une liste blanche de chemins et met les
 réponses en cache.
 
+## Base de données (Supabase)
+
+1. Projet Supabase → **Connect** → Next.js : copier l'URL et la clé *publishable* dans `.env.local`.
+2. Authentication → Sign In / Providers : activer **Allow anonymous sign-ins**.
+3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/`.
+
+Chaque visiteur reçoit une session anonyme ; ses données (états des films, journal, critiques,
+listes, collection, réglages, goûts appris) sont en base, protégées par RLS. Les comptes (email,
+Google) viendront convertir ces sessions sans perte.
+
+Tant que les comptes n'existent pas, la session est liée au navigateur : effacer les données du
+site ou changer de navigateur (ou passer de localhost au site en ligne) repart d'un profil vide.
+
 ## Déployer (Vercel)
 
 1. Importer le dépôt, **Root Directory** : `projectionniste`.
-2. Variable d'environnement `TMDB_TOKEN`.
-3. Déployer. Rien d'autre à configurer.
+2. Variables d'environnement : `TMDB_TOKEN`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+3. Déployer.
 
-## Données personnelles
+## Import Letterboxd
 
-- `public/seed.json` est le profil de départ (historique Letterboxd en identifiants IMDb +
-  affinités calculées). Il est **public** une fois le site en ligne. Pour un autre profil,
-  remplace-le, ou importe simplement ton export Letterboxd dans Réglages.
-- À la première visite, le navigateur relie ces identifiants IMDb à TMDB (≈ 20 s, une fois).
-  Pour supprimer cette attente : `npm run seed` (avec `TMDB_TOKEN`) écrit la correspondance
-  dans `public/seed.json`.
-- Tout le reste (plateformes, notes et marques, import Letterboxd) reste dans le
-  `localStorage` du navigateur. Réglages → Sauvegarde permet de l'emporter ailleurs.
+Réglages → déposer l'archive `.zip` de l'export (letterboxd.com → Settings → Data). Sont repris :
+films vus, notes, watchlist, likes (→ favoris), journal (dates, revisionnages, étiquettes),
+critiques, listes (ordre et notes), films favoris du profil (→ top), nom. Les goûts (réalisateurs,
+acteurs, genres) sont réappris à partir des notes. Un nouvel import met à jour sans doublons.
 
 ## Comment l'indice est calculé
 
@@ -72,7 +81,7 @@ app/            routes (pages serveur pour film/personne, client pour les rubriq
 app/api/tmdb/   proxy TMDB (liste blanche + cache)
 components/     cartes, grilles, en-tête, recherche, fiche, filmographie…
 lib/            client/serveur TMDB, prédiction, recommandations, humeurs, import Letterboxd
-scripts/        map-seed.mjs
+supabase/       migrations SQL
 ```
 
 Données et affiches : TMDB. Plateformes : JustWatch via TMDB. Ce produit utilise l'API TMDB

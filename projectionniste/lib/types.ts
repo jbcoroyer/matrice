@@ -65,34 +65,37 @@ export type Affinity = {
   g: Record<string, number>;
 };
 
-/** Historique Letterboxd, exprimé en identifiants TMDB. */
-export type Library = {
-  seen: number[];
-  rated: Record<string, number>;
-  watchlist: number[];
-  titles: Record<string, string>;
-};
+/** Goûts appris à partir des notes (import Letterboxd). */
+export type Taste = { mu: number; aff: Affinity };
 
+export type Settings = { platforms?: number[]; onlyMine?: boolean };
+
+/** Profil de l'utilisateur courant, tel que l'appli l'utilise. */
 export type Profile = {
-  v: 2;
+  id: string;
   owner: string;
-  source: "seed" | "letterboxd";
   mu: number;
   aff: Affinity;
-  lib: Library;
+  /** true si les goûts ont été appris (import Letterboxd) */
+  learned: boolean;
+  settings: Settings;
+  importedAt: string | null;
   updatedAt: string;
 };
 
-/** Ce que l'on fait dans le site, par-dessus l'historique Letterboxd. */
-export type Prefs = {
-  platforms: number[];
-  onlyMine: boolean;
-  hidden: number[];
-  wlAdd: number[];
-  wlDel: number[];
-  /** films marqués vus ici : id → note (0 = pas de note) */
-  seen: Record<string, number>;
-  titles: Record<string, string>;
+/** État d'un film pour l'utilisateur (table user_films). */
+export type FilmState = { watched: boolean; watchlist: boolean; favorite: boolean; hidden: boolean; rating: number | null };
+
+/** Ligne de la table films (cache TMDB). */
+export type FilmRow = {
+  tmdb_id: number;
+  title: string;
+  original_title?: string | null;
+  release_date?: string | null;
+  poster_path?: string | null;
+  backdrop_path?: string | null;
+  genre_ids?: number[];
+  runtime?: number | null;
 };
 
 /** Film enrichi pour l'affichage (indice prédit, raison de la recommandation). */

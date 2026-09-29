@@ -69,8 +69,7 @@ export function useWatchlistMovies() {
 
 /** Applique le filtre « Sur mes plateformes » si coché. */
 export function useMineFilter(list: Ranked[] | undefined): Async<Ranked[]> {
-  const { prefs, platforms } = useProfile();
-  const on = prefs.onlyMine && platforms.size > 0;
+  const { onlyMine: on, platforms } = useProfile();
   const key = list ? list.map((m) => m.id).join(",") : "";
   return useAsync<Ranked[]>(async () => (on ? filterMine(list!, platforms) : list!), [key, on, [...platforms].join(",")], !!list);
 }
