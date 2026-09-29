@@ -251,13 +251,10 @@ function Collection() {
   const onEdit = (e: Entry) => (item: CollectionItem) => setEditing({ film: openFilm(e), item });
   const wantFilm = (w: Want): FilmInput => ({ id: w.tmdb_id, title: w.films?.title ?? "Film", release_date: w.films?.release_date ?? undefined, poster_path: w.films?.poster_path, genre_ids: w.films?.genre_ids });
 
-  // étagères : un rayon par format ; un film possédé en deux formats est sur les deux rayons
-  const shelves = useMemo(() => {
+  // une seule étagère pour tous les formats, dans l'ordre du tri (réalisateur par défaut)
+  const shelf = useMemo(() => {
     if (!filtered) return [];
-    const g = new Map<string, { e: Entry; c: CollectionItem }[]>();
-    for (const e of filtered)
-      for (const c of e.copies) if (!format || c.format === format) g.set(c.format, [...(g.get(c.format) ?? []), { e, c }]);
-    return FORMATS.filter((f) => g.has(f.k)).map((f) => ({ k: f.k, label: f.l, list: g.get(f.k)! }));
+    return filtered.flatMap((e) => e.copies.filter((c) => !format || c.format === format).map((c) => ({ e, c })));
   }, [filtered, format]);
 
   const newest = all?.length ? all[all.length - 1] : null;
@@ -479,18 +476,16 @@ function Collection() {
           ) : null}
         </>
       ) : (
-        shelves.map((s) => (
-          <section key={s.k} className="shelf">
-            <h2>
-              {s.label} <span className="dim">{s.list.length}</span>
-            </h2>
-            <div className="shelf-row" style={{ "--h": `${{ "4k": 250, steelbook: 250, collector: 250, bluray: 228, laserdisc: 228, dvd: 214, vhs: 214, numerique: 204 }[s.k] ?? 250}px` } as React.CSSProperties}>
-              {s.list.map(({ e, c }) => (
-                <Spine key={c.id} entry={e} copy={c} seen={seen.has(e.tmdb_id)} />
-              ))}
-            </div>
-          </section>
-        ))
+        <section className="shelf">
+          <h2>
+            Toute ma cinémathèque <span className="dim">{shelf.length}</span>
+          </h2>
+          <div className="shelf-row">
+            {shelf.map(({ e, c }) => (
+              <Spine key={c.id} entry={e} copy={c} seen={seen.has(e.tmdb_id)} />
+            ))}
+          </div>
+        </section>
       )}
 
       {adding === "pick" ? <PickFilm onClose={() => setAdding(null)} onPick={(m) => setAdding(m)} /> : null}

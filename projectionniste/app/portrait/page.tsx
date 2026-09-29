@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useProfile } from "@/components/ProfileProvider";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { PickFilm } from "@/components/PickFilm";
+import { Plus } from "@/components/icons";
+import { useProfile, type FilmInput } from "@/components/ProfileProvider";
 import { ProfileGate, SecHead } from "@/components/ui";
 import { genreFrFromName } from "@/lib/genres";
 import { num1 } from "@/lib/format";
 import { tmdb } from "@/lib/tmdb";
 import { useAsync } from "@/lib/hooks";
-import { loadTop } from "@/lib/diary";
+import { filmRow } from "@/lib/db";
+import { clearTopSlot, loadTop, setTopSlot, type TopFilm } from "@/lib/diary";
 import { Poster } from "@/components/Poster";
 import type { Paged, Person } from "@/lib/types";
 
@@ -100,30 +103,91 @@ function top(o: Record<string, number>, n: number, dir: 1 | -1) {
 }
 
 function TopFive() {
-  const { sb, userId } = useProfile();
-  const top = useAsync(() => loadTop(sb!, userId!), [userId], !!sb && !!userId);
-  const slots = [1, 2, 3, 4, 5].map((n) => top.data?.find((t) => t.slot === n));
+  const { sb, userId, toast } = useProfile();
+  const [top, setTop] = useState<TopFilm[] | null>(null);
+  const [edit, setEdit] = useState(false);
+  const [picking, setPicking] = useState<number | null>(null);
+  const load = useCallback(() => {
+    if (sb && userId) loadTop(sb, userId).then(setTop, () => setTop([]));
+  }, [sb, userId]);
+  useEffect(load, [load]);
+  const slots = [1, 2, 3, 4, 5].map((n) => top?.find((t) => t.slot === n));
+  const filled = slots.filter(Boolean).length;
+
+  const choose = async (m: FilmInput) => {
+    if (!sb || !userId || !picking) return;
+    const slot = picking;
+    setPicking(null);
+    try {
+      await setTopSlot(sb, userId, filmRow(m), slot);
+      toast(`« ${m.title} » en n° ${slot} de ton top 5`);
+      load();
+    } catch (e) {
+      toast(`Échec : ${(e as Error).message}`);
+    }
+  };
+  const clear = async (slot: number, title?: string) => {
+    if (!sb || !userId) return;
+    try {
+      await clearTopSlot(sb, userId, slot);
+      toast(`${title ? `« ${title} »` : "Le film"} retiré de ton top 5`);
+      load();
+    } catch (e) {
+      toast(`Échec : ${(e as Error).message}`);
+    }
+  };
+
   return (
     <section className="section">
-      <SecHead title="Top 5" aside="Choisis-les depuis la fiche d'un film" />
+      <SecHead
+        title="Top 5"
+        aside={
+          <span className="aside top-aside">
+            {filled < 5 ? "Clique sur une affiche vide pour l'ajouter" : null}
+            {filled ? (
+              <button type="button" className="btn ghost small" aria-pressed={edit} onClick={() => setEdit((v) => !v)}>
+                {edit ? "Terminer" : "Modifier"}
+              </button>
+            ) : null}
+          </span>
+        }
+      />
       <div className="grid top5">
         {slots.map((t, i) =>
           t ? (
-            <Link key={i} href={`/film/${t.tmdb_id}`} className="card">
-              <Poster path={t.films?.poster_path} title={t.films?.title ?? ""} />
-              <h3>
-                {i + 1}. {t.films?.title}
-              </h3>
-            </Link>
+            <div key={i} className="card">
+              <Link href={`/film/${t.tmdb_id}`}>
+                <Poster path={t.films?.poster_path} title={t.films?.title ?? ""} />
+                <h3>
+                  {i + 1}. {t.films?.title}
+                </h3>
+              </Link>
+              {edit ? (
+                <div className="top-ctl">
+                  <button type="button" onClick={() => setPicking(i + 1)}>
+                    Changer
+                  </button>
+                  <button type="button" onClick={() => clear(i + 1, t.films?.title)} aria-label={`Retirer ${t.films?.title ?? "ce film"} du top 5`}>
+                    Retirer
+                  </button>
+                </div>
+              ) : null}
+            </div>
           ) : (
             <div key={i} className="card">
-              <div className="poster">
-                <div className="noimg">{i + 1}</div>
-              </div>
+              <button type="button" className="top-empty" onClick={() => setPicking(i + 1)} aria-label={`Choisir le film n° ${i + 1} de ton top 5`}>
+                <span className="poster">
+                  <span className="noimg">
+                    <Plus />
+                  </span>
+                </span>
+                <h3>{i + 1}. Ajouter un film</h3>
+              </button>
             </div>
           ),
         )}
       </div>
+      {picking ? <PickFilm title={`Ton n° ${picking}`} onPick={choose} onClose={() => setPicking(null)} /> : null}
     </section>
   );
 }

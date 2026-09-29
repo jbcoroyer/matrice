@@ -48,8 +48,8 @@ profil). Planches de départ : `design/collection/`.
 
 **Tri** : par réalisateur (nom de famille, puis date) dans toutes les vues, par défaut.
 
-**Trois vues** : Vitrine (cartes), Étagère (dos de boîtiers colorés par l'affiche, un rayon par
-format, trou « prêté » ; tous les DVD partagent le même dos noir et la même taille), Classeur
+**Trois vues** : Vitrine (cartes), Étagère (une seule étagère pour tous les formats : mêmes dos noirs,
+même taille, sans mention de format ; trou « prêté »), Classeur
 (un réalisateur par ligne : « 3 possédés sur 34, il en manque 31 » ; un clic ouvre ce qu'on
 possède et tout ce qui manque, avec un bouton « Envie »).
 **Envies** : films qu'on voudrait posséder en disque.

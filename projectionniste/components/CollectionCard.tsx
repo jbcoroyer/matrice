@@ -230,14 +230,11 @@ export function CollectionCard({
 /** Dos de boîtier pour la vue Étagère : la tranche prend la couleur de l'affiche. */
 export function Spine({ entry, copy, seen }: { entry: Entry; copy: CollectionItem; seen?: boolean }) {
   const [a, b] = splitTitle(entry.film.title);
-  const fin = entry.finish;
-  // tous les DVD se présentent de la même manière : même dos, même taille, quelle que soit l'édition
-  const dvd = copy.format === "dvd";
-  const dims = { "4k": [34, 236], steelbook: [34, 236], collector: [36, 236], bluray: [30, 214], dvd: [26, 200], vhs: [30, 200], laserdisc: [30, 214], numerique: [26, 190] }[copy.format];
+  // une seule étagère pour tous les formats : même dos, même taille, on ne fait pas de différence
   if (copy.lent_to) {
     return (
       <span className="slot">
-        <span className="spine loan" style={{ "--w": `${dims[0]}px`, "--sh": `${dims[1]}px` } as React.CSSProperties} title={`${entry.film.title} est prêté à ${copy.lent_to}`}>
+        <span className="spine loan" title={`${entry.film.title} est prêté à ${copy.lent_to}`}>
           <span className="t">Prêté à {copy.lent_to}</span>
         </span>
       </span>
@@ -247,18 +244,15 @@ export function Spine({ entry, copy, seen }: { entry: Entry; copy: CollectionIte
     <span className="slot">
       <Link
         href={`/film/${entry.tmdb_id}`}
-        className={`spine ${dvd ? "dvd" : `f-${fin}`}${copy.sealed && !dvd ? " sealed" : ""}`}
-        style={{ "--w": `${dims[0]}px`, "--sh": `${dims[1]}px`, "--img": entry.film.poster_path ? `url(${img(entry.film.poster_path, "w185")})` : "none" } as React.CSSProperties}
+        className="spine"
         title={`${entry.film.title} (${year(entry)}) · ${formatLabel(copy.format)}${copy.edition ? ` · ${copy.edition}` : ""}`}
       >
-        <span className="f">{formatCode(copy.format)}</span>
         <span className="t">
           <b>{a}</b>
           {b ? <span> {b}</span> : null}
         </span>
         <span className="y">{year(entry).slice(2)}</span>
         <i className={`dot${seen === false ? "" : " off"}`} />
-        {copy.sealed && !dvd ? <i className="glint" /> : null}
       </Link>
     </span>
   );
