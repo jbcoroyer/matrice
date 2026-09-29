@@ -36,14 +36,15 @@ réponses en cache.
 ## Base de données (Supabase)
 
 1. Projet Supabase → **Connect** → Next.js : copier l'URL et la clé *publishable* dans `.env.local`.
-2. Authentication → Sign In / Providers : activer **Allow anonymous sign-ins**.
+2. Authentication → Sign In / Providers : Email activé (connexion obligatoire). Les connexions
+   anonymes ne servent plus qu'aux anciennes sessions : on peut les désactiver une fois tous les
+   comptes créés.
 3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/`.
 
-Chaque visiteur reçoit une session anonyme ; ses données (états des films, journal, critiques,
-listes, collection, réglages, goûts appris) sont en base, protégées par RLS. Sans compte, cette
-session est liée au navigateur **et à l'adresse** (localhost:3000 et localhost:3001 sont deux
-profils). Créer un compte (menu profil → Compte : email + mot de passe) rattache les données
-existantes au compte ; on se connecte ensuite de n'importe où.
+Il faut un compte (email + mot de passe) pour utiliser l'appli ; sans session, tout le site
+affiche l'écran de connexion. Les données de chacun (états des films, journal, critiques, listes,
+collection, réglages, goûts appris, import Letterboxd) sont rattachées à son compte et protégées
+par RLS. Une ancienne session anonyme avec des données peut être transformée en compte sans perte.
 
 Dans Supabase, Authentication → URL Configuration : Site URL `http://localhost:3000` (puis l'URL
 du site en ligne) et `http://localhost:3000/**` dans Redirect URLs, pour les liens de confirmation

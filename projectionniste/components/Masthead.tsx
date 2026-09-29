@@ -71,7 +71,7 @@ function ProfileMenu() {
         <div className="pmenu-list" role="menu">
           <div className="pmenu-head">
             <b>{name || "Mon profil"}</b>
-            <span>{account && !account.anonymous ? account.email : "Sans compte (ce navigateur)"}</span>
+            <span>{account?.email}</span>
           </div>
           <Link role="menuitem" href="/portrait">
             Portrait
@@ -83,7 +83,7 @@ function ProfileMenu() {
             Réglages
           </Link>
           <Link role="menuitem" href="/compte">
-            {account && !account.anonymous ? "Compte" : "Créer un compte / se connecter"}
+            Compte
           </Link>
           <button type="button" role="menuitem" onClick={flipTheme}>
             {dark ? "Thème clair" : "Thème sombre"}
@@ -96,6 +96,17 @@ function ProfileMenu() {
 
 export function Masthead() {
   const path = usePathname();
+  const { status } = useProfile();
+  if (status !== "ready")
+    return (
+      <header className="top">
+        <div className="wrap top-in">
+          <Link href="/" className="brand">
+            Le Projectionniste
+          </Link>
+        </div>
+      </header>
+    );
   return (
     <header className="top">
       <div className="wrap top-in">

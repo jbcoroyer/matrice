@@ -2,7 +2,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { EMPTY_STATE, ensureSession, type Account, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
+import { currentAccount, EMPTY_STATE, type Account, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
 import { predict, type Prediction } from "@/lib/predict";
 import { derive, type Derived } from "@/lib/profile";
 import { clearRecs } from "@/lib/recs";
@@ -10,7 +10,8 @@ import { KEYS, store } from "@/lib/store";
 import { supabase } from "@/lib/supabase";
 import type { Credits, FilmState, Movie, Profile, Settings } from "@/lib/types";
 
-type Status = "loading" | "ready" | "error";
+/** signedOut : personne n'est connecté ; guest : ancienne session anonyme, à transformer en compte */
+type Status = "loading" | "ready" | "error" | "signedOut" | "guest";
 
 type Toast = { id: number; text: string; undo?: () => void };
 
@@ -59,6 +60,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
   const userId = account?.id ?? null;
+  const accountRef = useRef(account);
+  accountRef.current = account;
   const [profile, setProfile] = useState<Profile | null>(null);
   const [states, setStates] = useState<Map<number, FilmState>>(new Map());
   const [titles, setTitles] = useState<Record<number, string>>({});
@@ -102,11 +105,18 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     setStatus("loading");
     setError(null);
     (async () => {
-      const acc = await ensureSession(sb);
+      const acc = await currentAccount(sb);
       if (!alive) return;
       setAccount(acc);
+      if (!acc) {
+        setProfile(null);
+        setStates(new Map());
+        setTitles({});
+        setStatus("signedOut");
+        return;
+      }
       await loadAll(acc.id);
-      if (alive) setStatus("ready");
+      if (alive) setStatus(acc.anonymous ? "guest" : "ready");
     })().catch((e: Error) => {
       if (!alive) return;
       setError(e.message || "Impossible de charger tes données.");
@@ -116,6 +126,19 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       alive = false;
     };
   }, [sb, attempt, loadAll]);
+
+  useEffect(() => {
+    if (!sb) return;
+    // on recharge seulement si l'utilisateur change vraiment (SIGNED_IN est aussi émis au retour sur l'onglet)
+    const { data } = sb.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") return;
+      const u = session?.user;
+      const cur = accountRef.current;
+      const changed = (u?.id ?? null) !== (cur?.id ?? null) || (!!u && (u.email || null) !== (cur?.email ?? null));
+      if (changed) setAttempt((x) => x + 1);
+    });
+    return () => data.subscription.unsubscribe();
+  }, [sb]);
 
   const reload = useCallback(async () => {
     if (!userId) return;

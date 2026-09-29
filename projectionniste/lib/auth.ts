@@ -26,6 +26,17 @@ export async function createAccount(sb: SupabaseClient, email: string, password:
   return accountOf(data.user!);
 }
 
+/** Inscription. Renvoie "confirm" si Supabase attend la confirmation par email. */
+export async function signUp(sb: SupabaseClient, email: string, password: string): Promise<"ok" | "confirm"> {
+  if (password.length < 8) throw new DbError("Mot de passe trop court (8 caractères minimum).");
+  const { data, error } = await sb.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: location.origin + "/decouvrir" } });
+  if (error) authError(error);
+  // email déjà utilisé : Supabase renvoie un utilisateur sans identité, sans erreur
+  if (data.user && !data.session && data.user.identities && data.user.identities.length === 0)
+    throw new DbError("Un compte existe déjà avec cet email : connecte-toi plutôt.");
+  return data.session ? "ok" : "confirm";
+}
+
 export async function signIn(sb: SupabaseClient, email: string, password: string) {
   const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
   if (error) authError(error);

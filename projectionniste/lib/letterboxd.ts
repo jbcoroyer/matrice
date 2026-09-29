@@ -117,18 +117,24 @@ export async function readExport(files: File[]): Promise<Export> {
   const texts: Record<string, string> = {};
   for (const f of files) {
     const name = f.name.toLowerCase();
-    if (name.endsWith(".zip")) Object.assign(texts, await unzip(f, (n) => n.toLowerCase().endsWith(".csv") && !n.toLowerCase().includes("deleted/")));
+    if (name.endsWith(".zip")) Object.assign(texts, await unzip(f, (n) => n.toLowerCase().endsWith(".csv")));
     else if (name.endsWith(".csv")) texts[name] = await f.text();
   }
   const out: Export = { watched: [], ratings: [], watchlist: [], diary: [], reviews: [], likes: [], profile: null, lists: [] };
   for (const [path, t] of Object.entries(texts)) {
-    const p = path.toLowerCase();
-    const base = p.replace(/^.*\//, "");
-    if (p.includes("lists/")) {
+    const p = path.toLowerCase().replace(/\\/g, "/");
+    // l'export contient aussi deleted/ et orphaned/ (éléments supprimés, souvent vides) : on les ignore,
+    // sinon leurs diary.csv, watched.csv… écraseraient les vrais
+    if (/(^|\/)(deleted|orphaned)\//.test(p)) continue;
+    const parts = p.split("/");
+    const base = parts[parts.length - 1];
+    const dir = parts.length > 1 ? parts[parts.length - 2] : "";
+    if (dir === "lists") {
       const l = parseListExport(t);
       if (l) out.lists.push(l);
-    } else if (p.includes("likes/") && base === "films.csv") out.likes = parseTable(t);
-    else if (base === "watched.csv") out.watched = parseTable(t);
+    } else if (dir === "likes") {
+      if (base === "films.csv") out.likes = parseTable(t);
+    } else if (base === "watched.csv") out.watched = parseTable(t);
     else if (base === "ratings.csv") out.ratings = parseTable(t);
     else if (base === "watchlist.csv") out.watchlist = parseTable(t);
     else if (base === "diary.csv") out.diary = parseTable(t);

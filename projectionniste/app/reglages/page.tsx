@@ -151,10 +151,6 @@ export default function Page() {
           {status === "ready" ? <LetterboxdImport /> : <Loader text="Chargement…" />}
           <h2>Films écartés</h2>
           <Hidden />
-          <h2>Ton compte</h2>
-          <p className="note">
-            Sans compte, tes données sont liées à ce navigateur. <Link href="/compte">Crée un compte</Link> pour les retrouver sur tous tes appareils.
-          </p>
           <h2>Entretien</h2>
           <p className="note">
             La sélection « <Link href="/decouvrir">Pour toi</Link> » est recalculée chaque jour. Vider le cache force un recalcul immédiat.

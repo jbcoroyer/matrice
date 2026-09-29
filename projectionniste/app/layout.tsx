@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { AuthGate } from "@/components/AuthScreen";
 import { FooterStats, Toaster } from "@/components/Chrome";
 import { Masthead } from "@/components/Masthead";
 import { ProfileProvider } from "@/components/ProfileProvider";
@@ -38,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ProfileProvider>
           <Masthead />
           <main className="wrap" id="main">
-            {children}
+            <AuthGate>{children}</AuthGate>
           </main>
           <footer className="wrap">
            <div className="foot">

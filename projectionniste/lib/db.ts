@@ -1,6 +1,6 @@
 // Accès aux données de l'utilisateur dans Supabase.
 import type { SupabaseClient, User } from "@supabase/supabase-js";
-import { check, chunks, DbError } from "./supabase";
+import { check, chunks } from "./supabase";
 import type { FilmRow, FilmState, Movie, Profile, Settings, Taste } from "./types";
 
 export const EMPTY_STATE: FilmState = { watched: false, watchlist: false, favorite: false, hidden: false, rating: null };
@@ -11,18 +11,14 @@ export function accountOf(u: User): Account {
   return { id: u.id, email: u.email || null, pendingEmail: u.new_email || null, anonymous: !!u.is_anonymous && !u.email };
 }
 
-/** Session existante, ou session anonyme créée à la première visite. */
-export async function ensureSession(sb: SupabaseClient): Promise<Account> {
+/** Utilisateur connecté, ou null (l'appli demande alors de se connecter). */
+export async function currentAccount(sb: SupabaseClient): Promise<Account | null> {
   const { data } = await sb.auth.getSession();
-  if (data.session) {
-    // relit l'utilisateur (l'email a pu être confirmé depuis)
-    const fresh = await sb.auth.getUser();
-    return accountOf(fresh.data.user ?? data.session.user);
-  }
-  const res = await sb.auth.signInAnonymously();
-  check(res);
-  if (!res.data.user) throw new DbError("Impossible d'ouvrir une session.");
-  return accountOf(res.data.user);
+  if (!data.session) return null;
+  // relit l'utilisateur côté serveur (l'email a pu être confirmé entre-temps)
+  const fresh = await sb.auth.getUser();
+  if (fresh.error && !fresh.data.user) return null;
+  return accountOf(fresh.data.user ?? data.session.user);
 }
 
 type ProfileRow = {
