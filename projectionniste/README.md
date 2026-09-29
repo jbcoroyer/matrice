@@ -12,6 +12,8 @@ cachée côté serveur, URLs partageables.
 | `/watchlist` | Ta watchlist, filtres et tris |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
+| `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
+| `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
 | `/collection` | Tes exemplaires (format, édition, état, notes) ou tes films vus, en mur d'affiches ou en étagères ; filtres, statistiques, partage public |
 | `/c/[code]` | Collection partagée, lisible sans compte |
 | `/film/[id]` | Fiche : indice et « ce qui joue », watchlist / vu / favori / note, journal du film, top 5, où le voir, bande-annonce, distribution, films proches |
@@ -49,6 +51,11 @@ Il faut un compte (email + mot de passe) pour utiliser l'appli ; sans session, t
 affiche l'écran de connexion. Les données de chacun (états des films, journal, critiques, listes,
 collection, réglages, goûts appris, import Letterboxd) sont rattachées à son compte et protégées
 par RLS. Une ancienne session anonyme avec des données peut être transformée en compte sans perte.
+
+Ce qui est public : le nom affiché, le pseudo, la bio et l'avatar du profil ; les critiques
+publiques (une entrée du journal avec critique, sauf si « Critique privée » est cochée), leurs
+« j'aime » et commentaires ; les listes publiques ; la collection si son partage est activé.
+Les réglages et goûts appris ne sont lisibles que par leur propriétaire (fonction `my_profile`).
 
 Dans Supabase, Authentication → URL Configuration : Site URL `http://localhost:3000` (puis l'URL
 du site en ligne) et `http://localhost:3000/**` dans Redirect URLs, pour les liens de confirmation

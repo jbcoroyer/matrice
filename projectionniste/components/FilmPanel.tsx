@@ -13,7 +13,7 @@ import { LogDialog } from "./LogDialog";
 import { useProfile, type FilmInput } from "./ProfileProvider";
 import { Stars } from "./Stars";
 
-const DIARY_EVENT = "projo:diary";
+export const DIARY_EVENT = "projo:diary";
 const diaryChanged = (id: number) => window.dispatchEvent(new CustomEvent(DIARY_EVENT, { detail: id }));
 
 /** Bloc d'actions de la fiche : vu, favori, watchlist, note, journal, top 5, pas pour moi, partage. */
@@ -140,11 +140,11 @@ export function FilmPanel({ film }: { film: FilmInput }) {
 
 /** Tes visionnages de ce film (sous le résumé). */
 export function FilmHistory({ film }: { film: FilmInput }) {
-  const { sb, status } = useProfile();
+  const { sb, userId, status } = useProfile();
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const load = useCallback(() => {
-    if (sb) entriesForFilm(sb, film.id).then(setEntries, () => {});
-  }, [sb, film.id]);
+    if (sb && userId) entriesForFilm(sb, userId, film.id).then(setEntries, () => {});
+  }, [sb, userId, film.id]);
   useEffect(() => {
     if (status !== "ready") return;
     load();

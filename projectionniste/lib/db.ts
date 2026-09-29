@@ -31,7 +31,13 @@ type ProfileRow = {
 };
 
 export async function loadProfile(sb: SupabaseClient, userId: string): Promise<Profile> {
-  let row = check(await sb.from("profiles").select("id, username, display_name, settings, taste, updated_at").eq("id", userId).maybeSingle()) as ProfileRow | null;
+  // réglages et goûts ne sont lisibles que par leur propriétaire (fonction my_profile)
+  const res = await sb.rpc("my_profile");
+  let row: ProfileRow | null;
+  if (res.error?.code === "PGRST202")
+    // migration 20260929140000 pas encore appliquée
+    row = check(await sb.from("profiles").select("id, username, display_name, settings, taste, updated_at").eq("id", userId).maybeSingle()) as ProfileRow | null;
+  else row = ((check(res) as ProfileRow[] | null) ?? [])[0] ?? null;
   if (!row) {
     // profil absent (utilisateur créé avant le trigger) : on le crée
     check(await sb.from("profiles").insert({ id: userId }));

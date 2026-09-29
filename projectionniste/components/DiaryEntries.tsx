@@ -9,9 +9,10 @@ import { LogDialog } from "./LogDialog";
 import type { FilmInput } from "./ProfileProvider";
 import { StarsText } from "./Stars";
 
-function Review({ text, spoilers }: { text: string; spoilers: boolean }) {
+/** Texte d'une critique : masqué s'il contient des spoilers, replié s'il est long (sauf `full`). */
+export function ReviewText({ text, spoilers, full }: { text: string; spoilers: boolean; full?: boolean }) {
   const [shown, setShown] = useState(!spoilers);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!full);
   if (!shown)
     return (
       <p className="review hidden-spoiler">
@@ -25,7 +26,7 @@ function Review({ text, spoilers }: { text: string; spoilers: boolean }) {
   return (
     <div className="review">
       <p>{long && !open ? text.slice(0, 400).replace(/\s+\S*$/, "") + "…" : text}</p>
-      {long ? (
+      {long && !full ? (
         <button type="button" className="link-btn" onClick={() => setOpen((o) => !o)}>
           {open ? "Réduire" : "Lire la suite"}
         </button>
@@ -83,7 +84,18 @@ export function DiaryRow({
             Modifier
           </button>
         </div>
-        {e.review ? <Review text={e.review} spoilers={e.spoilers} /> : null}
+        {e.review ? <ReviewText text={e.review} spoilers={e.spoilers} /> : null}
+        {e.review ? (
+          <p className="review-foot">
+            {e.review_public ? (
+              <Link href={`/critique/${e.id}`} className="link-quiet">
+                Critique publique · j'aime et commentaires
+              </Link>
+            ) : (
+              <span className="dim">Critique privée</span>
+            )}
+          </p>
+        ) : null}
       </div>
     </li>
   );

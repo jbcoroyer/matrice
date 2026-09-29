@@ -16,8 +16,13 @@ function monthLabel(d: string | null) {
 }
 
 function Journal() {
-  const { sb } = useProfile();
-  const [filter, setFilter] = useState<DiaryFilter>({});
+  const { sb, userId } = useProfile();
+  // filtres de départ venus d'un lien (bilan de l'année) : ?etiquette=…&annee=…
+  const [filter, setFilter] = useState<DiaryFilter | null>(null);
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
+    setFilter({ tag: q.get("etiquette") || undefined, year: +(q.get("annee") || 0) || undefined });
+  }, []);
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
   const [done, setDone] = useState(false);
   const [more, setMore] = useState(false);
@@ -26,19 +31,19 @@ function Journal() {
 
   const load = useCallback(
     async (from: number, prev: DiaryEntry[]) => {
-      if (!sb) return;
-      const rows = await listEntries(sb, filter, from, PAGE);
+      if (!sb || !userId || !filter) return;
+      const rows = await listEntries(sb, userId, filter, from, PAGE);
       setDone(rows.length < PAGE);
       setEntries([...prev, ...rows]);
     },
-    [sb, filter],
+    [sb, userId, filter],
   );
 
   const refresh = useCallback(() => {
     setError(null);
     load(0, []).catch(setError);
-    if (sb) diaryIndex(sb).then(setIndex, () => {});
-  }, [load, sb]);
+    if (sb && userId) diaryIndex(sb, userId).then(setIndex, () => {});
+  }, [load, sb, userId]);
 
   useEffect(() => {
     setEntries(null);
@@ -46,7 +51,8 @@ function Journal() {
   }, [refresh]);
 
   const set = (patch: DiaryFilter) => setFilter((f) => ({ ...f, ...patch }));
-  const active = !!(filter.year || filter.tag || filter.reviews || filter.rewatch || filter.minRating);
+  const f = filter ?? {};
+  const active = !!(f.year || f.tag || f.reviews || f.rewatch || f.minRating);
 
   // regroupement par mois
   const groups: { label: string; items: DiaryEntry[] }[] = [];
@@ -59,11 +65,29 @@ function Journal() {
 
   return (
     <section className="section">
-      <SecHead as="h1" title="Journal" aside={index ? `${index.total.toLocaleString("fr-FR")} visionnages` : undefined} />
+      <SecHead
+        as="h1"
+        title="Journal"
+        aside={
+          index ? (
+            <span className="aside">
+              {index.total.toLocaleString("fr-FR")} visionnages
+              {index.years.length ? (
+                <>
+                  {" · "}
+                  <Link className="link" href={`/bilan?annee=${f.year ?? index.years[0][0]}`}>
+                    Bilan {f.year ?? index.years[0][0]}
+                  </Link>
+                </>
+              ) : null}
+            </span>
+          ) : undefined
+        }
+      />
       <div className="filterbar">
         <label>
           Année
-          <select value={filter.year ?? ""} onChange={(e) => set({ year: e.target.value ? +e.target.value : undefined })}>
+          <select value={f.year ?? ""} onChange={(e) => set({ year: e.target.value ? +e.target.value : undefined })}>
             <option value="">Toutes</option>
             {index?.years.map(([y, n]) => (
               <option key={y} value={y}>
@@ -74,7 +98,7 @@ function Journal() {
         </label>
         <label>
           Étiquette
-          <select value={filter.tag ?? ""} onChange={(e) => set({ tag: e.target.value || undefined })}>
+          <select value={f.tag ?? ""} onChange={(e) => set({ tag: e.target.value || undefined })}>
             <option value="">Toutes</option>
             {index?.tags.map(([t, n]) => (
               <option key={t} value={t}>
@@ -85,7 +109,7 @@ function Journal() {
         </label>
         <label>
           Note
-          <select value={filter.minRating ?? ""} onChange={(e) => set({ minRating: e.target.value ? +e.target.value : undefined })}>
+          <select value={f.minRating ?? ""} onChange={(e) => set({ minRating: e.target.value ? +e.target.value : undefined })}>
             <option value="">Toutes</option>
             <option value="5">5 ★</option>
             <option value="4.5">4,5 ★ et plus</option>
@@ -94,10 +118,10 @@ function Journal() {
           </select>
         </label>
         <label>
-          <input type="checkbox" checked={!!filter.reviews} onChange={(e) => set({ reviews: e.target.checked || undefined })} /> Avec critique
+          <input type="checkbox" checked={!!f.reviews} onChange={(e) => set({ reviews: e.target.checked || undefined })} /> Avec critique
         </label>
         <label>
-          <input type="checkbox" checked={!!filter.rewatch} onChange={(e) => set({ rewatch: e.target.checked || undefined })} /> Revisionnages
+          <input type="checkbox" checked={!!f.rewatch} onChange={(e) => set({ rewatch: e.target.checked || undefined })} /> Revisionnages
         </label>
         {active ? (
           <button type="button" className="link-btn" onClick={() => setFilter({})}>

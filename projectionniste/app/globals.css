@@ -2,6 +2,7 @@
   color-scheme: light;
   --paper: #ffffff; --paper-2: #f0f0ed; --ink: #161616; --ink-2: #555553; --ink-3: #70706d;
   --rule: #dcdcd7; --accent: #1d4ed8; --accent-ink: #ffffff; --good: #1c7a3f; --low: #b3261e;
+  --bar: #1d4ed8;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
@@ -9,12 +10,14 @@
     color-scheme: dark;
     --paper: #141414; --paper-2: #232322; --ink: #ececea; --ink-2: #b3b3af; --ink-3: #8d8d89;
     --rule: #34342f; --accent: #8fb0ff; --accent-ink: #0d0d0d; --good: #5fc08a; --low: #ee8b84;
+    --bar: #6b8ff0;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --paper: #141414; --paper-2: #232322; --ink: #ececea; --ink-2: #b3b3af; --ink-3: #8d8d89;
   --rule: #34342f; --accent: #8fb0ff; --accent-ink: #0d0d0d; --good: #5fc08a; --low: #ee8b84;
+  --bar: #6b8ff0;
 }
 
 * { box-sizing: border-box }
@@ -526,3 +529,89 @@ button.row-note:hover { color: var(--ink) }
   .filterbar .seg { margin-left: 0 }
 }
 .row-body .link-btn { display: block; margin-top: 3px }
+
+/* ---------- critiques ---------- */
+.link-quiet { color: var(--ink-2); text-decoration: none; font-size: 13px }
+.link-quiet:hover { color: var(--ink); text-decoration: underline }
+.review-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin: 6px 0 0; font-size: 13px }
+.review-foot.big { margin: 18px 0 0; padding-bottom: 18px; border-bottom: 1px solid var(--rule) }
+.like-btn { background: none; border: 1px solid var(--rule); border-radius: 14px; padding: 2px 10px; font-size: 13px; color: var(--ink-2); cursor: pointer }
+.like-btn:hover { border-color: var(--ink-3); color: var(--ink) }
+.like-btn[aria-pressed="true"] { border-color: var(--low); color: var(--low) }
+.like-btn.static { cursor: default; border-color: transparent; padding-left: 0 }
+.review-list { list-style: none; margin: 0; padding: 0; max-width: 760px }
+.review-card { padding: 14px 0; border-bottom: 1px solid var(--rule) }
+.review-card .line, .review-page .line, .comments .line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 14px; margin: 0 }
+.review-card .review p { margin: 6px 0 0 }
+.film-reviews .sec-head .seg { font-size: 14px }
+.review-page { max-width: 760px }
+.review-head { display: flex; gap: 18px; align-items: flex-start }
+.review-head .thumb { flex: 0 0 92px; width: 92px; aspect-ratio: 2/3; background: var(--paper-2); border-radius: 3px; overflow: hidden }
+.review-head .thumb img { width: 100%; height: 100%; object-fit: cover; display: block }
+.review-head h1 { font-size: 26px; line-height: 1.2; margin: 2px 0 6px }
+.review-head h1 a { color: inherit; text-decoration: none }
+.review-head h1 a:hover { text-decoration: underline }
+.review-body { margin-top: 20px; font-size: 16px; line-height: 1.6 }
+.review-body .review p { white-space: pre-line; margin: 0 }
+.tags-line { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0 }
+.comments { margin-top: 22px }
+.comments h2 { font-size: 17px; margin-bottom: 10px }
+.comments ul { list-style: none; margin: 0 0 16px; padding: 0 }
+.comments li { padding: 10px 0; border-bottom: 1px solid var(--rule) }
+.comments li p { margin: 4px 0 0; font-size: 14px; line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere }
+.comment-form { display: flex; flex-direction: column; gap: 8px; align-items: flex-start }
+.comment-form textarea { width: 100%; background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 8px; font: inherit; resize: vertical }
+
+/* ---------- bilan de l'année ---------- */
+.year-nav { display: flex; gap: 6px; align-items: center }
+.year-nav select { background: var(--paper); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 8px; font: inherit }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 18px 0 30px }
+.tiles div { border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px }
+.tiles dt { font-size: 13px; color: var(--ink-2) }
+.tiles dd { margin: 2px 0 0; font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.15 }
+.tiles small { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-3) }
+.bilan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px 40px; margin: 10px 0 30px }
+.bilan h2 { font-size: 17px; margin-bottom: 12px }
+.cols-fig { margin: 0 }
+.cols { display: flex; align-items: stretch; gap: 2px; height: 170px; border-bottom: 1px solid var(--rule) }
+.col { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; outline: none }
+.col .bar { width: min(100%, 26px); background: var(--bar); border-radius: 4px 4px 0 0; min-height: 0 }
+.col .val { font-size: 12px; font-weight: 600; color: var(--ink); height: 16px }
+.col .lab { position: absolute; bottom: -20px; font-size: 12px; color: var(--ink-3) }
+.col:hover::before, .col:focus-visible::before { content: ""; position: absolute; inset: 0; background: var(--paper-2); z-index: -1; border-radius: 3px }
+.col .tip { display: none; position: absolute; bottom: calc(100% + 4px); z-index: 5; white-space: nowrap; background: var(--ink); color: var(--paper); font-size: 12px; padding: 4px 7px; border-radius: 4px; pointer-events: none }
+.col:first-child .tip { left: 0 } .col:last-child .tip { right: 0 }
+.col:hover .tip, .col:focus-visible .tip { display: block }
+.cols-fig { padding-bottom: 22px }
+.hbars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px }
+.hbars li { display: grid; grid-template-columns: minmax(0, 11em) minmax(0, 1fr) 2.5em; gap: 10px; align-items: center; font-size: 14px }
+.hbars .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.hbars .lab a { color: var(--ink); text-decoration: none }
+.hbars .lab a:hover { text-decoration: underline }
+.hbars .track { height: 12px }
+.hbars .bar { display: block; height: 100%; background: var(--bar); border-radius: 0 4px 4px 0; min-width: 2px }
+.hbars .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2) }
+.best { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 18px 12px }
+.best li { display: flex; flex-direction: column; gap: 3px; min-width: 0 }
+.best a { display: flex; flex-direction: column; gap: 5px; text-decoration: none; color: inherit }
+.best .poster { display: block; position: relative }
+.best .poster img { opacity: 1; width: 100%; height: 100%; object-fit: cover }
+.best .rank { position: absolute; left: 5px; top: 5px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px; background: rgb(0 0 0 / 0.75); color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center }
+.best .t { font-size: 14px; font-weight: 600; line-height: 1.25 }
+.best a:hover .t { text-decoration: underline }
+.best .dim { font-size: 13px }
+.moments { list-style: none; margin: 0; padding: 0; max-width: 760px }
+.moments li { display: grid; grid-template-columns: 13em minmax(0, 1fr); gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 14px }
+.moments .k { color: var(--ink-2) }
+.moment-film { display: flex; gap: 10px; align-items: center; color: var(--ink); text-decoration: none }
+.moment-film:hover b { text-decoration: underline }
+.moment-film .thumb { flex: 0 0 30px; width: 30px; aspect-ratio: 2/3; background: var(--paper-2); border-radius: 2px; overflow: hidden }
+.moment-film .thumb img { width: 100%; height: 100%; object-fit: cover; display: block }
+@media (max-width: 600px) {
+  .moments li { grid-template-columns: 1fr; gap: 4px }
+  .hbars li { grid-template-columns: minmax(0, 8em) minmax(0, 1fr) 2.2em }
+  .tiles dd { font-size: 24px }
+}
+.review-body .review { font-size: 16px; max-width: none }
+.cols { isolation: isolate }
+.cols-fig { padding-top: 30px }

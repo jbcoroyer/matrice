@@ -39,7 +39,7 @@ function ProfileMenu() {
   }, [open]);
 
   const name = profile?.owner || account?.email?.split("@")[0] || "";
-  const mine = ["/portrait", "/journal", "/parametres"].includes(path);
+  const mine = ["/portrait", "/journal", "/bilan", "/parametres"].includes(path);
   const item = (href: string, label: string) => (
     <Link role="menuitem" href={href} aria-current={path === href ? "page" : undefined}>
       {label}
@@ -59,6 +59,7 @@ function ProfileMenu() {
           </div>
           {item("/portrait", "Mon profil")}
           {item("/journal", "Journal")}
+          {item("/bilan", "Bilan de l'année")}
           {item("/parametres", "Paramètres")}
           <hr />
           <button

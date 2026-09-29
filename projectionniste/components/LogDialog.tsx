@@ -29,6 +29,7 @@ export function LogDialog({
   const [liked, setLiked] = useState(entry ? entry.liked : favorites.has(film.id));
   const [review, setReview] = useState(entry?.review || "");
   const [spoilers, setSpoilers] = useState(entry?.spoilers || false);
+  const [reviewPublic, setReviewPublic] = useState(entry ? entry.review_public : true);
   const [tags, setTags] = useState<string[]>(entry?.tags || []);
   const [tagDraft, setTagDraft] = useState("");
   const [known, setKnown] = useState<string[]>(tagCache || []);
@@ -39,12 +40,12 @@ export function LogDialog({
   useEffect(() => {
     ref.current?.showModal();
     // revisionnage pré-coché seulement si ce film a déjà une entrée dans le journal
-    if (!entry && sb && seen.has(film.id))
-      entriesForFilm(sb, film.id)
+    if (!entry && sb && userId && seen.has(film.id))
+      entriesForFilm(sb, userId!, film.id)
         .then((l) => l.length && setRewatch(true))
         .catch(() => {});
-    if (!tagCache && sb)
-      diaryIndex(sb)
+    if (!tagCache && sb && userId)
+      diaryIndex(sb, userId)
         .then((i) => setKnown((tagCache = i.tags.map(([t]) => t))))
         .catch(() => {});
   }, [sb]);
@@ -69,7 +70,7 @@ export function LogDialog({
         sb,
         userId,
         filmRow(film),
-        { watched_on: date || null, rating: rating || null, rewatch, liked, review: review || null, spoilers: !!review && spoilers, tags: allTags },
+        { watched_on: date || null, rating: rating || null, rewatch, liked, review: review || null, spoilers: !!review && spoilers, review_public: reviewPublic, tags: allTags },
         entry?.id,
       );
       tagCache = [...new Set([...(tagCache || []), ...allTags])];
@@ -134,9 +135,15 @@ export function LogDialog({
           <textarea rows={6} value={review} maxLength={20000} placeholder="Facultatif" onChange={(e) => setReview(e.target.value)} />
         </label>
         {review.trim() ? (
-          <label className="check">
-            <input type="checkbox" checked={spoilers} onChange={(e) => setSpoilers(e.target.checked)} /> Contient des spoilers
-          </label>
+          <div className="form-row">
+            <label className="check">
+              <input type="checkbox" checked={spoilers} onChange={(e) => setSpoilers(e.target.checked)} /> Contient des spoilers
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={!reviewPublic} onChange={(e) => setReviewPublic(!e.target.checked)} /> Critique privée{" "}
+              <span className="dim">(sinon visible de tous sur la fiche du film)</span>
+            </label>
+          </div>
         ) : null}
         <div className="block">
           <label htmlFor={`${listId}-t`}>Étiquettes</label>

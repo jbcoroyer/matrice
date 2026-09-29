@@ -5,6 +5,7 @@ import { cache } from "react";
 import { Poster } from "@/components/Poster";
 import { FilmRecs, ScoreBox, Trailer, WhereToWatch } from "@/components/FilmPersonal";
 import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
+import { FilmReviews } from "@/components/Reviews";
 import { SeenBadge } from "@/components/SeenBadge";
 import { SecHead } from "@/components/ui";
 import { GENRE_FR } from "@/lib/genres";
@@ -177,6 +178,8 @@ export default async function FilmPage({ params }: Props) {
             </ul>
           </section>
         ) : null}
+
+        <FilmReviews tmdbId={m.id} />
 
         <div className="ext">
           {imdb ? (

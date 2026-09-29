@@ -13,21 +13,23 @@ export type DiaryEntry = {
   liked: boolean;
   review: string | null;
   spoilers: boolean;
+  review_public: boolean;
   tags: string[];
   created_at: string;
   films?: { title: string; release_date: string | null; poster_path: string | null } | null;
 };
 
-export type EntryInput = Pick<DiaryEntry, "watched_on" | "rating" | "rewatch" | "liked" | "review" | "spoilers" | "tags">;
+export type EntryInput = Pick<DiaryEntry, "watched_on" | "rating" | "rewatch" | "liked" | "review" | "spoilers" | "review_public" | "tags">;
 
-const COLS = "id, tmdb_id, watched_on, rating, rewatch, liked, review, spoilers, tags, created_at, films(title, release_date, poster_path)";
+const COLS = "id, tmdb_id, watched_on, rating, rewatch, liked, review, spoilers, review_public, tags, created_at, films(title, release_date, poster_path)";
 
 const norm = (e: DiaryEntry): DiaryEntry => ({ ...e, rating: e.rating == null ? null : +e.rating });
 
 export type DiaryFilter = { year?: number; tag?: string; reviews?: boolean; rewatch?: boolean; minRating?: number };
 
-export async function listEntries(sb: SupabaseClient, f: DiaryFilter, from: number, size: number): Promise<DiaryEntry[]> {
-  let q = sb.from("diary_entries").select(COLS);
+// Les critiques publiques des autres sont lisibles aussi : on filtre toujours sur l'utilisateur.
+export async function listEntries(sb: SupabaseClient, userId: string, f: DiaryFilter, from: number, size: number): Promise<DiaryEntry[]> {
+  let q = sb.from("diary_entries").select(COLS).eq("user_id", userId);
   if (f.year) q = q.gte("watched_on", `${f.year}-01-01`).lte("watched_on", `${f.year}-12-31`);
   if (f.tag) q = q.contains("tags", [f.tag]);
   if (f.reviews) q = q.not("review", "is", null);
@@ -42,20 +44,20 @@ export async function listEntries(sb: SupabaseClient, f: DiaryFilter, from: numb
   return rows.map(norm);
 }
 
-export async function entriesForFilm(sb: SupabaseClient, tmdbId: number): Promise<DiaryEntry[]> {
+export async function entriesForFilm(sb: SupabaseClient, userId: string, tmdbId: number): Promise<DiaryEntry[]> {
   const rows = check(
-    await sb.from("diary_entries").select(COLS).eq("tmdb_id", tmdbId).order("watched_on", { ascending: false, nullsFirst: false }),
+    await sb.from("diary_entries").select(COLS).eq("user_id", userId).eq("tmdb_id", tmdbId).order("watched_on", { ascending: false, nullsFirst: false }),
   ) as unknown as DiaryEntry[];
   return rows.map(norm);
 }
 
 /** Années et étiquettes présentes dans le journal (pour les filtres). */
-export async function diaryIndex(sb: SupabaseClient) {
+export async function diaryIndex(sb: SupabaseClient, userId: string) {
   const years = new Map<number, number>();
   const tags = new Map<string, number>();
   let total = 0;
   for (let from = 0; ; from += 1000) {
-    const rows = check(await sb.from("diary_entries").select("watched_on, tags").range(from, from + 999)) as { watched_on: string | null; tags: string[] }[];
+    const rows = check(await sb.from("diary_entries").select("watched_on, tags").eq("user_id", userId).order("id").range(from, from + 999)) as { watched_on: string | null; tags: string[] }[];
     for (const r of rows) {
       total++;
       if (r.watched_on) {
