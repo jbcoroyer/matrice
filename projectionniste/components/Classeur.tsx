@@ -2,293 +2,219 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { addSeries, formatCode, removeSeries, seriesFilms, type Entry, type Series } from "@/lib/collection";
+import { directorFilmIds, directorFilms, formatCode, groupByDirector, type DirectorGroup, type Entry } from "@/lib/collection";
 import { useAsync } from "@/lib/hooks";
-import { img, tmdb } from "@/lib/tmdb";
-import type { Movie, Paged, Person } from "@/lib/types";
+import { img } from "@/lib/tmdb";
+import type { Movie } from "@/lib/types";
 import { Plus } from "./icons";
-import { useProfile } from "./ProfileProvider";
-import { ErrorLine, Loader } from "./ui";
+import { ErrorLine, Loader, duo } from "./ui";
 
-const PAGE = 9;
+const year = (d?: string | null) => (d || "").slice(0, 4);
 
-/** Une série : les poches du classeur, remplies par tes exemplaires, vides pour ce qu'il manque. */
-function SeriesBinder({
-  series,
-  entries,
-  wants,
-  onWant,
-  onRemove,
-  onDone,
-}: {
-  series: Series;
-  entries: Map<number, Entry>;
-  wants: Set<number>;
-  onWant: (m: Movie) => void;
-  onRemove: () => void;
-  onDone: (id: string, complete: boolean) => void;
-}) {
-  const films = useAsync(() => seriesFilms(series.kind, series.ref_id), [series.kind, series.ref_id]);
-  const [page, setPage] = useState(0);
-  const [all, setAll] = useState(false);
-  const list = films.data ?? [];
-  const have = list.filter((m) => entries.has(m.id));
-  const missing = list.filter((m) => !entries.has(m.id));
-  const pages = Math.max(1, Math.ceil(list.length / PAGE));
-  const shown = list.slice(page * PAGE, page * PAGE + PAGE);
-  const pct = list.length ? Math.round((have.length / list.length) * 100) : 0;
-
+/** Pour chaque réalisateur : ses films connus. Chargés petit à petit, gardés une semaine dans le navigateur. */
+function useFilmographies(groups: DirectorGroup[]) {
+  const [ids, setIds] = useState<Map<number, number[]>>(new Map());
+  const wanted = useMemo(() => groups.map((g) => g.id).filter((x): x is number => !!x), [groups]);
   useEffect(() => {
-    if (films.data) onDone(series.id, films.data.length > 0 && missing.length === 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [films.data, missing.length]);
+    let alive = true;
+    for (const id of wanted) {
+      directorFilmIds(id).then(
+        (list) => alive && setIds((m) => (m.has(id) ? m : new Map(m).set(id, list))),
+        () => {},
+      );
+    }
+    return () => {
+      alive = false;
+    };
+  }, [wanted]);
+  return ids;
+}
 
-  const [first, ...rest] = series.name.split(" ");
+type Sort = "az" | "films" | "presque";
+
+/** Index : un réalisateur par ligne, avec ce que tu as et ce qu'il te manque. */
+function Index({ entries, onOpen }: { entries: Entry[]; onOpen: (id: number) => void }) {
+  const [sort, setSort] = useState<Sort>("az");
+  const [q, setQ] = useState("");
+  const groups = useMemo(() => groupByDirector(entries), [entries]);
+  const known = groups.filter((g) => g.name);
+  const unknown = groups.find((g) => !g.name);
+  const owned = useMemo(() => new Set(entries.map((e) => e.tmdb_id)), [entries]);
+  const films = useFilmographies(known);
+
+  const rows = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const l = known
+      .filter((g) => !needle || g.name.toLowerCase().includes(needle))
+      .map((g) => {
+        const all = g.id ? films.get(g.id) : undefined;
+        const missing = all ? all.filter((id) => !owned.has(id)).length : null;
+        return { g, missing, total: missing == null ? null : g.entries.length + missing };
+      });
+    if (sort === "films") l.sort((a, b) => b.g.entries.length - a.g.entries.length);
+    if (sort === "presque") l.sort((a, b) => (a.missing ?? 1e9) - (b.missing ?? 1e9) || b.g.entries.length - a.g.entries.length);
+    return l;
+  }, [known, films, owned, q, sort]);
+
   return (
-    <section className="series" aria-label={`Série ${series.name}`}>
+    <div>
+      <div className="filterbar">
+        <input className="input search-in" type="search" placeholder="Chercher un réalisateur" aria-label="Chercher un réalisateur" value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="seg" role="radiogroup" aria-label="Tri des réalisateurs">
+          <button type="button" role="radio" aria-checked={sort === "az"} onClick={() => setSort("az")}>
+            A–Z
+          </button>
+          <button type="button" role="radio" aria-checked={sort === "films"} onClick={() => setSort("films")}>
+            Plus de films
+          </button>
+          <button type="button" role="radio" aria-checked={sort === "presque"} onClick={() => setSort("presque")}>
+            Presque complets
+          </button>
+        </div>
+        <span className="count">
+          {known.length} réalisateur{known.length > 1 ? "s" : ""}
+        </span>
+      </div>
+      <ul className="dirs">
+        {rows.map(({ g, missing, total }) => (
+          <li key={g.id ?? g.name}>
+            <button type="button" className="dir-row" onClick={() => g.id && onOpen(g.id)} disabled={!g.id} aria-label={`${g.name} : ${g.entries.length} films possédés`}>
+              <span className="dir-name">{duo(g.name)}</span>
+              <span className="dir-count">
+                <b>{g.entries.length}</b> possédé{g.entries.length > 1 ? "s" : ""}
+                {total != null ? <> sur {total}</> : null}
+              </span>
+              <span className={`dir-missing${missing === 0 ? " done" : ""}`}>{missing == null ? "…" : missing === 0 ? "Complet" : `Il en manque ${missing}`}</span>
+              <span className="dir-bar" aria-hidden="true">
+                <i style={{ width: total ? `${Math.round((g.entries.length / total) * 100)}%` : "0%" }} />
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {!rows.length ? <p className="status">Aucun réalisateur ne correspond.</p> : null}
+      {unknown ? (
+        <p className="note" style={{ marginTop: 24 }}>
+          {unknown.entries.length} film{unknown.entries.length > 1 ? "s" : ""} sans réalisateur connu pour l'instant (complétés automatiquement quand TMDB répond).
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Détail d'un réalisateur : ce que tu possèdes et tout ce qu'il te manque. */
+function Detail({ group, entries, wants, onWant, onBack }: { group: DirectorGroup; entries: Entry[]; wants: Set<number>; onWant: (m: Movie) => void; onBack: () => void }) {
+  const films = useAsync(() => directorFilms(group.id!), [group.id]);
+  const owned = useMemo(() => new Set(entries.map((e) => e.tmdb_id)), [entries]);
+  const list = films.data ?? [];
+  const missing = list.filter((m) => !owned.has(m.id));
+  const total = group.entries.length + missing.length;
+  const pct = total ? Math.round((group.entries.length / total) * 100) : 0;
+  const nWants = missing.filter((m) => wants.has(m.id)).length;
+
+  return (
+    <section className="dir-detail" aria-label={`Films de ${group.name}`}>
+      <button type="button" className="link-quiet back" onClick={onBack}>
+        ← Tous les réalisateurs
+      </button>
       <div className="series-head">
         <div>
-          <div className="label">{series.kind === "person" ? "Cinéaste" : "Saga"}</div>
+          <div className="label">Réalisateur</div>
           <h2>
-            {rest.length ? (
-              <>
-                {first} <span>{rest.join(" ")}</span>
-              </>
-            ) : (
-              series.name
-            )}
+            <Link href={`/personne/${group.id}`}>{duo(group.name)}</Link>
           </h2>
         </div>
-        <span className="aside">
-          <button type="button" className="link-btn quiet" onClick={onRemove}>
-            Retirer cette série
-          </button>
-        </span>
       </div>
       {films.error ? (
         <ErrorLine error={films.error} onRetry={films.reload} />
       ) : !films.data ? (
-        <Loader text="Chargement de la série…" />
-      ) : !list.length ? (
-        <p className="status">Aucun film à afficher pour cette série.</p>
+        <Loader text="Chargement de sa filmographie…" />
       ) : (
-        <div className="binder-wrap">
-          <div>
-            <div className="binder">
-              {shown.map((m) => {
-                const e = entries.get(m.id);
-                return e ? (
-                  <Link key={m.id} href={`/film/${m.id}`} className={`pocket own f-${e.finish}`} title={`${m.title} (${(m.release_date || "").slice(0, 4)})`}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img(m.poster_path!, "w185")} alt={m.title} loading="lazy" />
-                    <span className="m">{formatCode(e.best.format)}</span>
-                  </Link>
-                ) : (
-                  <Link key={m.id} href={`/film/${m.id}`} className={`pocket miss${wants.has(m.id) ? " want" : ""}`} title={wants.has(m.id) ? "Dans tes envies" : "Il te manque ce film"}>
-                    <div>
-                      <b>{m.title}</b>
-                      <span>{(m.release_date || "").slice(0, 4)}</span>
-                    </div>
-                  </Link>
-                );
-              })}
+        <>
+          <div className="sprogress" role="img" aria-label={`${group.entries.length} films sur ${total}`}>
+            <div className="bar">
+              <i style={{ width: `${pct}%` }} />
             </div>
-            {pages > 1 ? (
-              <div className="binder-nav">
-                <button type="button" className="btn ghost small" disabled={page === 0} onClick={() => setPage(page - 1)} aria-label="Page précédente">
-                  ←
-                </button>
-                <span>
-                  Page {page + 1} / {pages}
-                </span>
-                <button type="button" className="btn ghost small" disabled={page >= pages - 1} onClick={() => setPage(page + 1)} aria-label="Page suivante">
-                  →
-                </button>
-              </div>
-            ) : null}
+            <b>
+              {group.entries.length} / {total}
+            </b>
           </div>
-          <div>
-            <div className="sprogress" role="img" aria-label={`${have.length} films sur ${list.length}`}>
-              <div className="bar">
-                <i style={{ width: `${pct}%` }} />
-              </div>
-              <b>
-                {have.length} / {list.length}
-              </b>
-            </div>
-            {missing.length ? (
-              <>
-                <div className="label" style={{ marginBottom: 6 }}>
-                  Il te manque
-                </div>
-                <ul className="wants">
-                  {(all ? missing : missing.slice(0, 6)).map((m) => (
-                    <li key={m.id}>
-                      <Link href={`/film/${m.id}`}>{m.title}</Link>
-                      <span className="y">{(m.release_date || "").slice(0, 4)}</span>
-                      <button type="button" className="btn ghost" aria-pressed={wants.has(m.id)} onClick={() => onWant(m)}>
-                        {wants.has(m.id) ? "Dans mes envies" : (
-                          <>
-                            <Plus />
-                            Envie
-                          </>
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                {missing.length > 6 ? (
-                  <button type="button" className="link-btn quiet" style={{ marginTop: 12 }} onClick={() => setAll(!all)}>
-                    {all ? "Réduire" : `Voir les ${missing.length - 6} autres`}
-                  </button>
-                ) : null}
-              </>
-            ) : (
-              <p className="status">Série complète.</p>
-            )}
+
+          <h3 className="dir-h">
+            Tu possèdes <span>{group.entries.length}</span>
+          </h3>
+          <div className="pockets">
+            {group.entries.map((e) => (
+              <Link key={e.tmdb_id} href={`/film/${e.tmdb_id}`} className={`pocket own f-${e.finish}`} title={`${e.film.title} (${year(e.film.release_date)})`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {e.film.poster_path ? <img src={img(e.film.poster_path, "w185")} alt={e.film.title} loading="lazy" /> : null}
+                <span className="m">{formatCode(e.best.format)}</span>
+              </Link>
+            ))}
           </div>
-        </div>
+
+          {missing.length ? (
+            <>
+              <h3 className="dir-h">
+                Il te manque <span>{missing.length}</span>
+                {nWants ? <em>{nWants} dans tes envies</em> : null}
+              </h3>
+              <div className="miss-grid">
+                {missing.map((m) => (
+                  <div key={m.id} className="miss">
+                    <Link href={`/film/${m.id}`} className="miss-poster" title={m.title}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img(m.poster_path!, "w185")} alt={m.title} loading="lazy" />
+                    </Link>
+                    <Link href={`/film/${m.id}`} className="miss-title">
+                      {m.title}
+                    </Link>
+                    <span className="miss-year">{year(m.release_date)}</span>
+                    <button type="button" className="btn ghost small" aria-pressed={wants.has(m.id)} onClick={() => onWant(m)}>
+                      {wants.has(m.id) ? (
+                        "Dans mes envies"
+                      ) : (
+                        <>
+                          <Plus />
+                          Envie
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="status">Filmographie complète : tu as tout.</p>
+          )}
+        </>
       )}
     </section>
   );
 }
 
-/** Cherche un cinéaste et en fait une série. */
-function AddSeries({ onAdd }: { onAdd: (s: Omit<Series, "id">) => void }) {
-  const [q, setQ] = useState("");
-  const [res, setRes] = useState<Person[] | null>(null);
-  const [busy, setBusy] = useState(false);
-  const search = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!q.trim()) return;
-    setBusy(true);
-    try {
-      const r = await tmdb<Paged<Person>>("search/person", { query: q.trim() });
-      setRes(r.results.filter((p) => p.known_for_department === "Directing").slice(0, 6).concat(r.results.filter((p) => p.known_for_department !== "Directing")).slice(0, 6));
-    } catch {
-      setRes([]);
-    }
-    setBusy(false);
-  };
-  return (
-    <div className="add-series">
-      <form onSubmit={search} className="share-link">
-        <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nom d'un cinéaste : Kubrick, Varda, Miyazaki…" aria-label="Chercher un cinéaste" />
-        <button type="submit" className="btn" disabled={busy || !q.trim()}>
-          Chercher
-        </button>
-      </form>
-      {res ? (
-        res.length ? (
-          <div className="suggest-series">
-            {res.map((p) => (
-              <button key={p.id} type="button" className="chip" onClick={() => (onAdd({ kind: "person", ref_id: p.id, name: p.name }), setRes(null), setQ(""))}>
-                <Plus />
-                {p.name}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="status">Personne trouvé.</p>
-        )
-      ) : null}
-    </div>
-  );
-}
-
-/** Vue Classeur : séries à compléter, avec ce qu'il manque et un bouton « Envie ». */
+/** Vue Classeur : un réalisateur par ligne ; un clic montre tout ce qu'il te manque. */
 export function Classeur({
-  series,
   entries,
   wants,
   onWant,
-  onSeriesChange,
-  onComplete,
+  openId,
+  onOpen,
 }: {
-  series: Series[];
   entries: Entry[];
   wants: Set<number>;
   onWant: (m: Movie) => void;
-  onSeriesChange: () => void;
-  onComplete: (id: string, complete: boolean) => void;
+  openId: number | null;
+  onOpen: (id: number | null) => void;
 }) {
-  const { sb, userId, toast } = useProfile();
-  const byId = useMemo(() => new Map(entries.map((e) => [e.tmdb_id, e])), [entries]);
-  const [adding, setAdding] = useState(false);
-
-  // suggestions : cinéastes et sagas dont tu possèdes au moins deux films
-  const suggestions = useMemo(() => {
-    const have = new Set(series.map((s) => `${s.kind}:${s.ref_id}`));
-    const by = new Map<string, { s: Omit<Series, "id">; films: Set<number> }>();
-    for (const e of entries) {
-      for (const c of e.copies) {
-        const cands: Omit<Series, "id">[] = [];
-        if (c.director_id && c.director) cands.push({ kind: "person", ref_id: c.director_id, name: c.director });
-        if (c.saga_id && c.saga_name) cands.push({ kind: "saga", ref_id: c.saga_id, name: c.saga_name });
-        for (const s of cands) {
-          const k = `${s.kind}:${s.ref_id}`;
-          if (have.has(k)) continue;
-          const g = by.get(k) ?? { s, films: new Set<number>() };
-          g.films.add(e.tmdb_id);
-          by.set(k, g);
-        }
-      }
-    }
-    return [...by.values()].filter((g) => g.films.size >= 2).sort((a, b) => b.films.size - a.films.size).slice(0, 8);
-  }, [entries, series]);
-
-  const add = async (s: Omit<Series, "id">) => {
-    if (!sb || !userId) return;
-    try {
-      await addSeries(sb, userId, s);
-      onSeriesChange();
-    } catch (e) {
-      toast(`Échec : ${(e as Error).message}`);
-    }
-  };
-  const remove = async (s: Series) => {
-    if (!sb) return;
-    try {
-      await removeSeries(sb, s.id);
-      onSeriesChange();
-      toast(`Série « ${s.name} » retirée`);
-    } catch (e) {
-      toast(`Échec : ${(e as Error).message}`);
-    }
-  };
-
-  return (
-    <div>
-      {suggestions.length ? (
-        <div className="suggest-series">
-          <span>Séries possibles :</span>
-          {suggestions.map((g) => (
-            <button key={`${g.s.kind}${g.s.ref_id}`} type="button" className="chip" onClick={() => add(g.s)} title={`${g.films.size} films possédés`}>
-              <Plus />
-              {g.s.name} <i style={{ fontStyle: "normal", opacity: 0.6 }}>{g.films.size}</i>
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {series.map((s) => (
-        <SeriesBinder key={s.id} series={s} entries={byId} wants={wants} onWant={onWant} onRemove={() => remove(s)} onDone={onComplete} />
-      ))}
-      {!series.length && !suggestions.length ? (
-        <div className="empty">
-          <p>Aucune série pour l'instant.</p>
-          <p className="note">Une série, c'est la filmographie d'un cinéaste ou une saga : le classeur montre ce que tu possèdes et ce qu'il te manque.</p>
-        </div>
-      ) : null}
-      <div style={{ marginTop: 8 }}>
-        {adding ? (
-          <AddSeries onAdd={(s) => (add(s), setAdding(false))} />
-        ) : (
-          <button type="button" className="btn" onClick={() => setAdding(true)}>
-            <Plus />
-            Ajouter une série
-          </button>
-        )}
+  const groups = useMemo(() => groupByDirector(entries), [entries]);
+  const open = openId ? groups.find((g) => g.id === openId) : null;
+  if (!entries.length)
+    return (
+      <div className="empty">
+        <p>Aucun film dans ta cinémathèque.</p>
       </div>
-    </div>
-  );
+    );
+  if (open) return <Detail group={open} entries={entries} wants={wants} onWant={onWant} onBack={() => onOpen(null)} />;
+  return <Index entries={entries} onOpen={onOpen} />;
 }

@@ -46,8 +46,12 @@ profil). Planches de départ : `design/collection/`.
   vrai foil. Pas d'arc-en-ciel holographique, pas de halo coloré. Les jetons `--f-*` et `--card-*`
   de `globals.css` portent cette matière, identique en thème clair et sombre.
 
+**Tri** : par réalisateur (nom de famille, puis date) dans toutes les vues, par défaut.
+
 **Trois vues** : Vitrine (cartes), Étagère (dos de boîtiers colorés par l'affiche, un rayon par
-format, trou « prêté »), Classeur (séries à compléter : poches remplies ou vides, bouton « Envie »).
+format, trou « prêté » ; tous les DVD partagent le même dos noir et la même taille), Classeur
+(un réalisateur par ligne : « 3 possédés sur 34, il en manque 31 » ; un clic ouvre ce qu'on
+possède et tout ce qui manque, avec un bouton « Envie »).
 **Envies** : films qu'on voudrait posséder en disque.
 
 ## Écran d'accueil (`components/AuthScreen.tsx`)

@@ -14,7 +14,7 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
 | `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
 | `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
-| `/collection` | Ta cinémathèque physique : cartes de collection (format, édition, éditeur, n° d'édition, scellé, état, prêt, photo), vues Vitrine / Étagère / Classeur (séries à compléter), envies, filtres « jamais vus », scellés, éditions limitées ; import CSV, partage public |
+| `/collection` | Ta cinémathèque physique : cartes de collection (format, édition, éditeur, n° d'édition, scellé, état, prêt, photo), tri par réalisateur, vues Vitrine / Étagère / Classeur (un réalisateur par ligne : films possédés, ce qu'il manque, détail cliquable), envies, filtres « jamais vus », scellés, éditions limitées ; partage public |
 | `/c/[code]` | Cinémathèque partagée, lisible sans compte (jamais tes films vus ni tes prêts) |
 | `/journal` | Journal daté ; onglet « Films vus » avec tous les films marqués comme vus |
 | `/film/[id]` | Fiche : indice, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques, films proches |

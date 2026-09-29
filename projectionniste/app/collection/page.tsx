@@ -5,7 +5,6 @@ import { Classeur } from "@/components/Classeur";
 import { CollectionCard, Spine } from "@/components/CollectionCard";
 import { CopyDialog } from "@/components/CopyDialog";
 import { EyeOff, Plus, Share } from "@/components/icons";
-import { ImportCollection } from "@/components/ImportCollection";
 import { PickFilm } from "@/components/PickFilm";
 import { Poster } from "@/components/Poster";
 import { useProfile, type FilmInput } from "@/components/ProfileProvider";
@@ -13,18 +12,19 @@ import { ErrorLine, Loader, ProfileGate } from "@/components/ui";
 import {
   addWant,
   backfillExtras,
+  compareByDirector,
+  directorIdOf,
+  directorName,
   formatLabel,
   FORMATS,
   getShare,
   groupEntries,
   listCollection,
-  listSeries,
   listWants,
   removeWant,
   saveShare,
   type CollectionItem,
   type Entry,
-  type Series,
   type Share as ShareT,
   type Want,
 } from "@/lib/collection";
@@ -115,20 +115,18 @@ function Collection() {
   const [view, setView] = useState<View>("vitrine");
   const [items, setItems] = useState<CollectionItem[] | null>(null);
   const [wants, setWants] = useState<Want[] | null>(null);
-  const [series, setSeries] = useState<Series[]>([]);
-  const [done, setDone] = useState<Map<string, boolean>>(new Map());
+  const [openDir, setOpenDir] = useState<number | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [q, setQ] = useState("");
   const [format, setFormat] = useState("");
   const [quick, setQuick] = useState<Quick>("tous");
   const [genre, setGenre] = useState(0);
   const [dec, setDec] = useState("");
-  const [sort, setSort] = useState<"recent" | "numero" | "titre" | "annee" | "note">("recent");
+  const [sort, setSort] = useState<"realisateur" | "recent" | "numero" | "titre" | "annee" | "note">("realisateur");
   const [limit, setLimit] = useState(STEP);
   const [adding, setAdding] = useState<"pick" | FilmInput | null>(null);
   const [editing, setEditing] = useState<{ film: FilmInput; item: CollectionItem } | null>(null);
   const [finding, setFinding] = useState<FilmInput | null>(null);
-  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     try {
@@ -137,6 +135,7 @@ function Collection() {
     } catch {}
   }, []);
   const pickView = (v: View) => {
+    if (openDir) openDirector(null);
     setView(v);
     try {
       localStorage.setItem(VIEW_KEY, v);
@@ -149,14 +148,27 @@ function Collection() {
   const loadWants = useCallback(() => {
     if (sb) listWants(sb).then(setWants, setError);
   }, [sb]);
-  const loadSeries = useCallback(() => {
-    if (sb) listSeries(sb).then(setSeries, () => {});
-  }, [sb]);
   useEffect(() => {
     loadItems();
     loadWants();
-    loadSeries();
-  }, [loadItems, loadWants, loadSeries]);
+  }, [loadItems, loadWants]);
+
+  // un réalisateur ouvert dans le classeur a sa propre adresse (?realisateur=…) : le retour du navigateur fonctionne
+  useEffect(() => {
+    const read = () => {
+      const id = +(new URLSearchParams(location.search).get("realisateur") || 0);
+      setOpenDir(id || null);
+      if (id) setView("classeur");
+    };
+    read();
+    window.addEventListener("popstate", read);
+    return () => window.removeEventListener("popstate", read);
+  }, []);
+  const openDirector = (id: number | null) => {
+    history.pushState({}, "", id ? `?realisateur=${id}` : location.pathname);
+    setOpenDir(id);
+    window.scrollTo({ top: 0 });
+  };
 
   // anciens exemplaires sans réalisateur : on complète en arrière-plan
   const [filled, setFilled] = useState(false);
@@ -186,6 +198,7 @@ function Collection() {
           (quick === "prets" && e.copies.some((c) => c.lent_to))),
     );
     const cmp: Record<typeof sort, (a: Entry, b: Entry) => number> = {
+      realisateur: compareByDirector,
       recent: (a, b) => b.added.localeCompare(a.added),
       numero: (a, b) => a.no - b.no,
       titre: (a, b) => a.film.title.localeCompare(b.film.title, "fr"),
@@ -208,6 +221,7 @@ function Collection() {
       limited: all.filter(isLimited).length,
       lent: all.filter((e) => e.copies.some((c) => c.lent_to)).length,
       formats,
+      directors: new Set(all.map((e) => directorIdOf(e) ?? directorName(e)).filter(Boolean)).size,
       decades: [...new Set(all.map((e) => decade(e.film.release_date)).filter(Boolean))].sort((a, b) => +b - +a),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -241,14 +255,13 @@ function Collection() {
   const shelves = useMemo(() => {
     if (!filtered) return [];
     const g = new Map<string, { e: Entry; c: CollectionItem }[]>();
-    for (const e of filtered.slice().sort((a, b) => a.film.title.localeCompare(b.film.title, "fr")))
+    for (const e of filtered)
       for (const c of e.copies) if (!format || c.format === format) g.set(c.format, [...(g.get(c.format) ?? []), { e, c }]);
     return FORMATS.filter((f) => g.has(f.k)).map((f) => ({ k: f.k, label: f.l, list: g.get(f.k)! }));
   }, [filtered, format]);
 
   const newest = all?.length ? all[all.length - 1] : null;
   const hasFilter = !!(q || format || genre || dec || quick !== "tous");
-  const completeCount = [...done.values()].filter(Boolean).length;
   const QUICKS: { k: Quick; l: string; n?: number; icon?: "off" }[] = [
     { k: "tous", l: "Tous", n: stats?.films },
     { k: "jamais", l: "Jamais vus", n: stats?.never, icon: "off" },
@@ -280,9 +293,6 @@ function Collection() {
               Ajouter un exemplaire
             </button>
             <SharePanel />
-            <button type="button" className="btn ghost" onClick={() => setImporting(true)}>
-              Importer un CSV
-            </button>
           </div>
         </div>
         {stats ? (
@@ -304,8 +314,8 @@ function Collection() {
                 <dt className="label">Jamais vus</dt>
               </div>
               <div>
-                <dd>{series.length ? completeCount : "–"}</dd>
-                <dt className="label">Séries complètes</dt>
+                <dd>{stats.directors || "–"}</dd>
+                <dt className="label">Réalisateurs</dt>
               </div>
             </dl>
             {stats.formats.length ? (
@@ -394,6 +404,7 @@ function Collection() {
           <label>
             Tri
             <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
+              <option value="realisateur">Réalisateur</option>
               <option value="recent">Ajout récent</option>
               <option value="numero">Numéro de collection</option>
               <option value="titre">Titre</option>
@@ -444,14 +455,7 @@ function Collection() {
       ) : !all || !filtered ? (
         <Loader text="Chargement de ta cinémathèque…" />
       ) : view === "classeur" ? (
-        <Classeur
-          series={series}
-          entries={entriesOnly}
-          wants={wantIds}
-          onWant={toggleWant}
-          onSeriesChange={loadSeries}
-          onComplete={(id, complete) => setDone((d) => (d.get(id) === complete ? d : new Map(d).set(id, complete)))}
-        />
+        <Classeur entries={entriesOnly} wants={wantIds} onWant={toggleWant} openId={openDir} onOpen={openDirector} />
       ) : !all.length ? (
         <div className="empty">
           <p>Ta cinémathèque est vide.</p>
@@ -489,7 +493,6 @@ function Collection() {
         ))
       )}
 
-      {importing ? <ImportCollection existing={items ?? []} onClose={() => setImporting(false)} onDone={loadItems} /> : null}
       {adding === "pick" ? <PickFilm onClose={() => setAdding(null)} onPick={(m) => setAdding(m)} /> : null}
       {adding && adding !== "pick" ? <CopyDialog film={adding} onClose={() => setAdding(null)} onSaved={loadItems} onNext={() => setAdding("pick")} /> : null}
       {editing ? <CopyDialog film={editing.film} item={editing.item} onClose={() => setEditing(null)} onSaved={loadItems} /> : null}

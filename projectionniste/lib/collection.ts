@@ -212,34 +212,35 @@ export async function removeWant(sb: SupabaseClient, tmdbId: number) {
   check(await sb.from("collection_wants").delete().eq("tmdb_id", tmdbId));
 }
 
-/* ---------- séries à compléter ---------- */
+/* ---------- réalisateurs : ce que j'ai, ce qu'il me manque ---------- */
 
-export type Series = { id: string; kind: "person" | "saga"; ref_id: number; name: string };
-
-export async function listSeries(sb: SupabaseClient): Promise<Series[]> {
-  return check(await sb.from("collection_series").select("id, kind, ref_id, name").order("created_at")) as unknown as Series[];
-}
-export async function addSeries(sb: SupabaseClient, userId: string, s: Omit<Series, "id">): Promise<Series> {
-  return check(await sb.from("collection_series").upsert({ user_id: userId, ...s }, { onConflict: "user_id,kind,ref_id" }).select("id, kind, ref_id, name").single()) as Series;
-}
-export async function removeSeries(sb: SupabaseClient, id: string) {
-  check(await sb.from("collection_series").delete().eq("id", id));
-}
-
-/** Les films d'une série : filmographie de réalisateur (long métrage connu) ou saga TMDB, par date. */
-export async function seriesFilms(kind: Series["kind"], refId: number): Promise<Movie[]> {
+/** Filmographie d'un réalisateur : longs métrages connus (assez de votes), sortis, avec affiche, par date. */
+export async function directorFilms(personId: number): Promise<Movie[]> {
   const now = new Date().toISOString().slice(0, 10);
-  let list: Movie[];
-  if (kind === "person") {
-    const c = await tmdb<PersonCredits>(`person/${refId}/movie_credits`);
-    list = c.crew.filter((m) => m.job === "Director" && (m.vote_count ?? 0) >= 30);
-  } else {
-    list = (await tmdb<{ parts: Movie[] }>(`collection/${refId}`)).parts;
-  }
+  const c = await tmdb<PersonCredits>(`person/${personId}/movie_credits`);
   const seen = new Set<number>();
-  return list
-    .filter((m) => m.poster_path && m.release_date && m.release_date <= now && !seen.has(m.id) && (seen.add(m.id), true))
+  return c.crew
+    .filter((m) => m.job === "Director" && (m.vote_count ?? 0) >= 30 && m.poster_path && m.release_date && m.release_date <= now && !seen.has(m.id) && (seen.add(m.id), true))
     .sort((a, b) => (a.release_date || "").localeCompare(b.release_date || ""));
+}
+
+const DIRFILMS_KEY = "projo.dirfilms.v1";
+const WEEK = 7 * 86400000;
+
+/** Identifiants des films d'un réalisateur, gardés une semaine dans le navigateur (l'index en demande beaucoup). */
+export async function directorFilmIds(personId: number): Promise<number[]> {
+  let cache: Record<string, { at: number; ids: number[] }> = {};
+  try {
+    cache = JSON.parse(localStorage.getItem(DIRFILMS_KEY) || "{}");
+  } catch {}
+  const hit = cache[personId];
+  if (hit && Date.now() - hit.at < WEEK) return hit.ids;
+  const ids = (await directorFilms(personId)).map((m) => m.id);
+  try {
+    cache[personId] = { at: Date.now(), ids };
+    localStorage.setItem(DIRFILMS_KEY, JSON.stringify(cache));
+  } catch {}
+  return ids;
 }
 
 /** Un film de la collection, avec tous ses exemplaires. */
@@ -316,4 +317,40 @@ export async function getPublicCollection(sb: SupabaseClient, code: string): Pro
   const rows = check(await sb.rpc("get_public_collection", { code })) as PublicItem[];
   sb.rpc("count_collection_view", { code }).then(() => {});
   return rows;
+}
+
+/* ---------- tri et regroupement par réalisateur ---------- */
+
+const surnameOf = (name: string) => name.trim().split(/\s+/).at(-1) ?? name;
+export const directorName = (e: Entry) => (e.copies.find((c) => c.director)?.director ?? "").trim();
+export const directorIdOf = (e: Entry) => e.copies.find((c) => c.director_id)?.director_id ?? null;
+
+/** Nom de famille (dernier mot), puis prénom, puis date de sortie ; les films sans réalisateur connu en dernier. */
+export function compareByDirector(a: Entry, b: Entry): number {
+  const da = directorName(a);
+  const db = directorName(b);
+  if (!da !== !db) return da ? -1 : 1;
+  const opt = { sensitivity: "base" } as const;
+  return (
+    surnameOf(da).localeCompare(surnameOf(db), "fr", opt) ||
+    da.localeCompare(db, "fr", opt) ||
+    (a.film.release_date || "").localeCompare(b.film.release_date || "") ||
+    a.film.title.localeCompare(b.film.title, "fr")
+  );
+}
+
+export type DirectorGroup = { id: number | null; name: string; entries: Entry[] };
+
+/** Un groupe par réalisateur (films possédés, triés par date), dans l'ordre alphabétique des noms de famille. */
+export function groupByDirector(entries: Entry[]): DirectorGroup[] {
+  const by = new Map<string, DirectorGroup>();
+  for (const e of entries.slice().sort(compareByDirector)) {
+    const name = directorName(e);
+    const id = directorIdOf(e);
+    const key = id ? `#${id}` : name ? `n:${name}` : "";
+    const g = by.get(key) ?? { id, name, entries: [] };
+    g.entries.push(e);
+    by.set(key, g);
+  }
+  return [...by.values()];
 }
