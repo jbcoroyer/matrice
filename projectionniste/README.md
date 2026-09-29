@@ -10,6 +10,8 @@ cachée côté serveur, URLs partageables.
 |---|---|
 | `/decouvrir` | Accueil : rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
 | `/watchlist` | Ta watchlist, filtres et tris |
+| `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
+| `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
 | `/collection` | Tes exemplaires (format, édition, état, notes) ou tes films vus, en mur d'affiches ou en étagères ; filtres, statistiques, partage public |
 | `/c/[code]` | Collection partagée, lisible sans compte |
 | `/film/[id]` | Fiche : indice et « ce qui joue », watchlist / vu / favori / note, journal du film, top 5, où le voir, bande-annonce, distribution, films proches |

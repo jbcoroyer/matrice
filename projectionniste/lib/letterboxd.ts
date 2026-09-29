@@ -281,7 +281,8 @@ export async function importLetterboxd(
   let li = 0;
   for (const l of ex.lists) {
     onProgress({ phase: "Import des listes", done: ++li, total: ex.lists.length });
-    const row = { user_id: userId, title: l.name.slice(0, 120), description: l.description || null, letterboxd_url: l.url || null, is_public: false };
+    // is_public / ranked absents : valeurs par défaut à la création, réglages de l'utilisateur conservés ensuite
+    const row = { user_id: userId, title: l.name.slice(0, 120), description: l.description || null, letterboxd_url: l.url || null };
     const saved = check(
       l.url
         ? await sb.from("lists").upsert(row, { onConflict: "user_id,letterboxd_url" }).select("id").single()

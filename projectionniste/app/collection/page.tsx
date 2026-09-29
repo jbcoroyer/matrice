@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CopyDialog } from "@/components/CopyDialog";
+import { PickFilm } from "@/components/PickFilm";
 import { useProfile, type FilmInput } from "@/components/ProfileProvider";
 import { StarsText } from "@/components/Stars";
 import { ErrorLine, Loader } from "@/components/ui";
 import { conditionLabel, formatLabel, FORMATS, getShare, listCollection, listWatched, saveShare, type CollectionItem, type FilmMeta, type Share } from "@/lib/collection";
 import { GENRE_FR, GENRE_OPTIONS } from "@/lib/genres";
-import { img, tmdb } from "@/lib/tmdb";
-import type { Movie, Paged } from "@/lib/types";
+import { img } from "@/lib/tmdb";
 
 type Mode = "possedes" | "vus";
 type View = "etagere" | "mur";
@@ -30,46 +30,6 @@ const decade = (f: FilmMeta) => {
   const y = +year(f);
   return y ? `${Math.floor(y / 10) * 10}` : "";
 };
-
-function PickFilm({ onPick, onClose }: { onPick: (m: FilmInput) => void; onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  const [q, setQ] = useState("");
-  const [hits, setHits] = useState<Movie[]>([]);
-  useEffect(() => ref.current?.showModal(), []);
-  useEffect(() => {
-    if (q.trim().length < 2) return setHits([]);
-    const t = setTimeout(() => {
-      tmdb<Paged<Movie>>("search/movie", { query: q.trim() })
-        .then((r) => setHits(r.results.slice(0, 8)))
-        .catch(() => setHits([]));
-    }, 220);
-    return () => clearTimeout(t);
-  }, [q]);
-  return (
-    <dialog ref={ref} className="dialog" onClose={onClose} onCancel={onClose}>
-      <h2>Quel film ajouter ?</h2>
-      <input className="input" autoFocus placeholder="Titre du film" value={q} onChange={(e) => setQ(e.target.value)} />
-      <ul className="pick-list">
-        {hits.map((m) => (
-          <li key={m.id}>
-            <button type="button" onClick={() => onPick(m)}>
-              <span className="thumb">{m.poster_path ? <img src={img(m.poster_path, "w92")} alt="" /> : null}</span>
-              <span>
-                <b>{m.title}</b> <span className="dim">{(m.release_date || "").slice(0, 4)}</span>
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      <div className="dialog-actions">
-        <span style={{ flex: 1 }} />
-        <button type="button" className="btn ghost" onClick={onClose}>
-          Annuler
-        </button>
-      </div>
-    </dialog>
-  );
-}
 
 function SharePanel() {
   const { sb, userId, toast } = useProfile();

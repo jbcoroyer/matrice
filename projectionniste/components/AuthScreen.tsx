@@ -117,8 +117,8 @@ export function AuthScreen() {
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { status, error, retry } = useProfile();
   const path = usePathname();
-  // pages publiques : collection partagée
-  if (path.startsWith("/c/")) return <>{children}</>;
+  // pages publiques : collection partagée, liste (la page vérifie elle-même si elle est publique)
+  if (path.startsWith("/c/") || /^\/listes\/[^/]+$/.test(path)) return <>{children}</>;
   if (status === "signedOut" || status === "guest") return <AuthScreen />;
   if (status === "error")
     return (

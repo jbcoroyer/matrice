@@ -9,6 +9,7 @@ import { SearchBox } from "./SearchBox";
 const RUBRIQUES = [
   { href: "/decouvrir", label: "Découvrir" },
   { href: "/watchlist", label: "Watchlist" },
+  { href: "/listes", label: "Listes" },
   { href: "/collection", label: "Collection" },
 ];
 
