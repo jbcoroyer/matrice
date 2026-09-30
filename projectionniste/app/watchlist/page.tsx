@@ -4,17 +4,17 @@ import { useMemo, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
 import Link from "next/link";
 import { EmptyState, ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
-import { GENRE_OPTIONS } from "@/lib/genres";
-import { genreIds } from "@/lib/predict";
+import { GENRE_OPTIONS, genreIds } from "@/lib/genres";
 import { useWatchlistMovies } from "@/lib/hooks";
 
 function Watchlist() {
   const [genre, setGenre] = useState(0);
-  const [sort, setSort] = useState<"pred" | "short" | "recent" | "old">("pred");
+  const [sort, setSort] = useState<"added" | "first" | "short" | "recent" | "old">("added");
   const wl = useWatchlistMovies(sort === "short");
   const sorted = useMemo(() => {
     if (!wl.data) return undefined;
     let l = wl.data.slice();
+    if (sort === "first") l.reverse();
     if (genre) l = l.filter((m) => genreIds(m).includes(genre));
     if (sort === "short") l.sort((a, b) => (a.runtime || 999) - (b.runtime || 999));
     if (sort === "recent") l.sort((a, b) => (b.release_date || "").localeCompare(a.release_date || ""));
@@ -25,7 +25,7 @@ function Watchlist() {
 
   return (
     <section className="section">
-      <SecHead as="h1" title="Watchlist" aside="Classée par ton indice" />
+      <SecHead as="h1" title="Watchlist" aside="Dans l'ordre où tu les as ajoutés" />
       <div className="filterbar">
         <label>
           Genre
@@ -41,7 +41,8 @@ function Watchlist() {
         <label>
           Tri
           <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
-            <option value="pred">Indice</option>
+            <option value="added">Ajoutés récemment</option>
+            <option value="first">Ajoutés en premier</option>
             <option value="short">Plus courts d'abord</option>
             <option value="recent">Plus récents</option>
             <option value="old">Plus anciens</option>
@@ -49,7 +50,7 @@ function Watchlist() {
         </label>
         {sorted ? (
           <span className="count" aria-live="polite">
-            {sorted.length} films{wl.refining ? " · affinage de l'indice…" : ""}
+            {sorted.length} films{wl.refining ? " · calcul des durées…" : ""}
           </span>
         ) : null}
       </div>

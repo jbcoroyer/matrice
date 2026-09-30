@@ -23,7 +23,7 @@ export default async function Page({ params }: Props) {
   if (!moodBySlug(slug)) notFound();
   return (
     <>
-      <BackLink href="/decouvrir/pour-toi" label="Pour toi" />
+      <BackLink />
       <MoodChips current={slug} />
       <ProfileGate>
         <MoodResults slug={slug} />

@@ -13,7 +13,7 @@ const SORTS = [
   { k: "vote_average.desc", l: "Mieux notés" },
 ] as const;
 
-/** Films d'un studio (TMDB discover), avec l'indice et le tri. */
+/** Films d'un studio (TMDB discover), avec le tri. */
 export function StudioFilms({ id, name }: { id: number; name: string }) {
   const d = useProfile();
   const [sort, setSort] = useState<(typeof SORTS)[number]["k"]>("popularity.desc");
@@ -33,7 +33,7 @@ export function StudioFilms({ id, name }: { id: number; name: string }) {
     setTotal(r.total_results);
     setPage(p + 1);
     const have = new Set(prev.map((m) => m.id));
-    const fresh = r.results.filter((m) => m.poster_path && !have.has(m.id)).map((m) => ({ ...m, _pred: d.predict(m).v }));
+    const fresh = r.results.filter((m) => m.poster_path && !have.has(m.id));
     return { list: [...prev, ...fresh], done: p + 1 >= r.total_pages };
   };
   const [done, setDone] = useState(false);

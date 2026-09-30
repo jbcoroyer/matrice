@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { num1, plural } from "@/lib/format";
+import { profileHref } from "@/lib/publicProfile";
 import { filmViewers, type Viewers } from "@/lib/viewers";
 import { useProfile } from "./ProfileProvider";
 import { StarsText } from "./Stars";
@@ -34,7 +36,9 @@ const initial = (n: string) => n.trim()[0]?.toUpperCase() ?? "?";
 /** « Qui l'a vu » : les membres qui ont vu le film, avec leur note. */
 export function FilmViewers({ tmdbId }: { tmdbId: number }) {
   const { userId } = useProfile();
+  const { status } = useProfile();
   const v = useViewers(tmdbId);
+  if (status !== "ready") return null;
   if (!v) return <aside className="viewers" aria-busy="true" style={{ minHeight: 120 }} />;
   if (!v.total)
     return (
@@ -77,7 +81,7 @@ export function FilmViewers({ tmdbId }: { tmdbId: number }) {
             <span className={`face${p.user_id === userId ? " me" : ""}`} aria-hidden>
               {p.avatar_url ? <img src={p.avatar_url} alt="" /> : initial(p.name)}
             </span>
-            <span className="n">{p.user_id === userId ? "Toi" : p.name}</span>
+            <span className="n">{p.user_id === userId ? "Toi" : <Link href={profileHref(p.user_id, p.username)}>{p.name}</Link>}</span>
             {p.favorite ? (
               <span className="heart" title="Coup de cœur">
                 ♥

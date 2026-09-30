@@ -1,7 +1,6 @@
 // Import d'un export Letterboxd (archive .zip ou CSV) vers la base.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureFilms, filmRow, saveFilmStates, updateProfile } from "./db";
-import { learnAffinities } from "./predict";
 import { KEYS, store } from "./store";
 import { check, chunks } from "./supabase";
 import { tmdb, ApiError } from "./tmdb";
@@ -316,28 +315,10 @@ export async function importLetterboxd(
     }
   }
 
-  // 7. goûts : réalisateurs, acteurs et genres des films notés
+  // 7. nom affiché
   const rated = stateRows.filter((r) => r.rating);
-  const genresOf = new Map(films.map((f) => [f.tmdb_id, f.genre_ids || []]));
-  let d2 = 0;
-  const learned = (
-    await Promise.all(
-      rated.map(async (r) => {
-        const c = await tmdb<Credits>(`movie/${r.tmdb_id}/credits`, { language: "en-US" }).catch(() => null);
-        onProgress({ phase: "Analyse de tes goûts", done: ++d2, total: rated.length });
-        if (!c) return null;
-        return {
-          rating: r.rating!,
-          genres: genresOf.get(r.tmdb_id) || [],
-          directors: c.crew.filter((x) => x.job === "Director").map((x) => x.name),
-          cast: c.cast.slice(0, 5).map((x) => x.name),
-        };
-      }),
-    )
-  ).filter((x): x is NonNullable<typeof x> => !!x);
-  const taste = learnAffinities(learned);
   const owner = (ex.profile?.["Given Name"] || ex.profile?.Username || "").trim();
-  await updateProfile(sb, userId, { taste: { ...taste, importedAt: new Date().toISOString() }, ...(owner ? { display_name: owner } : {}) });
+  if (owner) await updateProfile(sb, userId, { display_name: owner });
 
   return {
     films: films.length,

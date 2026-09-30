@@ -25,6 +25,7 @@ type ProfileRow = {
   id: string;
   username: string | null;
   display_name: string | null;
+  bio?: string | null;
   settings: Settings | null;
   taste: (Taste & { importedAt?: string }) | null;
   show_activity?: boolean;
@@ -39,21 +40,18 @@ export async function loadProfile(sb: SupabaseClient, userId: string): Promise<P
     check(await sb.from("profiles").insert({ id: userId }));
     row = { id: userId, username: null, display_name: null, settings: {}, taste: null, updated_at: new Date().toISOString() };
   }
-  const t = row.taste;
   return {
     id: row.id,
     owner: row.display_name || row.username || "",
-    mu: t?.mu ?? 3.5,
-    aff: t?.aff ?? { d: {}, c: {}, g: {} },
-    learned: !!t,
+    username: row.username ?? null,
+    bio: row.bio ?? null,
     settings: row.settings ?? {},
-    importedAt: t?.importedAt ?? null,
     showActivity: row.show_activity ?? true,
     updatedAt: row.updated_at,
   };
 }
 
-export async function updateProfile(sb: SupabaseClient, userId: string, patch: { settings?: Settings; taste?: Taste & { importedAt?: string }; display_name?: string | null; show_activity?: boolean }) {
+export async function updateProfile(sb: SupabaseClient, userId: string, patch: { settings?: Settings; taste?: Taste & { importedAt?: string }; display_name?: string | null; username?: string | null; bio?: string | null; show_activity?: boolean }) {
   check(await sb.from("profiles").update(patch).eq("id", userId));
 }
 
@@ -80,22 +78,41 @@ export async function loadFilmStates(sb: SupabaseClient) {
   return { states, titles };
 }
 
-/** La watchlist telle qu'elle est en base : une seule requête, sans passer par TMDB. */
-export async function loadWatchlistFilms(sb: SupabaseClient): Promise<Movie[]> {
-  const out: Movie[] = [];
+export type SeenFilm = { tmdb_id: number; rating: number | null; favorite: boolean; title: string; release_date: string | null; genre_ids: number[] };
+
+/** Tous les films vus, avec de quoi calculer des statistiques (genres, époques, notes) sans passer par TMDB. */
+export async function loadSeenFilms(sb: SupabaseClient): Promise<SeenFilm[]> {
+  const out: SeenFilm[] = [];
   for (let from = 0; ; from += 1000) {
     const rows = check(
-      await sb
-        .from("user_films")
-        .select("tmdb_id, updated_at, films(title, original_title, release_date, poster_path, backdrop_path, genre_ids, runtime)")
-        .eq("watchlist", true)
-        .order("updated_at", { ascending: false })
-        .order("tmdb_id")
-        .range(from, from + 999),
-    ) as unknown as {
-      tmdb_id: number;
-      films: { title: string; original_title: string | null; release_date: string | null; poster_path: string | null; backdrop_path: string | null; genre_ids: number[]; runtime: number | null } | null;
-    }[];
+      await sb.from("user_films").select("tmdb_id, rating, favorite, films(title, release_date, genre_ids)").eq("watched", true).order("tmdb_id").range(from, from + 999),
+    ) as unknown as { tmdb_id: number; rating: number | string | null; favorite: boolean; films: { title: string; release_date: string | null; genre_ids: number[] } | null }[];
+    for (const r of rows)
+      out.push({ tmdb_id: r.tmdb_id, rating: r.rating == null ? null : +r.rating, favorite: r.favorite, title: r.films?.title ?? "", release_date: r.films?.release_date ?? null, genre_ids: r.films?.genre_ids ?? [] });
+    if (rows.length < 1000) break;
+  }
+  return out;
+}
+
+/** La watchlist telle qu'elle est en base, du film ajouté le plus récemment au plus ancien. */
+export async function loadWatchlistFilms(sb: SupabaseClient): Promise<Movie[]> {
+  type Row = {
+    tmdb_id: number;
+    films: { title: string; original_title: string | null; release_date: string | null; poster_path: string | null; backdrop_path: string | null; genre_ids: number[]; runtime: number | null } | null;
+  };
+  const FILM = "films(title, original_title, release_date, poster_path, backdrop_path, genre_ids, runtime)";
+  const out: Movie[] = [];
+  let ordered = true; // false si la base n'a pas encore la colonne watchlisted_at (migration non passée)
+  for (let from = 0; ; from += 1000) {
+    let res = ordered
+      ? await sb.from("user_films").select(`tmdb_id, ${FILM}`).eq("watchlist", true).order("watchlisted_at", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).order("tmdb_id").range(from, from + 999)
+      : null;
+    if (res?.error && (res.error.code === "42703" || /watchlisted_at/.test(res.error.message))) {
+      ordered = false;
+      res = null;
+    }
+    res ??= await sb.from("user_films").select(`tmdb_id, ${FILM}`).eq("watchlist", true).order("updated_at", { ascending: false }).order("tmdb_id").range(from, from + 999);
+    const rows = check(res) as unknown as Row[];
     for (const r of rows) {
       const f = r.films;
       if (!f) continue;

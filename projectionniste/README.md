@@ -1,15 +1,14 @@
 # Filmable
 
-Journal de cinéma, critiques, listes, collection et recommandations calées sur tes goûts,
-avec import Letterboxd. Next.js 15, rendu serveur des fiches, clé TMDB cachée côté serveur,
+Journal de cinéma, critiques, listes et collection, avec import Letterboxd. Next.js 15, rendu serveur des fiches, clé TMDB cachée côté serveur,
 Supabase pour les comptes et les données. Direction artistique : voir `design/`.
 
 ## Rubriques
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil : ta sélection du jour (carrousel), rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
-| `/watchlist` | Ta watchlist, filtres et tris |
+| `/decouvrir` | Accueil : les films à la une cette semaine (carrousel), humeurs, rangées À l'affiche, Tendances, Bientôt en salles, Les mieux notés ; aucun tri personnalisé |
+| `/watchlist` | Ta watchlist, dans l'ordre d'ajout (le plus récent d'abord), filtres et tris |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
 | `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
@@ -17,8 +16,9 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 | `/collection` | Ta cinémathèque physique : cartes de collection (format, édition, éditeur, n° d'édition, scellé, état, prêt, photo), tri par réalisateur, vues Vitrine / Étagère / Classeur (un réalisateur par ligne : films possédés, ce qu'il manque, détail cliquable), envies, filtres « jamais vus », scellés, éditions limitées ; partage public |
 | `/c/[code]` | Cinémathèque partagée, lisible sans compte (jamais tes films vus ni tes prêts) |
 | `/journal` | Journal daté ; onglet « Films vus » avec tous les films marqués comme vus |
-| `/film/[id]` | Fiche : indice, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques, films proches |
-| `/personne/[id]` | Biographie et filmographie classée par ton indice |
+| `/film/[id]` | Fiche (lisible sans compte) : ta note, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques |
+| `/personne/[id]` | Biographie et filmographie (lisible sans compte) |
+| `/u/[pseudo]` | Profil public : nom, présentation, top 5, listes publiques, critiques publiques |
 | `/studio/[id]` | Studio : logo et films, triés par popularité, date ou note |
 | `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
 | Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal, Bilan, Paramètres (`/parametres`), déconnexion ; sur mobile aussi Mes listes |
@@ -27,7 +27,7 @@ Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur ch
 le marquer vu et le noter (demi-étoiles). Le bouton **Journaliser** de l'en-tête (le + central de la barre d'onglets sur mobile) enregistre un visionnage depuis n'importe quelle page : recherche du film, puis date, note, critique. Chaque action peut
 être annulée depuis la notification.
 
-Un compte neuf (aucun film vu, noté ni en watchlist) voit un guide de démarrage en haut de Découvrir et des pages vides qui proposent quoi faire ; sans historique, il n'y a ni « Pour toi » ni indice.
+Un compte neuf (aucun film vu, noté ni en watchlist) voit un guide de démarrage en haut de Découvrir et des pages vides qui proposent quoi faire.
 
 ## Démarrer
 
@@ -81,24 +81,20 @@ films vus, notes, watchlist, likes (→ favoris), journal (dates, revisionnages,
 critiques, listes (ordre et notes), films favoris du profil (→ top), nom. Les goûts (réalisateurs,
 acteurs, genres) sont réappris à partir des notes. Un nouvel import met à jour sans doublons.
 
-## Comment l'indice est calculé
+## Pas de recommandations
 
-`lib/predict.ts` : note prédite = ta moyenne + 0,25 × (note TMDB lissée − 7) + 1,2 × affinité
-genres + 0,8 × affinité réalisateur + 0,2 × affinité interprètes, bornée à [0,5 ; 5].
-Les affinités sont l'écart moyen de tes notes à ta moyenne, lissé pour ne pas surréagir à un
-film isolé ; l'import Letterboxd les réapprend à partir de tes notes (`learnAffinities`).
-
-`lib/recs.ts` : « Pour toi » agrège les recommandations TMDB de tes films notés 4,5 et plus,
-pondérées par ta note et le rang, puis reclasse par indice en limitant le poids de chaque film
-source (diversité). Recalculé une fois par jour ou quand ton historique change.
+Filmable ne prédit pas de note et ne trie pas les films selon tes goûts : Découvrir montre les
+mêmes classements à tout le monde (à l'affiche, tendances, sorties, mieux notés, humeurs), pour
+rester ouvert à tout type de cinéma. Le profil montre des « highlights » (réalisateur, acteur,
+genre, époque les plus vus, film le mieux noté), calculés en comptant les films vus.
 
 ## Requêtes TMDB
 
 `lib/tmdb.ts` : au plus 6 requêtes en même temps, jusqu'à 3 essais (réseau, 429, 5xx) avec pause
 croissante, annulation des requêtes en attente quand la page change, réponses gardées en mémoire.
-Les notes TMDB déjà vues sont gardées 14 jours dans le navigateur (`lib/votes.ts`). La watchlist
-vient de la base en une requête et s'affiche tout de suite ; seules les notes inconnues sont
-demandées, 4 à la fois, pour affiner l'indice. « Pour toi » part de 60 films au plus.
+La watchlist vient de la base en une requête (ordre d'ajout : colonne `watchlisted_at`) et
+s'affiche tout de suite ; les durées ne sont demandées à TMDB, 4 à la fois, que pour le tri
+« plus courts d'abord ».
 
 ## Structure
 
@@ -106,7 +102,7 @@ demandées, 4 à la fois, pour affiner l'indice. « Pour toi » part de 60 films
 app/            routes (pages serveur pour film/personne, client pour les rubriques personnelles)
 app/api/tmdb/   proxy TMDB (liste blanche + cache)
 components/     cartes, grilles, en-tête, recherche, fiche, filmographie…
-lib/            client/serveur TMDB, prédiction, recommandations, humeurs, import Letterboxd
+lib/            client/serveur TMDB, humeurs, highlights, import Letterboxd
 supabase/       migrations SQL
 ```
 

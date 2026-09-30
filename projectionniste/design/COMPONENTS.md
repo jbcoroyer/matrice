@@ -14,20 +14,20 @@
 - Image du film en fond pleine largeur, fondue vers le noir ; affiche arrondie posée dessus.
 - Libellés (genres · année · durée · visa), titre en deux graisses, « Un film de … · avec … »
   (liens vers les personnes).
-- Barre de notes : ta note en pastille crème pleine avec étoile, ou ton indice (estimé) en pastille à anneau pointillé sans étoile, TMDB, moyenne des membres, et ce qui
-  fait bouger l'indice.
+- Barre de notes : ta note en pastille crème pleine avec étoile, note TMDB, moyenne des membres.
 - Actions en pilules : Ajouter au journal, Vu, Watchlist, note en étoiles, coup de cœur, liste,
   collection, menu « … » (top 5, partager, envie de l'avoir en disque).
 - Synopsis + **Qui l'a vu** (membres, moyenne, notes ; chacun peut se masquer).
 - **Casting et réalisation** en photos, tout cliquable.
 - **Générique** : rôles alignés à droite, noms à gauche, comme un générique de fin ; logos des
   **studios** (en blanc) qui mènent à `/studio/[id]`.
-- Critiques des membres, puis « Dans le même esprit ».
+- Critiques des membres. Pas de « films proches » : pas de recommandation dans Filmable.
+- Sans compte : la fiche est lisible, les actions sont remplacées par « Créer un compte ».
 
-## Sélection du jour (`app/decouvrir/page.tsx`)
+## À la une (`app/decouvrir/page.tsx`)
 
-Carrousel : affiche centrale grande, voisines en retrait et inclinées ; fond d'ambiance tiré de
-l'affiche active ; texte à gauche (titre deux graisses, libellés, indice, résumé, raison),
+Les films les plus regardés de la semaine (TMDB), les mêmes pour tout le monde. Carrousel : affiche centrale grande, voisines en retrait et inclinées ; fond d'ambiance tiré de
+l'affiche active ; texte à gauche (titre deux graisses, libellés, note TMDB, résumé),
 points de pagination, flèches clavier et glisser sur mobile.
 
 ## Cinémathèque (`app/collection/page.tsx`, `components/CollectionCard.tsx`, `components/Classeur.tsx`)
@@ -68,16 +68,14 @@ possède et tout ce qui manque, avec un bouton « Envie »).
 Mur d'affiches du moment incliné et assombri, grand mot-marque « **Film**able », formulaire
 dans une carte en verre.
 
-## Indice, note, coup de cœur : vocabulaire
+## Vocabulaire
 
-- **Indice** : la note estimée d'après tes goûts. Anneau **pointillé**, sans étoile (`.pill.guess`,
-  `.score-pill.guess`), sur les affiches, la fiche et la sélection du jour.
-- **Note** : celle que tu as donnée. Pastille **pleine** crème avec étoile, « ta note ».
-- **Coup de cœur** : le cœur d'un film (fiche, journal). « J'aime » ne sert que pour les critiques
-  des autres membres.
-- **Mon profil** : menu, page `/portrait` (titre et onglet).
-- **Sélection du jour** : les cinq films du carrousel de Découvrir (recalculés chaque jour).
-  « Tendances de la semaine » garde « semaine » : c'est le classement TMDB hebdomadaire.
+- Pas d'**indice** ni de recommandation : décision du propriétaire, pour rester ouvert à tout le cinéma.
+- **Note** : celle que tu as donnée. Pastille pleine crème avec étoile, « ta note ».
+- **Coup de cœur** : le cœur d'un film (fiche, journal). « J'aime » ne sert que pour les critiques.
+- **Mon profil** (`/portrait`) : chiffres, top 5, répartition des notes, **highlights** (réalisateur,
+  acteur, genre, époque les plus vus, film le mieux noté : grands noms en typographie, pas de graphique).
+- **Profil public** (`/u/pseudo`) : nom, présentation, top 5, listes et critiques publiques.
 
 ## Premier lancement et pages vides (`components/ui.tsx`)
 
@@ -85,8 +83,6 @@ dans une carte en verre.
   ni en watchlist. « Bienvenue sur **Filmable** », trois gestes numérotés en grands chiffres légers
   (importer Letterboxd, journaliser un premier film, noter ce qu'on connaît), sans cartes ni icônes.
   « Masquer ce guide » le range (mémorisé dans le navigateur).
-- Sans historique, Découvrir n'affiche ni sélection du jour, ni « Pour toi », ni indice sur les
-  affiches (ils ne diraient rien de personnel) : seulement les tendances de la semaine.
 - **Page vide** (`EmptyState`) : un titre, une phrase qui dit à quoi sert la page, et de quoi la
   remplir (`StartActions` : Journaliser un film, Importer mon Letterboxd ; ou l'action propre à la
   page : Parcourir les tendances, Ajouter mon premier exemplaire, Créer ma première liste).

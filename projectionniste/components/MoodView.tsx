@@ -10,7 +10,7 @@ import type { Movie, Paged, Ranked } from "@/lib/types";
 
 const BATCH = 4;
 
-/** Une humeur : interroge TMDB en direct (4 pages à la fois), retire le déjà-vu, classe par indice. */
+/** Une humeur : interroge TMDB en direct (4 pages à la fois), dans l'ordre de TMDB. */
 export function MoodResults({ slug }: { slug: string }) {
   const d = useProfile();
   const mood = moodBySlug(slug);
@@ -31,9 +31,7 @@ export function MoodResults({ slug }: { slug: string }) {
     const have = new Set(prev.map((m) => m.id));
     const fresh = pages
       .flatMap((p) => p?.results ?? [])
-      .filter((m) => m.poster_path && !d.seen.has(m.id) && !have.has(m.id) && (have.add(m.id), true))
-      .map((m) => ({ ...m, _pred: d.predict(m).v }))
-      .sort((a, b) => b._pred - a._pred);
+      .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true));
     setPage(from + BATCH);
     setDone(from + BATCH >= Math.min(total, 40));
     return [...prev, ...fresh];
@@ -78,7 +76,7 @@ export function MoodResults({ slug }: { slug: string }) {
           }
         />
       ) : (
-        <p className="status">Rien de neuf pour toi ici. Tu as peut-être déjà tout vu.</p>
+        <p className="status">Aucun film pour cette humeur.</p>
       )}
     </section>
   );

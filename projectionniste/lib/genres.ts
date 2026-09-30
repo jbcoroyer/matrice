@@ -1,3 +1,5 @@
+import type { Movie } from "./types";
+
 /** Noms anglais (IMDb) : ce sont les clés des affinités de genre. */
 export const GENRE_NAME: Record<number, string> = {
   28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime", 99: "Documentary", 18: "Drama",
@@ -25,3 +27,7 @@ export const GENRE_OPTIONS = Object.entries(GENRE_FR)
   .filter(([id]) => id !== "10770")
   .map(([id, name]) => ({ id: +id, name }))
   .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+
+export function genreIds(m: Movie): number[] {
+  return m.genre_ids || (m.genres || []).map((x) => x.id);
+}

@@ -9,7 +9,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "Filmable", template: "%s · Filmable" },
-  description: "Ton journal de cinéma, tes critiques, tes listes et des recommandations calées sur tes goûts, avec import Letterboxd.",
+  description: "Ton journal de cinéma, tes critiques, tes listes et ta collection, avec import Letterboxd.",
   applicationName: "Filmable",
   appleWebApp: { capable: true, title: "Filmable", statusBarStyle: "black-translucent" },
 };

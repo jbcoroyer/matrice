@@ -131,7 +131,7 @@ export function Onboarding() {
       <ol className="onboard-steps">
         <li>
           <b>Importe ton Letterboxd</b>
-          <p>Notes, journal, critiques, watchlist et listes sont repris d'un coup. Les recommandations se calent tout de suite sur tes goûts.</p>
+          <p>Notes, journal, critiques, watchlist et listes sont repris d'un coup, sans rien ressaisir.</p>
           <Link className="btn primary" href="/parametres#import">
             Importer
           </Link>
@@ -145,7 +145,7 @@ export function Onboarding() {
         </li>
         <li>
           <b>Note ce que tu connais</b>
-          <p>Dans les tendances ci-dessous, ouvre un film que tu as vu et donne-lui une note : « Pour toi » et l'indice apparaissent dès les premières.</p>
+          <p>Ouvre un film que tu as vu et donne-lui une note : ton profil et ton bilan de l'année se construisent au fil de tes visionnages.</p>
         </li>
       </ol>
       <button

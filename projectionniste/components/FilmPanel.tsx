@@ -1,6 +1,7 @@
 "use client";
 
 import { errorText } from "@/lib/errors";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
 import { clearTopSlot, DIARY_EVENT, diaryChanged, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
@@ -26,13 +27,14 @@ export function FilmPanel({ film }: { film: FilmInput }) {
   const [listing, setListing] = useState(false);
   const [wanted, setWanted] = useState(false);
   const more = useRef<HTMLDetailsElement>(null);
+  const signedIn = d.status === "ready";
   const loadCopies = useCallback(() => {
-    if (d.sb) itemsForFilm(d.sb, film.id).then(setCopies, () => {});
-  }, [d.sb, film.id]);
+    if (d.sb && signedIn) itemsForFilm(d.sb, film.id).then(setCopies, () => {});
+  }, [d.sb, signedIn, film.id]);
   useEffect(loadCopies, [loadCopies]);
   useEffect(() => {
-    if (d.sb) isWanted(d.sb, film.id).then(setWanted, () => {});
-  }, [d.sb, film.id]);
+    if (d.sb && signedIn) isWanted(d.sb, film.id).then(setWanted, () => {});
+  }, [d.sb, signedIn, film.id]);
 
   const toggleWanted = async () => {
     if (!d.sb || !d.userId) return;
@@ -49,11 +51,11 @@ export function FilmPanel({ film }: { film: FilmInput }) {
     }
   };
   useEffect(() => {
-    if (d.sb && d.userId) listsWithFilm(d.sb, d.userId, film.id).then((s) => setInLists(s.size), () => {});
-  }, [d.sb, d.userId, film.id]);
+    if (d.sb && d.userId && signedIn) listsWithFilm(d.sb, d.userId, film.id).then((s) => setInLists(s.size), () => {});
+  }, [d.sb, d.userId, signedIn, film.id]);
   useEffect(() => {
-    if (d.sb && d.userId) loadTop(d.sb, d.userId).then(setTop, () => {});
-  }, [d.sb, d.userId]);
+    if (d.sb && d.userId && signedIn) loadTop(d.sb, d.userId).then(setTop, () => {});
+  }, [d.sb, d.userId, signedIn]);
 
   const isSeen = d.seen.has(film.id);
   const isFav = d.favorites.has(film.id);
@@ -84,6 +86,22 @@ export function FilmPanel({ film }: { film: FilmInput }) {
       }
     } catch {}
   };
+
+  // visiteur sans compte : on invite à créer un compte plutôt que de montrer des boutons qui ne feraient rien
+  if (!signedIn && d.status !== "loading")
+    return (
+      <div className="film-invite">
+        <p>Crée un compte pour noter ce film, l'ajouter à ta watchlist, le journaliser et garder la trace de ce que tu as vu.</p>
+        <div className="row-actions">
+          <Link className="btn primary" href="/">
+            Créer un compte
+          </Link>
+          <Link className="btn" href="/">
+            Se connecter
+          </Link>
+        </div>
+      </div>
+    );
 
   return (
     <>

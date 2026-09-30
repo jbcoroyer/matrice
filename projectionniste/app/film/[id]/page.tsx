@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { FadeImg, Poster } from "@/components/Poster";
-import { FilmRecs, ScoreBox } from "@/components/FilmPersonal";
+import { ScoreBox } from "@/components/FilmPersonal";
 import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
 import { FilmReviews } from "@/components/Reviews";
 import { SeenBadge } from "@/components/SeenBadge";
@@ -21,7 +21,7 @@ const getFilm = cache(async (id: string) => {
   if (!/^\d+$/.test(id)) return null;
   try {
     return await tmdbFetch<MovieDetail>(`movie/${id}`, {
-      append_to_response: "credits,recommendations,similar,release_dates",
+      append_to_response: "credits,release_dates",
     });
   } catch (e) {
     if (e instanceof TmdbError && e.status === 404) return null;
@@ -65,14 +65,6 @@ export default async function FilmPage({ params }: Props) {
   const cert = fr?.release_dates.map((d) => d.certification).find(Boolean);
   const frRelease = fr?.release_dates.find((d) => d.type === 3)?.release_date;
   const upcoming = frRelease && frRelease.slice(0, 10) > new Date().toISOString().slice(0, 10);
-
-  const seenIds = new Set<number>([m.id]);
-  const recs: Movie[] = [];
-  for (const r of [...(m.recommendations?.results ?? []), ...(m.similar?.results ?? [])])
-    if (r.poster_path && !seenIds.has(r.id)) {
-      seenIds.add(r.id);
-      recs.push(r);
-    }
 
   const film = {
     id: m.id,
@@ -135,7 +127,7 @@ export default async function FilmPage({ params }: Props) {
                 {cast.length ? <>avec {join(cast.slice(0, 3).map(person))}</> : null}
               </p>
             ) : null}
-            <ScoreBox movie={scoreMovie} credits={{ cast: cast.slice(0, 5), crew: dirs.map((d) => ({ ...d, job: "Director" })) }} />
+            <ScoreBox movie={scoreMovie} />
             <FilmPanel film={film} />
           </div>
         </div>
@@ -216,7 +208,6 @@ export default async function FilmPage({ params }: Props) {
 
       <FilmReviews tmdbId={m.id} />
 
-      <FilmRecs title={m.title} list={recs} />
     </article>
   );
 }

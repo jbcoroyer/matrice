@@ -29,13 +29,13 @@ function bucket(credits: PersonCredits) {
   return b;
 }
 
-/** Filmographie classée par indice : ce qu'il te reste à voir de ce cinéaste ou de cette actrice. */
+/** Filmographie d'une personne, par poste ; on voit ce qu'on a déjà vu. */
 export function Filmography({ credits, dept, name }: { credits: PersonCredits; dept: string; name: string }) {
-  const { status, seen, predict } = useProfile();
+  const { status, seen } = useProfile();
   const b = useMemo(() => bucket(credits), [credits]);
   const first = (TABS.find((t) => t.k === dept && b[t.k].length) || TABS.find((t) => b[t.k].length))?.k ?? "Acting";
   const [tab, setTab] = useState<Tab>(first);
-  const [sort, setSort] = useState<"pred" | "date" | "pop">("pred");
+  const [sort, setSort] = useState<"pop" | "date">("pop");
   const [unseen, setUnseen] = useState(false);
 
   const list = useMemo(() => {
@@ -51,14 +51,11 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
       byId.set(c.id, { ...c, _note: note || undefined });
     }
     let l = [...byId.values()];
-    if (status === "ready") l = l.map((m) => ({ ...m, _pred: predict(m).v }));
     if (unseen) l = l.filter((m) => !seen.has(m.id));
-    // les films à peine votés (courts, inédits) descendent en bas du classement
-    if (sort === "pred") l.sort((a, b) => ((b.vote_count || 0) >= 20 ? 1 : 0) - ((a.vote_count || 0) >= 20 ? 1 : 0) || (b._pred ?? 0) - (a._pred ?? 0));
     if (sort === "date") l.sort((a, b) => (b.release_date || "9999").localeCompare(a.release_date || "9999"));
     if (sort === "pop") l.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     return l;
-  }, [b, tab, sort, unseen, status, seen, predict]);
+  }, [b, tab, sort, unseen, seen]);
 
   const all = new Set(b[tab].map((c) => c.id));
   const seenCount = [...all].filter((id) => seen.has(id)).length;
@@ -69,7 +66,7 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
       {status === "ready" && all.size ? (
         <p className="tally">
           Tu en as vu <b>{seenCount}</b> sur {all.size}.{" "}
-          {seenCount < all.size ? "Classés par ton indice, voici ceux qui t'attendent." : "Tu as tout vu."}
+          {seenCount < all.size ? "Les autres t'attendent." : "Tu as tout vu."}
         </p>
       ) : null}
       <div className="filterbar">
@@ -83,17 +80,18 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
         <label>
           Tri
           <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
-            <option value="pred">Indice</option>
-            <option value="date">Plus récents</option>
             <option value="pop">Plus connus</option>
+            <option value="date">Plus récents</option>
           </select>
         </label>
-        <label>
-          <input type="checkbox" checked={unseen} onChange={(e) => setUnseen(e.target.checked)} /> Pas encore vus
-        </label>
+        {status === "ready" ? (
+          <label>
+            <input type="checkbox" checked={unseen} onChange={(e) => setUnseen(e.target.checked)} /> Pas encore vus
+          </label>
+        ) : null}
         <span className="count">{list.length} films</span>
       </div>
-      {status !== "ready" ? (
+      {status === "loading" ? (
         <SkeletonGrid n={10} />
       ) : list.length ? (
         <FilmGrid key={`${tab}|${sort}|${unseen}`} list={list} />

@@ -8,9 +8,11 @@ import { BackLink } from "@/components/Rail";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
 
-type Source = "movie/popular" | "trending/movie/week" | "movie/top_rated";
+type Source = "movie/popular" | "trending/movie/week" | "movie/top_rated" | "movie/now_playing" | "movie/upcoming";
 const SOURCES: { k: Source; l: string }[] = [
   { k: "trending/movie/week", l: "Tendances de la semaine" },
+  { k: "movie/now_playing", l: "À l'affiche" },
+  { k: "movie/upcoming", l: "Bientôt en salles" },
   { k: "movie/popular", l: "Les plus populaires" },
   { k: "movie/top_rated", l: "Les mieux notés" },
 ];
@@ -18,6 +20,12 @@ const SOURCES: { k: Source; l: string }[] = [
 function Populaires() {
   const d = useProfile();
   const [src, setSrc] = useState<Source>("trending/movie/week");
+  // ?liste=now_playing|upcoming|top_rated|popular : lien depuis les rangées de Découvrir
+  useEffect(() => {
+    const l = new URLSearchParams(location.search).get("liste");
+    const hit = SOURCES.find((x) => x.k === `movie/${l}`);
+    if (hit) setSrc(hit.k);
+  }, []);
   const [list, setList] = useState<Ranked[] | null>(null);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(1);
@@ -32,7 +40,7 @@ function Populaires() {
     const fresh: Ranked[] = pages
       .flatMap((x) => x.results)
       .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true))
-      .map((m) => ({ ...m, _pred: d.predict(m).v, _note: d.seen.has(m.id) ? "Déjà vu" : undefined }));
+      .map((m) => ({ ...m, _note: d.seen.has(m.id) ? "Déjà vu" : undefined }));
     return [...prev, ...fresh];
   };
 
@@ -52,7 +60,7 @@ function Populaires() {
   return (
     <section className="section">
       <BackLink />
-      <SecHead as="h1" title="Tendances" aside="Classement TMDB, avec ton indice" />
+      <SecHead as="h1" title="Tendances" aside="Classements TMDB" />
       <div className="filterbar">
         <div className="seg" role="group" aria-label="Classement">
           {SOURCES.map((s) => (

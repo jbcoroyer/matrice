@@ -70,12 +70,10 @@ export type Settings = Record<string, unknown>;
 export type Profile = {
   id: string;
   owner: string;
-  mu: number;
-  aff: Affinity;
-  /** true si les goûts ont été appris (import Letterboxd) */
-  learned: boolean;
+  /** pseudo public (adresse /u/pseudo), s'il en a un */
+  username: string | null;
+  bio: string | null;
   settings: Settings;
-  importedAt: string | null;
   /** montre aux autres membres les films vus (section « Qui l'a vu ») */
   showActivity: boolean;
   updatedAt: string;
@@ -96,5 +94,5 @@ export type FilmRow = {
   runtime?: number | null;
 };
 
-/** Film enrichi pour l'affichage (indice prédit, raison de la recommandation). */
-export type Ranked = Movie & { _pred?: number; _because?: string; _score?: number; _seed?: number; _note?: string };
+/** Film enrichi pour l'affichage (mention facultative sous le titre : rôle, « Déjà vu »…). */
+export type Ranked = Movie & { _note?: string };

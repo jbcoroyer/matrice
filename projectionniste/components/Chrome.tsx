@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { signOut } from "@/lib/auth";
 import { useProfile } from "./ProfileProvider";
@@ -41,11 +42,16 @@ export function Toaster() {
 /** Session refusée par le serveur : les changements ne sont plus enregistrés, on propose de se reconnecter. */
 export function SessionBanner() {
   const { sessionExpired, status, sb } = useProfile();
+  const router = useRouter();
   if (!sessionExpired || status !== "ready") return null;
   return (
     <div className="session-banner" role="alert">
       <span>Ta session a expiré : tes dernières modifications n'ont peut-être pas été enregistrées.</span>
-      <button type="button" className="btn primary" onClick={() => sb && signOut(sb)}>
+      <button type="button" className="btn primary" onClick={async () => {
+          if (sb) await signOut(sb);
+          // sur une page publique (fiche film…), on n'aurait sinon pas l'écran de connexion
+          router.push("/");
+        }}>
         Se reconnecter
       </button>
     </div>

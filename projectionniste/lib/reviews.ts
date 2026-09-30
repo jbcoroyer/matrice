@@ -49,6 +49,21 @@ export async function filmReviews(sb: SupabaseClient, tmdbId: number, sort: "rec
   return rows;
 }
 
+/** Critiques publiques d'un membre, les plus récentes d'abord. */
+export async function userReviews(sb: SupabaseClient, userId: string, limit = 12): Promise<Review[]> {
+  const rows = check(
+    await sb
+      .from("diary_entries")
+      .select(COLS)
+      .eq("user_id", userId)
+      .eq("review_public", true)
+      .not("review", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(limit),
+  ) as unknown as Raw[];
+  return rows.map(norm);
+}
+
 export async function getReview(sb: SupabaseClient, id: string): Promise<Review | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const row = check(await sb.from("diary_entries").select(COLS).eq("id", id).not("review", "is", null).maybeSingle()) as unknown as Raw | null;

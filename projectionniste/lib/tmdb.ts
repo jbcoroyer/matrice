@@ -1,5 +1,4 @@
 // Client TMDB côté navigateur : passe par le proxy /api/tmdb (le jeton reste sur le serveur).
-import { rememberVote } from "./votes";
 
 export const IMG = "https://image.tmdb.org/t/p/";
 
@@ -40,15 +39,6 @@ type Params = Record<string, string | number | boolean | undefined | null>;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Mémorise les notes TMDB au passage (fiche ou liste de films). */
-function rememberVotes(path: string, body: any) {
-  if (Array.isArray(body?.results)) {
-    for (const m of body.results) if (m && typeof m.id === "number" && m.title !== undefined) rememberVote(m.id, m.vote_average, m.vote_count);
-  } else if (/^movie\/\d+$/.test(path) && typeof body?.id === "number") {
-    rememberVote(body.id, body.vote_average, body.vote_count);
-  }
-}
-
 /** Appelle TMDB. `signal` retire la requête de la file d'attente si la page a changé entre-temps. */
 export function tmdb<T = any>(path: string, params: Params = {}, { cache = true, signal }: { cache?: boolean; signal?: AbortSignal } = {}): Promise<T> {
   const q = new URLSearchParams();
@@ -77,7 +67,6 @@ export function tmdb<T = any>(path: string, params: Params = {}, { cache = true,
       if (!r) throw new ApiError(0, "Connexion impossible. Vérifie ta connexion internet.");
       const body = await r.json().catch(() => null);
       if (!r.ok) throw new ApiError(r.status, (body && body.error) || `Erreur ${r.status}.`);
-      rememberVotes(path, body);
       return body as T;
     }
   }, signal);

@@ -5,9 +5,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { listOwned, type Format } from "@/lib/collection";
 import { currentAccount, EMPTY_STATE, type Account, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
-import { predict, type Prediction } from "@/lib/predict";
 import { derive, type Derived } from "@/lib/profile";
-import { clearRecs } from "@/lib/recs";
 import { KEYS, store } from "@/lib/store";
 import { takeManualSignOut } from "@/lib/auth";
 import { SESSION_EVENT, supabase } from "@/lib/supabase";
@@ -39,7 +37,6 @@ type Ctx = Derived & {
   /** films possédés en physique : formats des exemplaires, le plus prestigieux d'abord */
   owned: Map<number, Format[]>;
   refreshOwned: () => void;
-  predict: (m: Movie, credits?: Credits | null) => Prediction;
   retry: () => void;
   reload: () => Promise<void>;
   toggleWatchlist: (m: FilmInput) => void;
@@ -168,7 +165,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const reload = useCallback(async () => {
     if (!userId) return;
-    clearRecs();
     await loadAll(userId);
   }, [userId, loadAll]);
 
@@ -242,7 +238,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       states,
       owned,
       refreshOwned,
-      predict: (m, credits) => (profile ? predict(m, profile.aff, profile.mu, credits) : { v: 0, why: [] }),
       retry: () => setAttempt((a) => a + 1),
       reload,
       toggleWatchlist,

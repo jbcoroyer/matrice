@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Filmable",
     short_name: "Filmable",
-    description: "Ton journal de cinéma, tes critiques, tes listes et des recommandations calées sur tes goûts.",
+    description: "Ton journal de cinéma, tes critiques, tes listes et ta collection.",
     start_url: "/",
     display: "standalone",
     background_color: "#0c0c0e",

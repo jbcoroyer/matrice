@@ -4,6 +4,7 @@ import { errorText } from "@/lib/errors";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { frDate, plural } from "@/lib/format";
+import { profileHref } from "@/lib/publicProfile";
 import { authorName, filmReviews, myLikes, setLike, type Review } from "@/lib/reviews";
 import { ReviewText } from "./DiaryEntries";
 import { DIARY_EVENT } from "@/lib/diary";
@@ -82,7 +83,7 @@ export function ReviewCard({ r, liked, onLike, mine }: { r: Review; liked: boole
           {authorName(r.author)[0]?.toUpperCase()}
         </span>
         <span>
-          <b>{name}</b>
+          <b>{mine ? name : <Link href={profileHref(r.user_id, r.author?.username)}>{name}</Link>}</b>
           {r.watched_on ? `vu le ${frDate(r.watched_on)}` : null}
           {r.rewatch ? " · revu" : null}
         </span>
@@ -111,7 +112,6 @@ export function FilmReviews({ tmdbId }: { tmdbId: number }) {
     if (sb) filmReviews(sb, tmdbId, sort).then(setReviews, () => setReviews([]));
   }, [sb, tmdbId, sort]);
   useEffect(() => {
-    if (status !== "ready") return;
     load();
     const on = (e: Event) => (e as CustomEvent).detail === tmdbId && load();
     window.addEventListener(DIARY_EVENT, on);

@@ -64,8 +64,7 @@ export function AuthScreen() {
             Film<span>able</span>
           </h1>
           <p>
-            Ton journal de cinéma, tes critiques, tes listes et ta collection, avec des recommandations calées sur tes goûts. Importe ton
-            historique Letterboxd en une fois.
+            Ton journal de cinéma, tes critiques, tes listes et ta collection. Importe ton historique Letterboxd en une fois.
           </p>
         </div>
         <div className="auth-card">
@@ -143,12 +142,15 @@ function PosterWall() {
   );
 }
 
+/** Pages lisibles sans compte : collection partagée, liste, critique, profil public, fiche film, personne, studio. */
+export const isPublicPath = (path: string) => path.startsWith("/c/") || /^\/(listes|critique|u)\/[^/]+$/.test(path) || /^\/(film|personne|studio)\/\d+$/.test(path);
+
 /** Tout le site passe par ici : sans compte connecté, on affiche l'écran de connexion. */
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { status, error, retry } = useProfile();
   const path = usePathname();
-  // pages publiques : collection partagée, liste, critique (la page vérifie elle-même si elle est publique)
-  if (path.startsWith("/c/") || /^\/(listes|critique)\/[^/]+$/.test(path)) return <>{children}</>;
+  // pages publiques (chacune vérifie elle-même ce qu'elle a le droit de montrer)
+  if (isPublicPath(path)) return <>{children}</>;
   if (status === "signedOut" || status === "guest") return <AuthScreen />;
   if (status === "error")
     return (

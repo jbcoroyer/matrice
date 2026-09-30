@@ -1,12 +1,14 @@
 "use client";
 
 import { errorText } from "@/lib/errors";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, Loader } from "@/components/ui";
 import { setPassword, signOut } from "@/lib/auth";
 import { updateProfile } from "@/lib/db";
+import { profileHref } from "@/lib/publicProfile";
 import { importLetterboxd, type Progress } from "@/lib/letterboxd";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 
@@ -55,8 +57,7 @@ function LetterboxdImport() {
         <li>Dépose ici l'archive <b>.zip</b> reçue, sans la décompresser.</li>
       </ol>
       <p className="note">
-        Journal, notes, critiques, likes, watchlist, listes et favoris sont repris, et tes goûts réappris. Réimporter plus tard met à jour sans doublons.
-        {profile?.importedAt ? ` Dernier import : ${new Date(profile.importedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}.` : ""}
+        Journal, notes, critiques, likes, watchlist, listes et favoris sont repris. Réimporter plus tard met à jour sans doublons.
       </p>
       <label
         className={`drop${over ? " over" : ""}`}
@@ -94,20 +95,26 @@ function LetterboxdImport() {
 function ProfileName() {
   const { sb, userId, profile, reload, toast } = useProfile();
   const [name, setName] = useState(profile?.owner ?? "");
+  const [handle, setHandle] = useState(profile?.username ?? "");
+  const [bio, setBio] = useState(profile?.bio ?? "");
   const [busy, setBusy] = useState(false);
-  const dirty = name.trim() !== (profile?.owner ?? "");
+  const cleanHandle = handle.trim().toLowerCase();
+  const handleOk = !cleanHandle || /^[a-z0-9_]{3,24}$/.test(cleanHandle);
+  const dirty = name.trim() !== (profile?.owner ?? "") || cleanHandle !== (profile?.username ?? "") || bio.trim() !== (profile?.bio ?? "");
   return (
     <form
-      className="inline-form"
+      className="stack-form"
       onSubmit={async (e) => {
         e.preventDefault();
+        if (!handleOk) return;
         setBusy(true);
         try {
-          await updateProfile(sb!, userId!, { display_name: name.trim() || null });
+          await updateProfile(sb!, userId!, { display_name: name.trim() || null, username: cleanHandle || null, bio: bio.trim() || null });
           await reload();
-          toast("Nom enregistré");
+          toast("Profil enregistré");
         } catch (err) {
-          toast(`Échec : ${errorText(err)}`);
+          const m = errorText(err);
+          toast(`Échec : ${m === "Cet élément existe déjà." ? "ce pseudo est déjà pris." : m}`);
         } finally {
           setBusy(false);
         }
@@ -117,11 +124,25 @@ function ProfileName() {
         Nom affiché
         <input className="input" value={name} maxLength={60} placeholder="Ton prénom ou un pseudo" onChange={(e) => setName(e.target.value)} />
       </label>
-      {dirty ? (
-        <button type="submit" className="btn primary" disabled={busy}>
-          Enregistrer
-        </button>
-      ) : null}
+      <label className="block">
+        Pseudo (adresse de ton profil public)
+        <input className="input" value={handle} maxLength={24} placeholder="ex. marie_cine" autoCapitalize="none" spellCheck={false} aria-invalid={!handleOk} onChange={(e) => setHandle(e.target.value)} />
+        <span className="note">{handleOk ? (cleanHandle ? `filmable.app/u/${cleanHandle}` : "3 à 24 caractères : lettres, chiffres et _. Facultatif.") : "3 à 24 caractères : lettres, chiffres et _ seulement."}</span>
+      </label>
+      <label className="block">
+        Présentation
+        <textarea className="input" rows={3} value={bio} maxLength={500} placeholder="Deux lignes sur tes goûts, visibles sur ton profil public." onChange={(e) => setBio(e.target.value)} />
+      </label>
+      <div className="row-actions">
+        {dirty ? (
+          <button type="submit" className="btn primary" disabled={busy || !handleOk}>
+            Enregistrer
+          </button>
+        ) : null}
+        <Link className="btn ghost" href={profileHref(userId!, profile?.username)}>
+          Voir mon profil public
+        </Link>
+      </div>
     </form>
   );
 }

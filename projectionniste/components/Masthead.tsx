@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/lib/auth";
+import { isPublicPath } from "./AuthScreen";
 import { Bookmark, Compass, Disc, Journal, List, Plus, Search } from "./icons";
 import { JournalButton, openQuickLog } from "./QuickLog";
 import { useProfile } from "./ProfileProvider";
@@ -126,6 +127,15 @@ export function Masthead() {
               <ProfileMenu />
             </span>
           </>
+        ) : status === "signedOut" && isPublicPath(path) ? (
+          <span className="tools">
+            <Link className="btn ghost" href="/">
+              Se connecter
+            </Link>
+            <Link className="btn primary" href="/">
+              Créer un compte
+            </Link>
+          </span>
         ) : null}
       </div>
     </header>

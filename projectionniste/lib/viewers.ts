@@ -2,7 +2,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { check } from "./supabase";
 
-export type Viewer = { user_id: string; name: string; avatar_url: string | null; rating: number | null; favorite: boolean };
+export type Viewer = { user_id: string; username: string | null; name: string; avatar_url: string | null; rating: number | null; favorite: boolean };
 export type Viewers = { total: number; avg: number | null; list: Viewer[] };
 
 type Row = {
@@ -23,6 +23,7 @@ export async function filmViewers(sb: SupabaseClient, tmdbId: number, max = 24):
     avg: rows[0]?.avg_rating != null ? +rows[0].avg_rating : null,
     list: rows.map((r) => ({
       user_id: r.user_id,
+      username: r.username,
       name: r.display_name || r.username || "Un cinéphile",
       avatar_url: r.avatar_url,
       rating: r.rating == null ? null : +r.rating,

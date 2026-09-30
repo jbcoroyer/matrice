@@ -9,8 +9,7 @@ import { Poster } from "./Poster";
 import { useProfile } from "./ProfileProvider";
 
 export function FilmCard({ m }: { m: Ranked }) {
-  const { seen, watchlist, rated, owned, predict, toggleWatchlist, empty } = useProfile();
-  const p = m._pred ?? predict(m).v;
+  const { seen, watchlist, rated, owned, toggleWatchlist, status } = useProfile();
   const inWl = watchlist.has(m.id);
   const isSeen = seen.has(m.id);
   const r = rated.get(m.id);
@@ -30,19 +29,13 @@ export function FilmCard({ m }: { m: Ranked }) {
     <article className="card">
       <Link href={`/film/${m.id}`} prefetch={false}>
         <Poster path={m.poster_path} title={m.title} owned={formats?.length ? ownedLabel(formats) : null}>
-          {p > 0 && !isSeen && !empty ? (
-            <span className="score-pill guess" title="Ton indice : la note que tu devrais lui donner" aria-label={`Ton indice : ${num1(p)}, estimé d'après tes goûts`}>
-              {num1(p)}
-            </span>
-          ) : null}
           {badge}
         </Poster>
         <div className="card-title">{m.title}</div>
         <div className="meta">{yearOf(m)}</div>
         {m._note ? <div className="dir">{m._note}</div> : null}
-        {m._because ? <div className="dir">Parce que tu as aimé {m._because}</div> : null}
       </Link>
-      {!isSeen ? (
+      {!isSeen && status === "ready" ? (
         <button
           type="button"
           className="quick"

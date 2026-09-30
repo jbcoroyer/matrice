@@ -179,7 +179,6 @@ button.chip:hover, a.chip:hover { border-color: var(--text-3); color: var(--text
 .chip.on { background: var(--cream); border-color: var(--cream); color: var(--on-cream) }
 .pill { display: inline-flex; align-items: center; gap: 7px; height: 32px; padding: 0 14px; border-radius: 999px; background: var(--cream); color: var(--on-cream); font-size: 13.5px; font-weight: 700; white-space: nowrap }
 .pill svg { width: 13px; height: 13px; fill: currentColor }
-.pill.guess { background: none; color: var(--cream); border: 1px dashed var(--cream); font-weight: 600 }
 .pill.soft { background: none; color: var(--text-2); border: 1px solid var(--line-2); font-weight: 500 }
 .icon-btn { width: 34px; height: 34px; border: 1px solid transparent; background: none; border-radius: 50%; cursor: pointer; color: var(--text-2); font-size: 16px; line-height: 1; display: inline-grid; place-items: center }
 .icon-btn:hover:not(:disabled) { border-color: var(--line-2); color: var(--text); background: var(--bg-3) }
@@ -219,10 +218,6 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .card .meta { margin-top: 3px; font-size: 13px; color: var(--text-3) }
 .card .meta b { color: var(--text-2); font-weight: 600 }
 .card .dir { margin-top: 3px; font-size: 12.5px; color: var(--text-2); line-height: 1.35 }
-.score-pill { position: absolute; left: 10px; top: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; background: var(--cream); color: var(--on-cream); font-size: 12px; font-weight: 700 }
-.score-pill svg { width: 11px; height: 11px; fill: currentColor }
-/* indice (estimé) : anneau pointillé sur fond de la page ; note donnée : pastille pleine avec étoile */
-.score-pill.guess { background: color-mix(in srgb, var(--bg) 82%, transparent); color: var(--cream); border: 1px dashed var(--cream); font-weight: 600 }
 .badge { position: absolute; right: 10px; top: 10px; z-index: 2; height: 26px; padding: 0 10px 0 8px; border-radius: 999px; background: rgb(12 12 14 / 0.78); border: 1px solid rgb(255 255 255 / 0.12); color: #f3efe6; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px }
 .badge svg { width: 13px; height: 13px }
 .badge.wl { padding: 0 8px }
@@ -552,17 +547,6 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .histo span { position: absolute; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--text-3) }
 .histo .v { bottom: calc(var(--h) + 4px) }
 .histo-x { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; text-align: center; font-size: 12px; color: var(--text-3); margin-top: 6px }
-.aff-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px 44px }
-.aff-cols h3 { font-size: 16px; margin-bottom: 8px }
-.aff-list { list-style: none; margin: 0; padding: 0 }
-.aff-list li { display: grid; grid-template-columns: minmax(0, 1fr) 100px 42px; gap: 12px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px }
-.aff-list li a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
-.aff-list li a:hover { text-decoration: underline; text-decoration-color: var(--cream) }
-.aff-bar { height: 6px; position: relative; background: var(--bg-3); border-radius: 3px }
-.aff-bar i { position: absolute; top: 0; bottom: 0; background: var(--good); border-radius: 3px }
-.aff-bar i.neg { background: var(--low) }
-.aff-bar::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--text-3) }
-.aff-list .n { font-size: 13px; text-align: right; color: var(--text-2) }
 .grid.top5 { grid-template-columns: repeat(5, minmax(0, 1fr)) }
 .top-aside { display: inline-flex; align-items: center; gap: 14px }
 .top-empty { display: flex; flex-direction: column; width: 100%; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; color: inherit }
@@ -1059,4 +1043,46 @@ button.row-note:hover { color: var(--text) }
 .back, .rail-tools a, .link-quiet, .link-btn.quiet, .diary-row .edit, .filterbar .link-btn { display: inline-flex; align-items: center; min-height: 36px }
 .rail-tools a { padding-inline: 6px; margin-right: 0 }
 .diary-row .edit { padding-inline: 8px; margin-right: -8px }
-.aff-list li a { display: block; padding: 6px 0; margin: -6px 0 }
+
+/* ---------- profil public et invitation des visiteurs ---------- */
+.pub-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px 36px; align-items: center; padding-top: 44px }
+.pub-avatar { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--bg-3); border: 1px solid var(--line-2); font-size: 48px; font-weight: 250; color: var(--text-2) }
+.pub-avatar img { width: 100%; height: 100%; object-fit: cover }
+.pub-head .sec-head { margin: 6px 0 10px }
+.pub-head .lede { margin-bottom: 10px }
+.top-empty { background: var(--bg-2); box-shadow: 0 0 0 1px var(--line) inset }
+.pub-reviews { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
+.pub-reviews li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 20px; padding: 22px 0; border-top: 1px solid var(--line) }
+.pub-reviews li:first-child { border-top: 0 }
+.pub-reviews h3 { font-size: 17px; margin: 0 0 6px; letter-spacing: -0.01em }
+.pub-reviews h3 a:hover { text-decoration: underline; text-decoration-color: var(--cream); text-underline-offset: 4px }
+.pr-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin: 0 0 8px; font-size: 13px }
+.pr-text { margin: 0 0 8px; color: var(--text-2); line-height: 1.55; max-width: 70ch }
+.film-invite { margin-top: 28px; max-width: 46ch }
+.film-invite p { color: var(--text-2); margin: 0 0 4px }
+@media (max-width: 900px) {
+  .pub-head { grid-template-columns: minmax(0, 1fr); padding-top: 24px }
+  .pub-avatar { width: 88px; height: 88px; font-size: 36px }
+  .pub-reviews li { grid-template-columns: 64px minmax(0, 1fr); gap: 14px }
+}
+.stack-form { display: flex; flex-direction: column; gap: 4px; max-width: 460px }
+.stack-form .block { margin-bottom: 10px }
+.stack-form .input { display: block; width: 100%; margin-top: 6px }
+.stack-form .note { display: block; margin-top: 6px; font-size: 13px }
+.stack-form [aria-invalid="true"] { border-color: var(--low) }
+.pub-head .handle { text-transform: none; letter-spacing: 0.02em; font-size: 13px }
+
+/* ---------- highlights du profil : de gros noms, pas de graphiques ---------- */
+.hl { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 44px }
+.hl li { display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line-2); min-width: 0 }
+.hl b { font-size: clamp(26px, 2.6vw, 40px); line-height: 1.05; letter-spacing: -0.03em; font-weight: 700; overflow-wrap: anywhere }
+.hl b span { font-weight: 250; letter-spacing: -0.02em }
+.hl b a:hover { text-decoration: underline; text-decoration-color: var(--cream); text-underline-offset: 6px }
+@media (max-width: 900px) { .hl { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 24px } }
+@media (max-width: 600px) { .hl { grid-template-columns: minmax(0, 1fr) } }
+/* sous le guide de démarrage, le carrousel ne remonte pas sous l'en-tête (il recouvrirait le guide) */
+.onboard + .d-hero { margin-top: 24px; padding-top: 0 }
+@media (max-width: 600px) {
+  .mood-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: calc(-1 * clamp(18px, 3.4vw, 44px)); padding-right: 18px }
+  .mood-chips > * { flex: none }
+}

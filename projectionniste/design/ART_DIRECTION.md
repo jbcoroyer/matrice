@@ -19,8 +19,8 @@ Validée par le propriétaire du projet le 29/09/2026, à partir de ses référe
 
 1. **Le film porte la couleur.** L'interface est neutre (anthracite, ivoire, gris par opacité) ;
    la couleur vient de l'image du film : fond panoramique sur la fiche, affiche floutée en
-   ambiance derrière le film de la semaine.
-2. **Un seul accent, crème**, réservé à : l'indice ou la note (pastille), l'action principale,
+   ambiance derrière les films à la une.
+2. **Un seul accent, crème**, réservé à : ta note (pastille), l'action principale,
    la sélection (onglet actif, point sous la rubrique, bascules).
 3. **Hiérarchie par la taille et l'opacité**, pas par des boîtes : texte à 100 %, 66 %, 45 %.
    Filets de 1 px très discrets. Les blocs (qui l'a vu, critiques) sont à peine plus clairs.

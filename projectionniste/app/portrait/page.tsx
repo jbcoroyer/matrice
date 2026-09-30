@@ -6,15 +6,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PickFilm } from "@/components/PickFilm";
 import { Plus } from "@/components/icons";
 import { useProfile, type FilmInput } from "@/components/ProfileProvider";
-import { EmptyState, ProfileGate, SecHead, StartActions } from "@/components/ui";
-import { genreFrFromName } from "@/lib/genres";
+import { profileHref } from "@/lib/publicProfile";
+import { duo, EmptyState, ErrorLine, ProfileGate, SecHead, StartActions } from "@/components/ui";
+import { filmFacts, type Facts } from "@/lib/bilan";
+import { peopleHighlights, quickHighlights } from "@/lib/highlights";
 import { num1 } from "@/lib/format";
 import { tmdb } from "@/lib/tmdb";
 import { useAsync } from "@/lib/hooks";
-import { filmRow } from "@/lib/db";
+import { filmRow, loadSeenFilms, type SeenFilm } from "@/lib/db";
 import { clearTopSlot, loadTop, setTopSlot, type TopFilm } from "@/lib/diary";
 import { Poster } from "@/components/Poster";
-import type { Paged, Person } from "@/lib/types";
 
 const STEPS = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
 
@@ -58,49 +59,71 @@ function Histogram({ ratings }: { ratings: number[] }) {
   );
 }
 
-/** Retrouve la fiche TMDB d'un nom (pour le lien), seulement au clic. */
-function PersonLink({ name }: { name: string }) {
-  const [busy, setBusy] = useState(false);
-  return (
-    <a
-      href={`/recherche?q=${encodeURIComponent(name)}`}
-      onClick={async (e) => {
-        e.preventDefault();
-        if (busy) return;
-        setBusy(true);
-        const r = await tmdb<Paged<Person>>("search/person", { query: name }).catch(() => null);
-        const hit = r?.results?.find((p) => p.name === name) || r?.results?.[0];
-        location.href = hit ? `/personne/${hit.id}` : `/recherche?q=${encodeURIComponent(name)}`;
-      }}
-      title={name}
-    >
-      {name}
-    </a>
-  );
-}
+const FACTS_CAP = 400;
 
-function AffList({ entries, people }: { entries: [string, number][]; people: boolean }) {
-  const max = Math.max(0.01, ...entries.map(([, a]) => Math.abs(a)));
-  return (
-    <ul className="aff-list">
-      {entries.map(([n, a]) => (
-        <li key={n}>
-          {people ? <PersonLink name={n} /> : <span>{genreFrFromName(n)}</span>}
-          <span className="aff-bar" aria-hidden="true">
-            <i className={a < 0 ? "neg" : undefined} style={a < 0 ? { right: "50%", width: `${(Math.abs(a) / max) * 50}%` } : { left: "50%", width: `${(a / max) * 50}%` }} />
-          </span>
-          <span className="n">{(a >= 0 ? "+" : "−") + Math.abs(a).toFixed(2).replace(".", ",")}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
+/** Les gros highlights : réalisateur, acteur, genre et époque les plus vus, film le mieux noté. */
+function Highlights() {
+  const { sb, seen } = useProfile();
+  const [films, setFilms] = useState<SeenFilm[] | null>(null);
+  const [facts, setFacts] = useState<Map<number, Facts>>(new Map());
+  const [progress, setProgress] = useState<[number, number] | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
-function top(o: Record<string, number>, n: number, dir: 1 | -1) {
-  return Object.entries(o)
-    .filter(([, a]) => a * dir > 0)
-    .sort((a, b) => (b[1] - a[1]) * dir)
-    .slice(0, n);
+  useEffect(() => {
+    if (!sb) return;
+    let alive = true;
+    (async () => {
+      const list = await loadSeenFilms(sb);
+      if (!alive) return;
+      setFilms(list);
+      // les crédits (réalisateurs, acteurs) demandent une requête par film : les mieux notés d'abord, 400 au plus
+      const ids = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || +b.favorite - +a.favorite).slice(0, FACTS_CAP).map((f) => f.tmdb_id);
+      const all = new Map<number, Facts>();
+      for (let k = 0; k < ids.length && alive; k += 60) {
+        const chunk = await filmFacts(ids.slice(k, k + 60), (d) => alive && setProgress([k + d, ids.length]));
+        chunk.forEach((v, id) => all.set(id, v));
+        if (alive) setFacts(new Map(all));
+      }
+      if (alive) setProgress(null);
+    })().catch((e) => alive && setError(e));
+    return () => {
+      alive = false;
+    };
+  }, [sb, seen.size]);
+
+  const items = useMemo(() => (films ? [...peopleHighlights(films, facts), ...quickHighlights(films)] : []), [films, facts]);
+  const order = ["director", "actor", "genre", "decade", "best"];
+  items.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+
+  if (error) return <ErrorLine error={error} />;
+  if (films && !films.length)
+    return (
+      <EmptyState title="Tes highlights apparaîtront ici" actions={<StartActions />}>
+        Marque des films comme vus ou journalise-en : on y verra ton réalisateur, ton acteur et ton genre les plus vus, ton époque, ton film le mieux noté.
+      </EmptyState>
+    );
+  const capped = films && films.length > FACTS_CAP;
+  return (
+    <>
+      <ul className="hl" aria-busy={!!progress}>
+        {items.map((h) => (
+          <li key={h.key}>
+            <span className="lbl">{h.label}</span>
+            <b>{h.href ? <Link href={h.href}>{duo(h.value)}</Link> : duo(h.value)}</b>
+            <span className="dim">{h.note}</span>
+          </li>
+        ))}
+        {!films ? <li aria-hidden><span className="sk sk-line w60" /></li> : null}
+      </ul>
+      {progress ? (
+        <p className="note" role="status">
+          Recherche de ton réalisateur et de ton acteur préférés… {progress[0]} / {progress[1]}
+        </p>
+      ) : capped ? (
+        <p className="note">Réalisateur et acteur : d'après tes {FACTS_CAP} films les mieux notés.</p>
+      ) : null}
+    </>
+  );
 }
 
 function TopFive() {
@@ -198,8 +221,6 @@ function Portrait() {
   const ratings = useMemo(() => [...rated.values()], [rated]);
   const avg = ratings.length ? ratings.reduce((s, x) => s + x, 0) / ratings.length : 0;
   const fives = useMemo(() => [...rated.entries()].filter(([, r]) => r >= 5).map(([id]) => id), [rated]);
-  const aff = profile!.aff;
-  const noAff = !Object.keys(aff.d).length && !Object.keys(aff.c).length && !Object.keys(aff.g).length;
   const favs = useAsync(
     async () => {
       const ids = fives.slice(0, 12);
@@ -213,7 +234,7 @@ function Portrait() {
   return (
     <>
       <section className="section">
-        <SecHead as="h1" title="Mon profil" aside={profile!.importedAt ? `Goûts appris lors de l'import Letterboxd du ${new Date(profile!.importedAt).toLocaleDateString("fr-FR")}` : "Importe ton Letterboxd pour affiner les affinités"} />
+        <SecHead as="h1" title="Mon profil" />
         <div className="stats">
           <div>
             <span className="lbl">Films vus</span>
@@ -248,6 +269,10 @@ function Portrait() {
           <Link className="link" href="/collection">
             Ta cinémathèque
           </Link>
+          {" · "}
+          <Link className="link" href={profileHref(profile!.id, profile!.username)}>
+            Ton profil public
+          </Link>
         </p>
       </section>
 
@@ -261,30 +286,8 @@ function Portrait() {
       ) : null}
 
       <section className="section">
-        <SecHead title="Ce que tu aimes" aside="Écart à ta note moyenne, lissé" />
-        {noAff ? (
-          <EmptyState title="Tes goûts apparaîtront ici" actions={<StartActions />}>
-            Note quelques films, ou importe ton Letterboxd : Filmable en déduit les réalisateurs, interprètes et genres qui te réussissent, et s'en sert pour ton indice.
-          </EmptyState>
-        ) : null}
-        {noAff ? null : <div className="aff-cols">
-          <div>
-            <h3 className="lbl">Réalisateurs qui te réussissent</h3>
-            <AffList entries={top(aff.d, 12, 1)} people />
-          </div>
-          <div>
-            <h3 className="lbl">Interprètes fétiches</h3>
-            <AffList entries={top(aff.c, 12, 1)} people />
-          </div>
-          <div>
-            <h3 className="lbl">Genres</h3>
-            <AffList entries={Object.entries(aff.g).sort((a, b) => b[1] - a[1])} people={false} />
-          </div>
-          <div>
-            <h3 className="lbl">Cinéastes qui te laissent froid</h3>
-            <AffList entries={top(aff.d, 8, -1)} people />
-          </div>
-        </div>}
+        <SecHead title="Tes highlights" />
+        <Highlights />
       </section>
 
       {fives.length ? (

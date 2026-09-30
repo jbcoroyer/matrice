@@ -6,10 +6,11 @@ import { Check, Plus } from "@/components/icons";
 import { useProfile } from "@/components/ProfileProvider";
 import { Rail } from "@/components/Rail";
 import { TitleDuo } from "@/components/TitleDuo";
+import { MoodChips } from "@/components/MoodChips";
 import { Onboarding } from "@/components/ui";
 import { num1, runtime, truncate, yearOf } from "@/lib/format";
 import { GENRE_FR } from "@/lib/genres";
-import { useAsync, useRecs } from "@/lib/hooks";
+import { useAsync } from "@/lib/hooks";
 import { img, tmdb } from "@/lib/tmdb";
 import type { Credits, Movie, MovieDetail, Paged, Ranked } from "@/lib/types";
 
@@ -20,7 +21,7 @@ function greeting() {
   return h >= 18 || h < 5 ? "Bonsoir" : "Bonjour";
 }
 
-/** La sélection du jour : carrousel d'affiches, fond d'ambiance tiré de l'affiche active. */
+/** À la une : les films les plus regardés cette semaine, en carrousel ; fond d'ambiance tiré de l'affiche active. */
 function Featured({ list }: { list: Ranked[] }) {
   const d = useProfile();
   const [i, setI] = useState(0);
@@ -40,6 +41,7 @@ function Featured({ list }: { list: Ranked[] }) {
   const genres = (info?.genres?.map((g) => g.id) ?? m.genre_ids ?? []).slice(0, 2).map((g) => GENRE_FR[g]).filter(Boolean);
   const inWl = d.watchlist.has(m.id);
   const first = d.profile?.owner?.split(" ")[0];
+  const Heading = d.empty ? "h2" : "h1";
   const pos = (k: number) => {
     const n = list.length;
     let p = (k - i + n) % n;
@@ -48,18 +50,19 @@ function Featured({ list }: { list: Ranked[] }) {
   };
 
   return (
-    <section className="d-hero" aria-label="Ta sélection du jour">
+    <section className="d-hero" aria-label="À la une cette semaine">
       <div className="ambient">{m.poster_path ? <img key={m.id} src={img(m.poster_path, "w342")} alt="" /> : null}</div>
       <div className="wrap d-in">
         <div className="d-text">
           <p className="hello">
-            {greeting()} {first ? <b>{first}</b> : null} — {i === 0 ? "voici ta sélection du jour" : `et aussi, pour toi (${i + 1}/${list.length})`}
+            {greeting()} {first ? <b>{first}</b> : null} — {i === 0 ? "voici ce que tout le monde regarde cette semaine" : `et aussi (${i + 1}/${list.length})`}
           </p>
-          <h1 className="d-title">
+          {/* le guide de démarrage porte le titre de la page pour un compte neuf */}
+          <Heading className="d-title">
             <Link href={`/film/${m.id}`}>
               <TitleDuo title={m.title} />
             </Link>
-          </h1>
+          </Heading>
           <div className="meta-line label">
             {[
               ...genres,
@@ -85,19 +88,9 @@ function Featured({ list }: { list: Ranked[] }) {
             ) : null}
           </div>
           <div className="d-scores">
-            {m._pred ? (
-              <span className="pill guess" title="La note que tu devrais lui donner, d'après tes goûts" aria-label={`Ton indice : ${num1(m._pred)}, estimé d'après tes goûts`}>
-                {num1(m._pred)} · ton indice
-              </span>
-            ) : null}
             {m.vote_average ? <span className="chip">TMDB {num1(m.vote_average)}</span> : null}
           </div>
           {m.overview ? <p className="d-why">{truncate(m.overview, 220)}</p> : null}
-          {m._because ? (
-            <p className="d-why" style={{ marginTop: 10, fontSize: 14.5 }}>
-              Parce que tu as aimé <b>{m._because}</b>
-            </p>
-          ) : null}
           <div className="d-actions">
             <button type="button" className={inWl ? "btn" : "btn primary"} aria-pressed={inWl} onClick={() => d.toggleWatchlist(m)}>
               {inWl ? <Check /> : <Plus />}
@@ -143,42 +136,36 @@ function Featured({ list }: { list: Ranked[] }) {
   );
 }
 
+/** Une rangée de films TMDB (page 1 et 2), sans tri ni filtre personnel. */
+function useMovies(path: string, params: Record<string, string | number> = {}) {
+  return useAsync<Ranked[]>(async () => {
+    const pages = await Promise.all([1, 2].map((page) => tmdb<Paged<Movie>>(path, { ...params, page })));
+    const have = new Set<number>();
+    return pages
+      .flatMap((p) => p.results)
+      .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true))
+      .slice(0, 24);
+  }, [path]);
+}
+
+const rail = (a: { data?: Ranked[]; error: unknown }) => ({ list: a.data ?? (a.error ? [] : undefined), loading: !a.data && !a.error });
+
 export default function Decouvrir() {
-  const d = useProfile();
-  const recs = useRecs();
-  const withPoster = (recs.data ?? []).filter((m) => m.poster_path && !d.seen.has(m.id));
-  const featured = withPoster.slice(0, FEATURED);
-  const trending = useAsync<Ranked[]>(
-    async () => {
-      const ps = await Promise.all([1, 2].map((page) => tmdb<Paged<Movie>>("trending/movie/week", { page })));
-      // les pages de tendances peuvent se recouper : un film n'apparaît qu'une fois
-      const have = new Set<number>();
-      return ps
-        .flatMap((p) => p.results)
-        .filter((m) => m.poster_path && !have.has(m.id) && (have.add(m.id), true))
-        .map((m) => ({ ...m, _pred: d.predict(m).v }))
-        .slice(0, 24);
-    },
-    [d.profile],
-  );
+  const trending = useMovies("trending/movie/week");
+  const playing = useMovies("movie/now_playing", { region: "FR" });
+  const upcoming = useMovies("movie/upcoming", { region: "FR" });
+  const top = useMovies("movie/top_rated");
+  const featured = (trending.data ?? []).slice(0, FEATURED);
 
   return (
     <>
       <Onboarding />
-      {featured.length && !d.empty ? <Featured list={featured} /> : null}
-      {d.empty ? null : <Rail
-        title="Pour toi"
-        sub={d.rated.size ? "D'après les films que tu as le mieux notés" : "Note quelques films pour affiner la sélection"}
-        href="/decouvrir/pour-toi"
-        list={recs.data ? withPoster.slice(FEATURED, FEATURED + 24) : undefined}
-        loading={!recs.data && !recs.error}
-        empty={
-          <>
-            Rien à proposer pour l'instant. <Link href="/parametres#import">Importe ton Letterboxd</Link> ou note quelques films.
-          </>
-        }
-      />}
-      <Rail title="Tendances de la semaine" sub={d.empty ? "Ce que tout le monde regarde cette semaine" : "Ce que tout le monde regarde, avec ton indice"} href="/decouvrir/populaires" list={trending.data} loading={!trending.data} />
+      {featured.length ? <Featured list={featured} /> : null}
+      <MoodChips />
+      <Rail title="À l'affiche en France" sub="Ce qui est en salles en ce moment" href="/decouvrir/populaires?liste=now_playing" {...rail(playing)} />
+      <Rail title="Tendances de la semaine" sub="Ce que tout le monde regarde" href="/decouvrir/populaires" {...rail(trending)} list={trending.data ? trending.data.slice(FEATURED) : rail(trending).list} />
+      <Rail title="Bientôt en salles" sub="Les prochaines sorties" href="/decouvrir/populaires?liste=upcoming" {...rail(upcoming)} />
+      <Rail title="Les mieux notés" sub="Les grands films, tous pays et toutes époques" href="/decouvrir/populaires?liste=top_rated" {...rail(top)} />
     </>
   );
 }

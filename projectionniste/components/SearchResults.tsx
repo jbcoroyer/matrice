@@ -12,7 +12,6 @@ import type { Movie, Paged, Person, Ranked } from "@/lib/types";
 type PersonHit = Person & { known_for?: Movie[] };
 
 export function SearchResults({ q }: { q: string }) {
-  const { predict, status } = useProfile();
   const [films, setFilms] = useState<Ranked[] | null>(null);
   const [people, setPeople] = useState<PersonHit[]>([]);
   const [error, setError] = useState<unknown>(null);
@@ -53,7 +52,7 @@ export function SearchResults({ q }: { q: string }) {
       </section>
     );
 
-  const list = films?.map((m) => (status === "ready" ? { ...m, _pred: predict(m).v } : m));
+  const list = films;
 
   return (
     <>
