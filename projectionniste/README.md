@@ -8,7 +8,7 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil : ton film de la semaine (carrousel), rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
+| `/decouvrir` | Accueil : ta sélection du jour (carrousel), rangées Pour toi et Tendances ; « Tout voir » mène aux listes complètes (filtres, humeurs) |
 | `/watchlist` | Ta watchlist, filtres et tris |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |

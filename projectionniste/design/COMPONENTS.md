@@ -14,7 +14,7 @@
 - Image du film en fond pleine largeur, fondue vers le noir ; affiche arrondie posée dessus.
 - Libellés (genres · année · durée · visa), titre en deux graisses, « Un film de … · avec … »
   (liens vers les personnes).
-- Barre de notes : pastille crème (ton indice ou ta note), TMDB, moyenne des membres, et ce qui
+- Barre de notes : ta note en pastille crème pleine avec étoile, ou ton indice (estimé) en pastille à anneau pointillé sans étoile, TMDB, moyenne des membres, et ce qui
   fait bouger l'indice.
 - Actions en pilules : Ajouter au journal, Vu, Watchlist, note en étoiles, coup de cœur, liste,
   collection, menu « … » (top 5, partager, envie de l'avoir en disque).
@@ -24,7 +24,7 @@
   **studios** (en blanc) qui mènent à `/studio/[id]`.
 - Critiques des membres, puis « Dans le même esprit ».
 
-## Film de la semaine (`app/decouvrir/page.tsx`)
+## Sélection du jour (`app/decouvrir/page.tsx`)
 
 Carrousel : affiche centrale grande, voisines en retrait et inclinées ; fond d'ambiance tiré de
 l'affiche active ; texte à gauche (titre deux graisses, libellés, indice, résumé, raison),
@@ -67,3 +67,14 @@ possède et tout ce qui manque, avec un bouton « Envie »).
 
 Mur d'affiches du moment incliné et assombri, grand mot-marque « **Film**able », formulaire
 dans une carte en verre.
+
+## Indice, note, coup de cœur : vocabulaire
+
+- **Indice** : la note estimée d'après tes goûts. Anneau **pointillé**, sans étoile (`.pill.guess`,
+  `.score-pill.guess`), sur les affiches, la fiche et la sélection du jour.
+- **Note** : celle que tu as donnée. Pastille **pleine** crème avec étoile, « ta note ».
+- **Coup de cœur** : le cœur d'un film (fiche, journal). « J'aime » ne sert que pour les critiques
+  des autres membres.
+- **Mon profil** : menu, page `/portrait` (titre et onglet).
+- **Sélection du jour** : les cinq films du carrousel de Découvrir (recalculés chaque jour).
+  « Tendances de la semaine » garde « semaine » : c'est le classement TMDB hebdomadaire.

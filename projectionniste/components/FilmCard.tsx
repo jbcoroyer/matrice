@@ -4,7 +4,7 @@ import Link from "next/link";
 import { num1, yearOf } from "@/lib/format";
 import type { Ranked } from "@/lib/types";
 import { ownedLabel } from "@/lib/collection";
-import { Bookmark, Check, Eye, Plus, Star } from "./icons";
+import { Bookmark, Check, Eye, Plus } from "./icons";
 import { Poster } from "./Poster";
 import { useProfile } from "./ProfileProvider";
 
@@ -31,8 +31,7 @@ export function FilmCard({ m }: { m: Ranked }) {
       <Link href={`/film/${m.id}`} prefetch={false}>
         <Poster path={m.poster_path} title={m.title} owned={formats?.length ? ownedLabel(formats) : null}>
           {p > 0 && !isSeen ? (
-            <span className="score-pill" title="Ton indice : la note que tu devrais lui donner">
-              <Star />
+            <span className="score-pill guess" title="Ton indice : la note que tu devrais lui donner" aria-label={`Ton indice : ${num1(p)}, estimé d'après tes goûts`}>
               {num1(p)}
             </span>
           ) : null}

@@ -9,7 +9,7 @@ import { Stars } from "./Stars";
 
 let tagCache: string[] | null = null;
 
-/** Enregistrer (ou modifier) un visionnage : date, note, revisionnage, j'aime, critique, étiquettes. */
+/** Enregistrer (ou modifier) un visionnage : date, note, revisionnage, coup de cœur, critique, étiquettes. */
 export function LogDialog({
   film,
   entry,
@@ -74,7 +74,7 @@ export function LogDialog({
         entry?.id,
       );
       tagCache = [...new Set([...(tagCache || []), ...allTags])];
-      // l'état du film suit le journal : vu, dernière note, favori si « j'aime »
+      // l'état du film suit le journal : vu, dernière note, favori si « coup de cœur »
       const patch: Parameters<typeof setFilmState>[1] = { watched: true, watchlist: false };
       // la note du film est celle du dernier visionnage : on ne l'écrase pas en retouchant une vieille entrée
       if (rating && !entry) patch.rating = rating;
@@ -122,7 +122,7 @@ export function LogDialog({
             <input type="checkbox" checked={rewatch} onChange={(e) => setRewatch(e.target.checked)} /> Revisionnage
           </label>
           <label className="check">
-            <input type="checkbox" checked={liked} onChange={(e) => setLiked(e.target.checked)} /> J'aime
+            <input type="checkbox" checked={liked} onChange={(e) => setLiked(e.target.checked)} /> Coup de cœur
           </label>
         </div>
         <div className="form-row">

@@ -67,7 +67,7 @@ export function DiaryRow({
           ) : null}
           {withFilm && f?.release_date ? <span className="y">{f.release_date.slice(0, 4)}</span> : null}
           <StarsText value={e.rating} />
-          {e.liked ? <span className="like" title="J'aime">♥</span> : null}
+          {e.liked ? <span className="like" title="Coup de cœur" aria-label="Coup de cœur">♥</span> : null}
           {e.rewatch ? <span className="dim" title="Revisionnage">↻ revu</span> : null}
           {e.tags.map((t) =>
             onTag ? (

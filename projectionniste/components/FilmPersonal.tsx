@@ -35,8 +35,7 @@ export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits })
           {num1(mine)} · ta note
         </span>
       ) : pred ? (
-        <span className="pill" title="La note que tu devrais lui donner, d'après tes goûts">
-          <Star />
+        <span className="pill guess" title="La note que tu devrais lui donner, d'après tes goûts" aria-label={`Ton indice : ${num1(pred.v)}, estimé d'après tes goûts`}>
           {num1(pred.v)} · ton indice
         </span>
       ) : null}

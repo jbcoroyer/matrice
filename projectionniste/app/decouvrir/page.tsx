@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Check, Plus, Star } from "@/components/icons";
+import { Check, Plus } from "@/components/icons";
 import { useProfile } from "@/components/ProfileProvider";
 import { Rail } from "@/components/Rail";
 import { TitleDuo } from "@/components/TitleDuo";
@@ -20,7 +20,7 @@ function greeting() {
   return h >= 18 || h < 5 ? "Bonsoir" : "Bonjour";
 }
 
-/** Le film de la semaine : carrousel d'affiches, fond d'ambiance tiré de l'affiche active. */
+/** La sélection du jour : carrousel d'affiches, fond d'ambiance tiré de l'affiche active. */
 function Featured({ list }: { list: Ranked[] }) {
   const d = useProfile();
   const [i, setI] = useState(0);
@@ -48,12 +48,12 @@ function Featured({ list }: { list: Ranked[] }) {
   };
 
   return (
-    <section className="d-hero" aria-label="Ton film de la semaine">
+    <section className="d-hero" aria-label="Ta sélection du jour">
       <div className="ambient">{m.poster_path ? <img key={m.id} src={img(m.poster_path, "w342")} alt="" /> : null}</div>
       <div className="wrap d-in">
         <div className="d-text">
           <p className="hello">
-            {greeting()} {first ? <b>{first}</b> : null} — {i === 0 ? "voici ton film de la semaine" : `et aussi, pour toi (${i + 1}/${list.length})`}
+            {greeting()} {first ? <b>{first}</b> : null} — {i === 0 ? "voici ta sélection du jour" : `et aussi, pour toi (${i + 1}/${list.length})`}
           </p>
           <h1 className="d-title">
             <Link href={`/film/${m.id}`}>
@@ -86,8 +86,7 @@ function Featured({ list }: { list: Ranked[] }) {
           </div>
           <div className="d-scores">
             {m._pred ? (
-              <span className="pill">
-                <Star />
+              <span className="pill guess" title="La note que tu devrais lui donner, d'après tes goûts" aria-label={`Ton indice : ${num1(m._pred)}, estimé d'après tes goûts`}>
                 {num1(m._pred)} · ton indice
               </span>
             ) : null}

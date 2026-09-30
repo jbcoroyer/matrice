@@ -211,7 +211,7 @@ function Portrait() {
   return (
     <>
       <section className="section">
-        <SecHead as="h1" title="Portrait" aside={profile!.importedAt ? `Goûts appris lors de l'import Letterboxd du ${new Date(profile!.importedAt).toLocaleDateString("fr-FR")}` : "Importe ton Letterboxd pour affiner les affinités"} />
+        <SecHead as="h1" title="Mon profil" aside={profile!.importedAt ? `Goûts appris lors de l'import Letterboxd du ${new Date(profile!.importedAt).toLocaleDateString("fr-FR")}` : "Importe ton Letterboxd pour affiner les affinités"} />
         <div className="stats">
           <div>
             <span className="lbl">Films vus</span>
