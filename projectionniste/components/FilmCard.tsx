@@ -38,7 +38,7 @@ export function FilmCard({ m }: { m: Ranked }) {
           ) : null}
           {badge}
         </Poster>
-        <h3>{m.title}</h3>
+        <div className="card-title">{m.title}</div>
         <div className="meta">{yearOf(m)}</div>
         {m._note ? <div className="dir">{m._note}</div> : null}
         {m._because ? <div className="dir">Parce que tu as aimé {m._because}</div> : null}

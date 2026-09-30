@@ -9,7 +9,7 @@ Tous les jetons vivent dans `app/globals.css` (`:root` = sombre, `[data-theme="l
 | `--bg` | `#0c0c0e` | `#f6f4ef` |
 | `--bg-2` / `--bg-3` / `--bg-4` | `#141417` / `#1c1c20` / `#27272c` | `#ffffff` / `#efece5` / `#e2ded5` |
 | `--text` | `#f3efe6` | `#17150f` |
-| `--text-2` / `--text-3` | ivoire à 66 % / 45 % | encre à 68 % / 50 % |
+| `--text-2` / `--text-3` | ivoire à 70 % / 55 % | encre à 75 % / 65 % |
 | `--line` / `--line-2` | blanc à 8 % / 16 % | encre à 9 % / 18 % |
 | `--cream` (accent) | `#ede4cc` | `#1c1a14` (l'accent devient l'encre) |
 | `--good` / `--low` | affinités positives / négatives, cœur | idem, plus sombres |
@@ -43,3 +43,12 @@ Rayons : `--r-xl` 28 (carrousel, fenêtres), `--r-lg` 22 (blocs, affiche de fich
 
 120–250 ms pour les survols, 600 ms pour le carrousel ; courbe `--ease` sans rebond ;
 `prefers-reduced-motion` coupe tout.
+
+## Accessibilité
+
+- Contraste du texte : `--text-2` et `--text-3` ont été relevés pour atteindre 4,5:1 sur toutes les
+  surfaces (`--bg` à `--bg-4`, thème sombre et clair). Ne pas les éclaircir davantage.
+- Note en étoiles (`components/Stars.tsx`) : un seul arrêt de tabulation, flèches gauche/droite
+  (Début/Fin) pour changer, Entrée ou Espace pour valider. Demi-étoiles de 22 × 44 px au minimum
+  sur mobile.
+- Liens et boutons secondaires : zone cliquable de 36 px minimum. Échap ferme les menus.

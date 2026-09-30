@@ -54,7 +54,7 @@ export function DiaryRow({
         {e.watched_on ? (withFilm ? +e.watched_on.slice(8, 10) : frDate(e.watched_on, { day: "numeric", month: "short", year: "numeric" })) : "—"}
       </span>
       {withFilm ? (
-        <Link href={`/film/${e.tmdb_id}`} className="thumb">
+        <Link href={`/film/${e.tmdb_id}`} className="thumb" aria-label={f?.title ?? `Film ${e.tmdb_id}`} tabIndex={-1}>
           {f?.poster_path ? <img src={img(f.poster_path, "w92")} alt="" loading="lazy" /> : null}
         </Link>
       ) : null}

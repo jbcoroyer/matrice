@@ -4,7 +4,7 @@
   color-scheme: dark;
   --bg: #0c0c0e; --bg-2: #141417; --bg-3: #1c1c20; --bg-4: #27272c;
   --line: rgb(255 255 255 / 0.08); --line-2: rgb(255 255 255 / 0.16);
-  --text: #f3efe6; --text-2: rgb(243 239 230 / 0.66); --text-3: rgb(243 239 230 / 0.45);
+  --text: #f3efe6; --text-2: rgb(243 239 230 / 0.7); --text-3: rgb(243 239 230 / 0.55);
   --cream: #ede4cc; --on-cream: #16150f; --cream-soft: rgb(237 228 204 / 0.12);
   --good: #9fd6a8; --low: #f0a39a;
   --glass: rgb(20 20 23 / 0.72);
@@ -13,7 +13,7 @@
   --header: 72px;
   --f-std: linear-gradient(160deg, #303036, #161618); --f-premium: linear-gradient(140deg, #6b6b73 0%, #dcdce1 22%, #8b8b93 46%, #c6c6cc 68%, #74747c 100%); --f-collector: linear-gradient(140deg, #8e7b52 0%, #f3e8c9 22%, #a58e63 46%, #ecdeb4 68%, #8a774e 100%);
   /* matière des cartes de collection : objets sombres dans les deux thèmes */
-  --card-bg: #0d0d0f; --card-ink: #f3efe6; --card-ink-2: rgb(243 239 230 / 0.66); --card-ink-3: rgb(243 239 230 / 0.45); --card-line: rgb(255 255 255 / 0.09); --card-cream: #ede4cc; --card-on-cream: #16150f;
+  --card-bg: #0d0d0f; --card-ink: #f3efe6; --card-ink-2: rgb(243 239 230 / 0.66); --card-ink-3: rgb(243 239 230 / 0.58); --card-line: rgb(255 255 255 / 0.09); --card-cream: #ede4cc; --card-on-cream: #16150f;
   --font: "Urbanist Variable", "Urbanist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
 }
@@ -21,7 +21,7 @@
   color-scheme: light;
   --bg: #f6f4ef; --bg-2: #ffffff; --bg-3: #efece5; --bg-4: #e2ded5;
   --line: rgb(20 18 14 / 0.09); --line-2: rgb(20 18 14 / 0.18);
-  --text: #17150f; --text-2: rgb(23 21 15 / 0.68); --text-3: rgb(23 21 15 / 0.5);
+  --text: #17150f; --text-2: rgb(23 21 15 / 0.75); --text-3: rgb(23 21 15 / 0.65);
   --cream: #1c1a14; --on-cream: #f6f4ef; --cream-soft: rgb(28 26 20 / 0.08);
   --good: #2f7a45; --low: #b4432f;
   --glass: rgb(246 244 239 / 0.8);
@@ -203,7 +203,7 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .card .poster { transition: transform 0.3s var(--ease), box-shadow 0.3s }
 .card:hover .poster, .card > a:focus-visible .poster { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--line-2), 0 18px 40px -18px rgb(0 0 0 / 0.8) }
 .card > a:focus-visible { outline: none }
-.card h3 { margin-top: 12px; font-size: 15px; font-weight: 600; line-height: 1.25; letter-spacing: -0.005em; overflow-wrap: anywhere }
+.card h3, .card .card-title { margin-top: 12px; font-size: 15px; font-weight: 600; line-height: 1.25; letter-spacing: -0.005em; overflow-wrap: anywhere }
 .card .meta { margin-top: 3px; font-size: 13px; color: var(--text-3) }
 .card .meta b { color: var(--text-2); font-weight: 600 }
 .card .dir { margin-top: 3px; font-size: 12.5px; color: var(--text-2); line-height: 1.35 }
@@ -276,9 +276,10 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .d-why { margin: 20px 0 0; font-size: 16.5px; line-height: 1.6; color: var(--text-2); max-width: 44ch }
 .d-why b { color: var(--text); font-weight: 600 }
 .d-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px }
-.dots { display: flex; gap: 6px; margin-top: 34px }
-.dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: var(--line-2); cursor: pointer; transition: width 0.3s var(--ease), background 0.3s }
-.dots button[aria-current="true"] { width: 24px; background: var(--cream) }
+.dots { display: flex; gap: 0; margin: 22px 0 0 -4px }
+.dots button { display: grid; place-items: center; min-width: 24px; height: 32px; padding: 0 4px; border: 0; background: none; cursor: pointer }
+.dots button::before { content: ""; display: block; width: 8px; height: 8px; border-radius: 4px; background: var(--line-2); transition: width 0.3s var(--ease), background 0.3s }
+.dots button[aria-current="true"]::before { width: 24px; background: var(--cream) }
 .carousel { position: relative; height: 580px; perspective: 1400px }
 .carousel .c { position: absolute; top: 50%; left: 50%; width: 320px; padding: 0; border: 0; background: var(--bg-3); border-radius: var(--r-xl); overflow: hidden; cursor: pointer; box-shadow: var(--shadow), 0 0 0 1px var(--line); transition: transform 0.6s var(--ease), opacity 0.6s var(--ease), filter 0.6s }
 .carousel .c img { width: 100%; aspect-ratio: 2/3; object-fit: cover }
@@ -414,7 +415,7 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .star .fill { position: absolute; left: 0; top: 0; overflow: hidden; color: var(--cream); width: 0; white-space: nowrap }
 .star .fill.half { width: 50% }
 .star .fill.full { width: 100% }
-.star button { position: absolute; top: 0; bottom: 0; width: 50%; background: none; border: 0; padding: 0; cursor: pointer }
+.star button { position: absolute; top: -8px; bottom: -8px; width: 50%; background: none; border: 0; padding: 0; cursor: pointer }
 .star button.l { left: 0 }
 .star button.r { right: 0 }
 .star button:focus-visible { outline-offset: 0 }
@@ -948,7 +949,7 @@ button.row-note:hover { color: var(--text) }
   .hello b { font-weight: 700 }
   .d-title { font-size: 42px; margin-top: 14px }
   .d-actions .btn.primary { flex: 1 1 auto }
-  .dots { justify-content: center; margin: 0 0 20px; order: -1 }
+  .dots { justify-content: center; margin: 0 0 12px; order: -1 }
 
   .film-backdrop { height: 440px }
   .film-backdrop::after { background: linear-gradient(to bottom, rgb(12 12 14 / 0.4), transparent 30%, rgb(12 12 14 / 0.65) 70%, var(--bg) 100%) }
@@ -960,7 +961,10 @@ button.row-note:hover { color: var(--text) }
   .film-actions { gap: 8px }
   .film-actions > .btn.primary { flex: 1 1 100% }
   .rate { width: 100%; justify-content: space-between }
-  .rate .star { font-size: 28px }
+  .rate .stars, .dialog .stars { gap: 6px }
+  .rate .star, .dialog .star { font-size: 44px }
+  .star button.l { left: -3px; width: calc(50% + 3px) }
+  .star button.r { right: -3px; width: calc(50% + 3px) }
   .film-body { grid-template-columns: minmax(0, 1fr); gap: 36px; margin-top: 44px }
   .overview, .tagline-f { font-size: 17px }
   .generique { column-gap: 16px }
@@ -1007,3 +1011,9 @@ button.row-note:hover { color: var(--text) }
 .photo-pick img { width: 96px; height: 72px; object-fit: cover; border-radius: 10px }
 @media (max-width: 600px) { .form-grid { grid-template-columns: minmax(0, 1fr) } }
 .tabs-row { margin: 0 0 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px }
+
+/* zones de clic confortables pour les liens et boutons textuels (36 px minimum) */
+.back, .rail-tools a, .link-quiet, .link-btn.quiet, .diary-row .edit, .filterbar .link-btn { display: inline-flex; align-items: center; min-height: 36px }
+.rail-tools a { padding-inline: 6px; margin-right: 0 }
+.diary-row .edit { padding-inline: 8px; margin-right: -8px }
+.aff-list li a { display: block; padding: 6px 0; margin: -6px 0 }

@@ -75,10 +75,10 @@ export function AuthScreen() {
             </p>
           ) : null}
           <div className="seg" role="tablist">
-            <button type="button" role="tab" aria-pressed={mode === "signin"} onClick={() => setMode("signin")}>
+            <button type="button" role="tab" aria-selected={mode === "signin"} onClick={() => setMode("signin")}>
               Se connecter
             </button>
-            <button type="button" role="tab" aria-pressed={mode === "signup"} onClick={() => setMode("signup")}>
+            <button type="button" role="tab" aria-selected={mode === "signup"} onClick={() => setMode("signup")}>
               Créer un compte
             </button>
           </div>

@@ -22,9 +22,9 @@ function Columns({ values, labels, full, unit, caption }: { values: number[]; la
   const peak = values.indexOf(Math.max(...values));
   return (
     <figure className="cols-fig">
-      <div className="cols" role="img" aria-label={caption}>
+      <div className="cols" role="group" aria-label={caption}>
         {values.map((v, i) => (
-          <div key={i} className={`col${i === peak && v ? " peak" : ""}`} tabIndex={0} aria-label={`${full[i]} : ${pl(v, ...unit)}`}>
+          <div key={i} className={`col${i === peak && v ? " peak" : ""}`} role="img" tabIndex={0} aria-label={`${full[i]} : ${pl(v, ...unit)}`}>
             <span className="tip" aria-hidden>
               {full[i]} · <b>{pl(v, ...unit)}</b>
             </span>
@@ -170,28 +170,36 @@ function Bilan() {
           <dl className="tiles">
             <div>
               <dt>Visionnages</dt>
-              <dd>{n(s.total)}</dd>
-              {before ? (
-                <small>
-                  {s.total >= before ? "+" : "−"}
-                  {Math.abs(Math.round(((s.total - before) / before) * 100))} % par rapport à {year - 1}
-                </small>
-              ) : null}
+              <dd>
+                {n(s.total)}
+                {before ? (
+                  <small>
+                    {s.total >= before ? "+" : "−"}
+                    {Math.abs(Math.round(((s.total - before) / before) * 100))} % par rapport à {year - 1}
+                  </small>
+                ) : null}
+              </dd>
             </div>
             <div>
               <dt>Films différents</dt>
-              <dd>{n(s.films)}</dd>
-              {s.rewatches ? <small>{pl(s.rewatches, "revisionnage")}</small> : null}
+              <dd>
+                {n(s.films)}
+                {s.rewatches ? <small>{pl(s.rewatches, "revisionnage")}</small> : null}
+              </dd>
             </div>
             <div>
               <dt>Heures devant l'écran</dt>
-              <dd>{p ? n(Math.round(p.minutes / 60)) : "…"}</dd>
-              {p && p.known < s.total ? <small>durée connue pour {pl(p.known, "visionnage")}</small> : null}
+              <dd>
+                {p ? n(Math.round(p.minutes / 60)) : "…"}
+                {p && p.known < s.total ? <small>durée connue pour {pl(p.known, "visionnage")}</small> : null}
+              </dd>
             </div>
             <div>
               <dt>Note moyenne</dt>
-              <dd>{s.avg ? num1(s.avg) : "—"}</dd>
-              {s.liked ? <small>{pl(s.liked, "film aimé", "films aimés")}</small> : null}
+              <dd>
+                {s.avg ? num1(s.avg) : "—"}
+                {s.liked ? <small>{pl(s.liked, "film aimé", "films aimés")}</small> : null}
+              </dd>
             </div>
             <div>
               <dt>Critiques</dt>

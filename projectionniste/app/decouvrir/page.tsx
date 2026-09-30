@@ -108,9 +108,9 @@ function Featured({ list }: { list: Ranked[] }) {
               Voir la fiche
             </Link>
           </div>
-          <div className="dots" role="tablist" aria-label="Sélection">
+          <div className="dots" role="group" aria-label="Sélection">
             {list.map((f, k) => (
-              <button key={f.id} type="button" role="tab" aria-current={k === i} aria-label={f.title} onClick={() => setI(k)} />
+              <button key={f.id} type="button" aria-current={k === i} aria-label={`${k + 1} sur ${list.length} : ${f.title}`} onClick={() => setI(k)} />
             ))}
           </div>
         </div>

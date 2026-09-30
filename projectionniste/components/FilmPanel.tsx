@@ -121,7 +121,17 @@ export function FilmPanel({ film }: { film: FilmInput }) {
         >
           <Disc />
         </button>
-        <details className="more-menu" ref={more}>
+        <details
+          className="more-menu"
+          ref={more}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && more.current?.open) {
+              e.stopPropagation();
+              closeMore();
+              more.current.querySelector("summary")?.focus();
+            }
+          }}
+        >
           <summary className="btn icon" aria-label="Plus d'options" title="Plus d'options">
             <Dots />
           </summary>

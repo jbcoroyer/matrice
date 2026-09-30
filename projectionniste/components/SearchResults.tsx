@@ -54,6 +54,7 @@ export function SearchResults({ q }: { q: string }) {
 
   return (
     <>
+      <h1 className="sr-only">Résultats pour « {q} »</h1>
       {people.length ? (
         <section className="section">
           <SecHead title="Personnes" />
@@ -73,7 +74,7 @@ export function SearchResults({ q }: { q: string }) {
         </section>
       ) : null}
       <section className="section">
-        <SecHead as="h1" title={`Films : « ${q} »`} />
+        <SecHead title={`Films : « ${q} »`} />
         {error ? (
           <ErrorLine error={error} />
         ) : !list ? (
