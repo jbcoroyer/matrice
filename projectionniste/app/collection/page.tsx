@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Classeur } from "@/components/Classeur";
+import { Rayons } from "@/components/Rayons";
 import { CollectionCard, Spine } from "@/components/CollectionCard";
 import { CopyDialog } from "@/components/CopyDialog";
 import { Dots, Plus, Search } from "@/components/icons";
@@ -288,8 +288,7 @@ function Collection() {
   const [finding, setFinding] = useState<FilmInput | null>(null);
   const [pickWant, setPickWant] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [classeur, setClasseur] = useState(false);
-  const [openDir, setOpenDir] = useState<number | null>(null);
+  const [rayon, setRayon] = useState<string | null>(null);
   const menu = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => setArrange(store.get<Arrange>(ARRANGE_KEY, "realisateur")), []);
@@ -305,14 +304,12 @@ function Collection() {
     loadWants();
   }, [loadItems, loadWants]);
 
-  // l'adresse suit ce qui est ouvert : ?film=… (feuille), ?vue=classeur, ?realisateur=… ; le retour du navigateur fonctionne
+  // l'adresse suit ce qui est ouvert : ?film=… (feuille), ?rayon=… ; le retour du navigateur fonctionne
   useEffect(() => {
     const read = () => {
       const p = new URLSearchParams(location.search);
       setOpenId(+(p.get("film") || 0) || null);
-      const dir = +(p.get("realisateur") || 0) || null;
-      setOpenDir(dir);
-      setClasseur(p.get("vue") === "classeur" || !!dir);
+      setRayon(p.get("rayon"));
     };
     read();
     window.addEventListener("popstate", read);
@@ -337,11 +334,6 @@ function Collection() {
     }
     setOpenId(id);
   };
-  const openDirector = (id: number | null) => {
-    go(id ? { realisateur: id } : { vue: "classeur" });
-    setOpenDir(id);
-    window.scrollTo({ top: 0 });
-  };
 
   // anciens exemplaires sans réalisateur : on complète en arrière-plan
   const [filled, setFilled] = useState(false);
@@ -359,6 +351,7 @@ function Collection() {
   const results = useMemo(() => (all && searching ? all.filter((e) => matches(e, query, seen)) : []), [all, query, searching, seen]);
   const shelf = useMemo(() => (all ? planks(all, total >= ARRANGE_FROM ? arrange : "realisateur") : []), [all, arrange, total]);
   const loans = useMemo(() => (all ?? []).flatMap((e) => e.copies.filter((c) => c.lent_to).map((c) => ({ e, c }))), [all]);
+  const ownedIds = useMemo(() => new Set((all ?? []).map((e) => e.tmdb_id)), [all]);
   const opened = openId && all ? all.find((e) => e.tmdb_id === openId) ?? null : null;
 
   const pickArrange = (a: Arrange) => {
@@ -394,20 +387,6 @@ function Collection() {
   };
 
   const closeMenu = () => menu.current?.removeAttribute("open");
-
-  if (classeur)
-    return (
-      <>
-        <Link href="/collection" className="back" onClick={() => setClasseur(false)}>
-          ← Ma cinémathèque
-        </Link>
-        {!all ? (
-          <Loader text="Chargement de ta cinémathèque…" />
-        ) : (
-          <Classeur entries={all} wants={new Set((wants ?? []).map((w) => w.tmdb_id))} onWant={toggleWant} openId={openDir} onOpen={openDirector} />
-        )}
-      </>
-    );
 
   return (
     <>
@@ -445,11 +424,9 @@ function Collection() {
               <Link href="/collection/registre" onClick={closeMenu}>
                 Registre de la collection
               </Link>
-              {total ? (
-                <Link href="/collection?vue=classeur" onClick={() => (closeMenu(), setClasseur(true))}>
-                  Classeur des réalisateurs
-                </Link>
-              ) : null}
+              <Link href="/ensembles" onClick={closeMenu}>
+                Ouvrir un rayon
+              </Link>
             </div>
           </details>
         </div>
@@ -591,6 +568,8 @@ function Collection() {
           </section>
         </>
       )}
+
+      {all ? <Rayons owned={ownedIds} onOpen={(id) => (all.some((e) => e.tmdb_id === id) ? openFilm(id) : undefined)} highlight={rayon} /> : null}
 
       {wants && (total || wants.length) ? (
         <Wanted wants={wants} onFound={(w) => setFinding({ id: w.tmdb_id, title: w.films?.title ?? "Film", release_date: w.films?.release_date ?? undefined, poster_path: w.films?.poster_path })} onRemove={removeWanted} onAdd={() => setPickWant(true)} />

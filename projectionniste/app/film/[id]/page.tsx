@@ -5,6 +5,7 @@ import { cache } from "react";
 import { FadeImg, Poster } from "@/components/Poster";
 import { ScoreBox } from "@/components/FilmPersonal";
 import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
+import { FilmSets } from "@/components/SetLinks";
 import { FilmReviews } from "@/components/Reviews";
 import { SeenBadge } from "@/components/SeenBadge";
 import { TitleDuo } from "@/components/TitleDuo";
@@ -129,6 +130,7 @@ export default async function FilmPage({ params }: Props) {
             ) : null}
             <ScoreBox movie={scoreMovie} />
             <FilmPanel film={film} />
+            <FilmSets tmdbId={m.id} saga={m.belongs_to_collection ?? null} />
           </div>
         </div>
       </section>

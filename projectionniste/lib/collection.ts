@@ -4,7 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureFilms } from "./db";
 import { check } from "./supabase";
 import { tmdb } from "./tmdb";
-import type { FilmRow, Movie, MovieDetail, PersonCredits } from "./types";
+import type { FilmRow, MovieDetail } from "./types";
 
 /** Supports physiques proposés à la saisie. */
 export const FORMATS = [
@@ -233,37 +233,6 @@ export async function removeWant(sb: SupabaseClient, tmdbId: number) {
   check(await sb.from("collection_wants").delete().eq("tmdb_id", tmdbId));
 }
 
-/* ---------- réalisateurs : ce que j'ai, ce qu'il me manque ---------- */
-
-/** Filmographie d'un réalisateur : longs métrages connus (assez de votes), sortis, avec affiche, par date. */
-export async function directorFilms(personId: number): Promise<Movie[]> {
-  const now = new Date().toISOString().slice(0, 10);
-  const c = await tmdb<PersonCredits>(`person/${personId}/movie_credits`);
-  const seen = new Set<number>();
-  return c.crew
-    .filter((m) => m.job === "Director" && (m.vote_count ?? 0) >= 30 && m.poster_path && m.release_date && m.release_date <= now && !seen.has(m.id) && (seen.add(m.id), true))
-    .sort((a, b) => (a.release_date || "").localeCompare(b.release_date || ""));
-}
-
-const DIRFILMS_KEY = "projo.dirfilms.v1";
-const WEEK = 7 * 86400000;
-
-/** Identifiants des films d'un réalisateur, gardés une semaine dans le navigateur (l'index en demande beaucoup). */
-export async function directorFilmIds(personId: number): Promise<number[]> {
-  let cache: Record<string, { at: number; ids: number[] }> = {};
-  try {
-    cache = JSON.parse(localStorage.getItem(DIRFILMS_KEY) || "{}");
-  } catch {}
-  const hit = cache[personId];
-  if (hit && Date.now() - hit.at < WEEK) return hit.ids;
-  const ids = (await directorFilms(personId)).map((m) => m.id);
-  try {
-    cache[personId] = { at: Date.now(), ids };
-    localStorage.setItem(DIRFILMS_KEY, JSON.stringify(cache));
-  } catch {}
-  return ids;
-}
-
 /** Un film de la collection, avec tous ses exemplaires. */
 export type Entry = {
   tmdb_id: number;
@@ -359,20 +328,4 @@ export function compareByDirector(a: Entry, b: Entry): number {
     (a.film.release_date || "").localeCompare(b.film.release_date || "") ||
     a.film.title.localeCompare(b.film.title, "fr")
   );
-}
-
-export type DirectorGroup = { id: number | null; name: string; entries: Entry[] };
-
-/** Un groupe par réalisateur (films possédés, triés par date), dans l'ordre alphabétique des noms de famille. */
-export function groupByDirector(entries: Entry[]): DirectorGroup[] {
-  const by = new Map<string, DirectorGroup>();
-  for (const e of entries.slice().sort(compareByDirector)) {
-    const name = directorName(e);
-    const id = directorIdOf(e);
-    const key = id ? `#${id}` : name ? `n:${name}` : "";
-    const g = by.get(key) ?? { id, name, entries: [] };
-    g.entries.push(e);
-    by.set(key, g);
-  }
-  return [...by.values()];
 }

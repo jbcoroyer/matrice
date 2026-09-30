@@ -30,7 +30,7 @@ Les films les plus regardés de la semaine (TMDB), les mêmes pour tout le monde
 l'affiche active ; texte à gauche (titre deux graisses, libellés, note TMDB, résumé),
 points de pagination, flèches clavier et glisser sur mobile.
 
-## Cinémathèque (`app/collection/page.tsx`, `components/CollectionCard.tsx`, `components/Classeur.tsx`)
+## Cinémathèque (`app/collection/page.tsx`, `components/CollectionCard.tsx`)
 
 La collection **physique**, séparée de ce qu'on a vu (les films vus vivent dans le journal et le
 profil). Planches de départ : `design/collection/`.
@@ -46,18 +46,19 @@ profil). Planches de départ : `design/collection/`.
 - L'affiche reste entière ; le cadre est une matière : noir mat (DVD, Blu-ray, VHS), **argent
   satiné** (4K, steelbook, Criterion…), **or crème** (collector, éditions limitées ou numérotées).
 - Médaillon de format (4K, BD, DVD…), sceau d'édition, cartouche (titre en deux graisses, ligne
-  « genre · réalisateur · année »), numéro de collection « N° 142 / 187 », médaillon de note :
+  « genre · réalisateur · année »), support en pied de carte, médaillon de note :
   crème avec la note si le film est vu, anneau pointillé s'il ne l'a jamais été.
 - Scellé : film plastique + étiquette « Scellé ». Prêté : affiche assombrie + « Prêté à … ».
-- L'affiche retourne la carte (verso : édition, éditeur, numéro, état, achat, prêt, notes, photo,
-  visionnages) ; le titre ouvre la fiche du film. Survol : inclinaison ≤ 7° et un reflet crème.
+- Sur la page publique, l'affiche retourne la carte (verso : édition, éditeur, numéro, état, achat,
+  notes, photo). Dans la collection, la carte est posée dans la feuille du film. Survol : inclinaison
+  ≤ 7° et un reflet crème.
 - **Exception validée à la charte** : l'argent et l'or crème n'existent que sur la carte, comme un
   vrai foil. Pas d'arc-en-ciel holographique, pas de halo coloré. Les jetons `--f-*` et `--card-*`
   de `globals.css` portent cette matière, identique en thème clair et sombre.
 
 **Page Collection** (`app/collection/page.tsx`, `lib/shelf.ts`) : une vidéothèque, pas un tableau.
 - En tête : « Ma cinémathèque », une phrase (« 187 films, 203 exemplaires »), **Ajouter** et un menu ⋯
-  (Partager, Registre, Classeur des réalisateurs, provisoire). Une ligne rappelle les prêts s'il y en a.
+  (Partager, Registre, Ouvrir un rayon). Une ligne rappelle les prêts s'il y en a.
 - Jusqu'à 12 films : tout est de face (l'affiche dans le cadre de sa matière), sans aucun outil.
 - Au-delà : **Dernières entrées** de face, puis **l'étagère** : une seule, continue, un dos par
   exemplaire, des **intercalaires** (lettre du réalisateur, du titre, décennie ou année d'entrée)
@@ -75,6 +76,29 @@ profil). Planches de départ : `design/collection/`.
   édition (Standard, Steelbook, Coffret, Mediabook, Digibook, Collector). « Numérique » n'est plus
   proposé. Les anciens « Steelbook » / « Collector » sont devenus des Blu-ray de cette édition,
   marqués « support à vérifier ».
+
+## Rayons et cycles (`lib/sets.ts`, `lib/editorial.ts`, `components/SetView.tsx`, `Rayons.tsx`, `Cycles.tsx`)
+
+Un **ensemble** de films (la filmographie d'un cinéaste, une saga, un studio, une sélection
+éditoriale) se suit de deux façons, jamais confondues :
+- **Rayon** (posséder) : vit dans la **Collection**. Une étagère avec les boîtiers possédés et des
+  **places vides en pointillé** ; « 11 / 14 » en chiffres légers ; pas de barre de progression.
+  Plusieurs éditions d'un film comptent pour un. Trois rayons à l'affiche, les autres repliés.
+- **Cycle** (voir) : vit dans le **Journal** (onglet Cycles). Un **programme de cinémathèque** :
+  une ligne par séance (année, titre, « vu le 12/03/2026 » et la note, ou « à voir · Journaliser »),
+  et des cases comme des tickets poinçonnés dans la liste des cycles. « Vu » = `user_films.watched` ;
+  le journal date les séances.
+- **Page d'un ensemble** (`/ensembles/[clé]`, lisible sans compte) : neutre, comme une fiche. Titre,
+  description, **la règle en clair**, puis deux lignes « Dans ta collection : 4 sur 13 · Ouvrir un
+  rayon » et « Dans ton parcours : 9 sur 13 · Commencer le cycle ». « Ajuster » permet de ne pas
+  compter un film (caméo, film introuvable). Pour une personne : Réalisation · Rôles principaux ·
+  Toute la filmographie (sans apparitions, téléfilms, documentaires ni films introuvables).
+- **Catalogue** (`/ensembles`) : le même pour tout le monde (Mouvements, Palmarès, Studios, Sagas),
+  pas de recommandation ni de sélection sous licence. Portes d'entrée : bandeau dans Découvrir,
+  « Fait partie de la saga … » sur la fiche film, « Rétrospective » sur la fiche d'une personne.
+- **Fin** : un rayon complet garde « Complet · mars 2027 » ; un film sorti ensuite affiche
+  « Complet en 2027 · 1 nouveau film depuis » sans effacer la date. Les cycles achevés restent,
+  avec leurs dates, dans « Cycles achevés ».
 
 ## Écran d'accueil (`components/AuthScreen.tsx`)
 

@@ -44,7 +44,7 @@ export function FilmPanel({ film }: { film: FilmInput }) {
     try {
       if (on) await addWant(d.sb, d.userId, filmRow(film));
       else await removeWant(d.sb, film.id);
-      d.toast(on ? `« ${film.title} » ajouté à tes envies (à posséder en disque)` : `« ${film.title} » retiré de tes envies`);
+      d.toast(on ? `« ${film.title} » ajouté à ce que tu cherches` : `« ${film.title} » retiré de ce que tu cherches`, undefined, on ? { label: "Voir", href: "/collection" } : undefined);
     } catch (e) {
       setWanted(!on);
       d.toast(`Échec : ${errorText(e)}`);
@@ -181,7 +181,7 @@ export function FilmPanel({ film }: { film: FilmInput }) {
             </button>
             {!copies.length ? (
               <button type="button" onClick={toggleWanted}>
-                {wanted ? "Retirer de mes envies" : "Envie de l'avoir en disque"}
+                {wanted ? "Je ne le cherche plus" : "Je le cherche en disque"}
               </button>
             ) : null}
           </div>

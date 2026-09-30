@@ -7,6 +7,7 @@ import { useProfile } from "@/components/ProfileProvider";
 import { Rail } from "@/components/Rail";
 import { TitleDuo } from "@/components/TitleDuo";
 import { MoodChips } from "@/components/MoodChips";
+import { EDITORIAL } from "@/lib/editorial";
 import { Onboarding } from "@/components/ui";
 import { num1, runtime, truncate, yearOf } from "@/lib/format";
 import { GENRE_FR } from "@/lib/genres";
@@ -164,6 +165,31 @@ export default function Decouvrir() {
       <MoodChips />
       <Rail title="À l'affiche en France" sub="Ce qui est en salles en ce moment" href="/decouvrir/populaires?liste=now_playing" {...rail(playing)} />
       <Rail title="Tendances de la semaine" sub="Ce que tout le monde regarde" href="/decouvrir/populaires" {...rail(trending)} list={trending.data ? trending.data.slice(FEATURED) : rail(trending).list} />
+      <section className="dsets" aria-labelledby="dsets-title">
+        <div className="rail-head">
+          <div>
+            <h2 id="dsets-title">
+              <Link href="/ensembles">
+                Rayons <span>et cycles</span>
+              </Link>
+            </h2>
+            <p>Des ensembles à voir ou à collectionner, les mêmes pour tout le monde</p>
+          </div>
+          <div className="rail-tools">
+            <Link href="/ensembles">Tout le catalogue →</Link>
+          </div>
+        </div>
+        <ul>
+          {EDITORIAL.slice(0, 7).map((e) => (
+            <li key={e.key}>
+              <Link href={`/ensembles/${e.key}`}>
+                <span className="dsets-k">{e.kicker}</span>
+                <TitleDuo title={e.title} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
       <Rail title="Bientôt en salles" sub="Les prochaines sorties" href="/decouvrir/populaires?liste=upcoming" {...rail(upcoming)} />
       <Rail title="Les mieux notés" sub="Les grands films, tous pays et toutes époques" href="/decouvrir/populaires?liste=top_rated" {...rail(top)} />
     </>

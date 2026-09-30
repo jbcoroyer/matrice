@@ -31,6 +31,7 @@ export type MovieDetail = Movie & {
   recommendations?: { results: Movie[] };
   similar?: { results: Movie[] };
   external_ids?: { imdb_id?: string | null };
+  belongs_to_collection?: { id: number; name: string } | null;
   release_dates?: { results: { iso_3166_1: string; release_dates: { certification: string; type: number; release_date: string }[] }[] };
 };
 
@@ -48,7 +49,7 @@ export type Person = {
   imdb_id?: string | null;
 };
 
-export type PersonCredit = Movie & { character?: string; job?: string; department?: string };
+export type PersonCredit = Movie & { character?: string; job?: string; department?: string; order?: number };
 export type PersonCredits = { cast: PersonCredit[]; crew: PersonCredit[] };
 
 /** Affinités apprises à partir des notes : écart moyen (lissé) à la note moyenne. */

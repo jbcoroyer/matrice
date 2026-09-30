@@ -14,8 +14,9 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 | `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
 | `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
 | `/collection` | Ta cinémathèque physique : dernières entrées de face, étagère continue (un dos par exemplaire, intercalaires, index), une seule recherche (titre, cinéaste, 4K, scellé, prêté, pas vu…), feuille de chaque film avec ses exemplaires, « Tu cherches » ; `/collection/registre` pour les chiffres |
+| `/ensembles` | Catalogue de rayons et cycles (mouvements, palmarès, studios, sagas) ; `/ensembles/[clé]` : un ensemble, à posséder (rayon) ou à voir (cycle) |
 | `/c/[code]` | Cinémathèque partagée, lisible sans compte (jamais tes films vus ni tes prêts) |
-| `/journal` | Journal daté ; onglet « Films vus » avec tous les films marqués comme vus |
+| `/journal` | Journal daté ; onglets « Films vus » et « Cycles » (les ensembles que tu décides de voir, en programme de cinémathèque) |
 | `/film/[id]` | Fiche (lisible sans compte) : ta note, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques |
 | `/personne/[id]` | Biographie et filmographie (lisible sans compte) |
 | `/u/[pseudo]` | Profil public : nom, présentation, top 5, listes publiques, critiques publiques |
@@ -49,7 +50,8 @@ réponses en cache.
 2. Authentication → Sign In / Providers : Email activé (connexion obligatoire). Les connexions
    anonymes ne servent plus qu'aux anciennes sessions : on peut les désactiver une fois tous les
    comptes créés.
-3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/`.
+3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/` (les plus récents :
+   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`).
 
 Il faut un compte (email + mot de passe) pour utiliser l'appli ; sans session, tout le site
 affiche l'écran de connexion. Les données de chacun (états des films, journal, critiques, listes,
