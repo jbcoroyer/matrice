@@ -85,9 +85,10 @@ Un **ensemble** de films (la filmographie d'un cinéaste, une saga, un studio, u
 - **Rayon** (posséder) : vit dans la **Collection**. Une étagère avec les boîtiers possédés et des
   **places vides en pointillé** ; « 11 / 14 » en chiffres légers ; pas de barre de progression.
   Plusieurs éditions d'un film comptent pour un. Trois rayons à l'affiche, les autres repliés.
-  Le but est d'avoir **vu et possédé**, et le rayon **se colore en avançant** : un boîtier vu
-  prend la couleur de son affiche et un petit œil (place vide vue : en transparence ; vu et possédé :
-  en pleine couleur) ; le reste reste neutre. La couleur vient du film, jamais de l'interface.
+  Le but est d'avoir **vu et possédé**, et le rayon **se colore en avançant** : la couleur de l'affiche monte dans le boîtier
+  **jusqu'à mi-hauteur** s'il est vu **ou** possédé, et le **remplit entièrement** s'il est vu **et**
+  possédé. Un vu porte l'œil ; une place vide vue reste en pointillé, affiche en transparence ; un
+  film ni vu ni possédé reste neutre. La couleur vient du film, jamais de l'interface.
   « 2 / 35 possédés · 5 vus · 1 vu et possédé », et une légende sous l'étagère. Les cycles
   pas encore ouverts en rayon sont rappelés sous les rayons. Dans un cycle, « possédé » marque les films qu'on a.
 - **Cycle** (voir) : vit dans le **Journal** (onglet Cycles). Un **programme de cinémathèque** :
