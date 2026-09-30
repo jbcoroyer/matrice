@@ -1,8 +1,9 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import { useEffect, useId, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
-import { deleteEntry, diaryIndex, entriesForFilm, saveEntry, type DiaryEntry } from "@/lib/diary";
+import { deleteEntry, diaryChanged, diaryIndex, entriesForFilm, restoreEntry, saveEntry, type DiaryEntry } from "@/lib/diary";
 import { today } from "@/lib/format";
 import { useProfile, type FilmInput } from "./ProfileProvider";
 import { Stars } from "./Stars";
@@ -88,21 +89,26 @@ export function LogDialog({
       onSaved?.(saved);
       onClose();
     } catch (err) {
-      setError((err as Error).message);
+      setError(errorText(err));
       setBusy(false);
     }
   };
 
   const remove = async () => {
-    if (!sb || !entry || !confirm("Supprimer cette entrée du journal ?")) return;
+    if (!sb || !userId || !entry) return;
     setBusy(true);
     try {
       await deleteEntry(sb, entry.id);
-      toast("Entrée supprimée");
+      toast("Entrée supprimée", () =>
+        restoreEntry(sb, userId, entry).then(
+          () => diaryChanged(film.id),
+          (err) => toast(`Impossible de la remettre : ${errorText(err)}`),
+        ),
+      );
       onSaved?.(null);
       onClose();
     } catch (err) {
-      setError((err as Error).message);
+      setError(errorText(err));
       setBusy(false);
     }
   };

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import Link from "next/link";
 import { use, useCallback, useEffect, useState } from "react";
 import { ReviewText } from "@/components/DiaryEntries";
@@ -15,7 +16,7 @@ import { img } from "@/lib/tmdb";
 /** Une critique : lisible par tous si elle est publique ; j'aime et commentaires pour les membres. */
 export default function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { status, userId, toast } = useProfile();
+  const { status, userId, toast, confirm } = useProfile();
   const [review, setReview] = useState<Review | null | undefined>(undefined);
   const [comments, setComments] = useState<Comment[]>([]);
   const [error, setError] = useState<unknown>(null);
@@ -52,7 +53,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
       setReview((r) => (r ? { ...r, comments: r.comments + 1 } : r));
       setDraft("");
     } catch (err) {
-      toast(`Échec : ${(err as Error).message}`);
+      toast(`Échec : ${errorText(err)}`);
     } finally {
       setPosting(false);
     }
@@ -60,13 +61,13 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 
   const remove = async (c: Comment) => {
     const sb = supabase();
-    if (!sb || !confirm("Supprimer ce commentaire ?")) return;
+    if (!sb || !(await confirm({ title: "Supprimer le commentaire ?", message: "Ce commentaire sera supprimé définitivement.", confirmLabel: "Supprimer", danger: true }))) return;
     try {
       await deleteComment(sb, c.id);
       setComments((l) => l.filter((x) => x.id !== c.id));
       setReview((r) => (r ? { ...r, comments: Math.max(0, r.comments - 1) } : r));
     } catch (err) {
-      toast(`Échec : ${(err as Error).message}`);
+      toast(`Échec : ${errorText(err)}`);
     }
   };
 

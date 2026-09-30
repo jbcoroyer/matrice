@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { frDate, plural } from "@/lib/format";
@@ -50,7 +51,7 @@ export function useLikes(reviews: Review[] | null, setReviews: (f: (l: Review[])
       await setLike(sb, userId, r.id, on);
     } catch (e) {
       apply(!on);
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
   return { liked, toggle: status === "ready" ? toggle : undefined };

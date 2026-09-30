@@ -1,7 +1,8 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import { useEffect, useRef, useState } from "react";
-import { CONDITIONS, deleteItem, fetchExtra, FORMATS, photoUrl, PUBLISHERS, removePhoto, saveItem, uploadPhoto, type CollectionItem, type Format } from "@/lib/collection";
+import { CONDITIONS, deleteItem, fetchExtra, FORMATS, photoUrl, PUBLISHERS, removePhoto, restoreItem, saveItem, uploadPhoto, type CollectionItem, type Format } from "@/lib/collection";
 import { filmRow } from "@/lib/db";
 import { today } from "@/lib/format";
 import { useProfile, type FilmInput } from "./ProfileProvider";
@@ -102,23 +103,35 @@ export function CopyDialog({
       onClose();
       if (next) onNext?.();
     } catch (err) {
-      setError((err as Error).message);
+      setError(errorText(err));
       setBusy(false);
     }
   };
 
   const remove = async () => {
-    if (!sb || !item || !confirm("Retirer cet exemplaire de ta collection ?")) return;
+    if (!sb || !userId || !item) return;
     setBusy(true);
     try {
       await deleteItem(sb, item.id);
-      if (item.photo_path) removePhoto(sb, item.photo_path).catch(() => {});
-      toast("Exemplaire retiré de ta collection");
+      // la photo n'est effacée qu'une fois le délai d'annulation passé
+      const photo = item.photo_path;
+      let undone = false;
+      if (photo) setTimeout(() => !undone && removePhoto(sb, photo).catch(() => {}), 8000);
+      toast("Exemplaire retiré de ta collection", () => {
+        undone = true;
+        restoreItem(sb, userId, item).then(
+          () => {
+            refreshOwned();
+            onSaved();
+          },
+          (err) => toast(`Impossible de le remettre : ${errorText(err)}`),
+        );
+      });
       refreshOwned();
       onSaved();
       onClose();
     } catch (err) {
-      setError((err as Error).message);
+      setError(errorText(err));
       setBusy(false);
     }
   };

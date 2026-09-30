@@ -92,6 +92,12 @@ export async function deleteEntry(sb: SupabaseClient, id: string) {
   check(await sb.from("diary_entries").delete().eq("id", id));
 }
 
+/** Remet une entrée supprimée (« Annuler »), avec son identifiant et sa date d'origine. */
+export async function restoreEntry(sb: SupabaseClient, userId: string, e: DiaryEntry) {
+  const { films: _films, ...row } = e;
+  check(await sb.from("diary_entries").insert({ ...row, user_id: userId }));
+}
+
 /* ---------- top 5 ---------- */
 
 export type TopFilm = { slot: number; tmdb_id: number; films: { title: string; release_date: string | null; poster_path: string | null } | null };

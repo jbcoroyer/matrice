@@ -1,4 +1,5 @@
 // Collection : exemplaires possédés (collection_items) et partage public (collection_shares).
+import { errorText } from "./errors";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureFilms } from "./db";
 import { check } from "./supabase";
@@ -163,6 +164,12 @@ export async function deleteItem(sb: SupabaseClient, id: string) {
   check(await sb.from("collection_items").delete().eq("id", id));
 }
 
+/** Remet un exemplaire supprimé (« Annuler »), avec son identifiant et sa date d'ajout d'origine. */
+export async function restoreItem(sb: SupabaseClient, userId: string, i: CollectionItem) {
+  const { films: _films, ...row } = i;
+  check(await sb.from("collection_items").insert({ ...row, user_id: userId }));
+}
+
 /* ---------- photos d'exemplaires ---------- */
 
 const BUCKET = "collection-photos";
@@ -185,7 +192,7 @@ export async function uploadPhoto(sb: SupabaseClient, userId: string, file: File
   const blob = await shrink(file);
   const path = `${userId}/${crypto.randomUUID()}.jpg`;
   const { error } = await sb.storage.from(BUCKET).upload(path, blob, { contentType: "image/jpeg" });
-  if (error) throw new Error(`Envoi de la photo impossible : ${error.message}`);
+  if (error) throw new Error(`Envoi de la photo impossible : ${errorText(error)}`);
   return path;
 }
 

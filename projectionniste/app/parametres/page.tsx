@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
@@ -106,7 +107,7 @@ function ProfileName() {
           await reload();
           toast("Nom enregistré");
         } catch (err) {
-          toast(`Échec : ${(err as Error).message}`);
+          toast(`Échec : ${errorText(err)}`);
         } finally {
           setBusy(false);
         }
@@ -143,7 +144,7 @@ function Activity() {
             toast(v ? "Les autres membres voient les films que tu as vus" : "Tes films vus sont masqués aux autres membres");
           } catch (err) {
             setOn(!v);
-            toast(`Échec : ${(err as Error).message}`);
+            toast(`Échec : ${errorText(err)}`);
           }
         }}
       />

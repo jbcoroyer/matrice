@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/urbanist";
 import { AuthGate } from "@/components/AuthScreen";
-import { FooterStats, Toaster } from "@/components/Chrome";
+import { ConfirmHost, FooterStats, SessionBanner, Toaster } from "@/components/Chrome";
 import { Masthead, TabBar } from "@/components/Masthead";
 import { ProfileProvider } from "@/components/ProfileProvider";
 import { QuickLogHost } from "@/components/QuickLog";
@@ -55,6 +55,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <TabBar />
           <QuickLogHost />
           <Toaster />
+          <SessionBanner />
+          <ConfirmHost />
         </ProfileProvider>
       </body>
     </html>

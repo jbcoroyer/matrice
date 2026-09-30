@@ -19,7 +19,7 @@ function Field({ label, ...p }: { label: string } & React.InputHTMLAttributes<HT
 
 /** Écran d'accueil pour les personnes non connectées (ou ancienne session sans compte). */
 export function AuthScreen() {
-  const { sb, status, empty, retry } = useProfile();
+  const { sb, status, empty, retry, sessionExpired } = useProfile();
   const guest = status === "guest";
   const [mode, setMode] = useState<"signin" | "signup">(guest ? "signup" : "signin");
   const [email, setEmail] = useState("");
@@ -93,6 +93,7 @@ export function AuthScreen() {
               value={pw}
               onChange={(e) => setPw(e.target.value)}
             />
+            {sessionExpired ? <p className="status" role="status">Ta session a expiré. Reconnecte-toi pour retrouver tes données.</p> : null}
             {error ? <ErrorLine error={error} /> : null}
             {info ? <p className="status">{info}</p> : null}
             <div className="row-actions">

@@ -91,3 +91,20 @@ dans une carte en verre.
   remplir (`StartActions` : Journaliser un film, Importer mon Letterboxd ; ou l'action propre à la
   page : Parcourir les tendances, Ajouter mon premier exemplaire, Créer ma première liste).
   Utilisé par Journal, Films vus, Watchlist, Collection, Bilan, Mon profil (« Ce que tu aimes ») et Listes.
+
+## Erreurs, confirmations, session (`lib/errors.ts`, `components/Chrome.tsx`)
+
+- **Erreurs** : tout message montré passe par `errorText(e)` : réseau, session expirée, droits refusés,
+  doublon, délai sont traduits ; un texte technique anglais devient « Une erreur est survenue.
+  Réessaie dans un instant. ». Jamais de message brut de Supabase ou du navigateur.
+- **Session expirée** : le client Supabase signale toute réponse 401 d'un utilisateur connecté ;
+  un bandeau sous l'en-tête (« Ta session a expiré… », bouton **Se reconnecter**) reste affiché, et
+  l'écran de connexion rappelle pourquoi. Il disparaît à la reconnexion.
+- **Suppressions** : le journal et la collection n'ont plus de confirmation : c'est fait, avec une
+  notification **Annuler** (l'entrée ou l'exemplaire revient tel quel ; la photo n'est effacée
+  qu'après 8 s). Les suppressions qui ne se rejouent pas (liste, commentaire) et le passage d'une
+  liste en public demandent confirmation dans une fenêtre de l'appli (`useProfile().confirm`),
+  jamais `window.confirm`. Échap refuse.
+- **Recherche** : si TMDB ne répond pas, les suggestions, la page de résultats et la fenêtre
+  « Quel film ? » disent que la recherche est indisponible et proposent **Réessayer**.
+  Échap ferme les suggestions où que soit le focus.

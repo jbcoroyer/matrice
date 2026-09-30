@@ -19,6 +19,7 @@ export function SearchResults({ q }: { q: string }) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(1);
   const [more, setMore] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   const fetchPage = (p: number) =>
     tmdb<Paged<Movie>>("search/movie", { query: q, include_adult: false, page: p }).then((r) => {
@@ -30,6 +31,8 @@ export function SearchResults({ q }: { q: string }) {
   useEffect(() => {
     if (!q) return;
     let alive = true;
+    setError(null);
+    setFilms(null);
     fetchPage(1)
       .then((l) => alive && setFilms(l.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))))
       .catch((e) => alive && setError(e));
@@ -40,7 +43,7 @@ export function SearchResults({ q }: { q: string }) {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+  }, [q, attempt]);
 
   if (!q)
     return (
@@ -76,7 +79,7 @@ export function SearchResults({ q }: { q: string }) {
       <section className="section">
         <SecHead title={`Films : « ${q} »`} />
         {error ? (
-          <ErrorLine error={error} />
+          <ErrorLine error={error} onRetry={() => setAttempt((a) => a + 1)} />
         ) : !list ? (
           <SkeletonGrid n={10} />
         ) : list.length ? (

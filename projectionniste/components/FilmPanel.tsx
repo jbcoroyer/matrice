@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
 import { clearTopSlot, DIARY_EVENT, diaryChanged, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
@@ -44,7 +45,7 @@ export function FilmPanel({ film }: { film: FilmInput }) {
       d.toast(on ? `« ${film.title} » ajouté à tes envies (à posséder en disque)` : `« ${film.title} » retiré de tes envies`);
     } catch (e) {
       setWanted(!on);
-      d.toast(`Échec : ${(e as Error).message}`);
+      d.toast(`Échec : ${errorText(e)}`);
     }
   };
   useEffect(() => {
@@ -69,7 +70,7 @@ export function FilmPanel({ film }: { film: FilmInput }) {
       setTop(await loadTop(d.sb, d.userId));
       d.toast(v === "0" ? "Retiré de ton top 5" : `En n° ${v} de ton top 5`);
     } catch (e) {
-      d.toast(`Échec : ${(e as Error).message}`);
+      d.toast(`Échec : ${errorText(e)}`);
     }
     closeMore();
   };

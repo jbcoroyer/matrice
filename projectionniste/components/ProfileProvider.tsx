@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { listOwned, type Format } from "@/lib/collection";
@@ -8,11 +9,16 @@ import { predict, type Prediction } from "@/lib/predict";
 import { derive, type Derived } from "@/lib/profile";
 import { clearRecs } from "@/lib/recs";
 import { KEYS, store } from "@/lib/store";
-import { supabase } from "@/lib/supabase";
+import { takeManualSignOut } from "@/lib/auth";
+import { SESSION_EVENT, supabase } from "@/lib/supabase";
 import type { Credits, FilmState, Movie, Profile, Settings } from "@/lib/types";
 
 /** signedOut : personne n'est connecté ; guest : ancienne session anonyme, à transformer en compte */
 type Status = "loading" | "ready" | "error" | "signedOut" | "guest";
+
+/** Demande de confirmation (remplace window.confirm) : se règle en oui / non. */
+export type ConfirmOptions = { title?: string; message: string; confirmLabel?: string; danger?: boolean };
+type Ask = ConfirmOptions & { resolve: (ok: boolean) => void };
 
 type Toast = { id: number; text: string; undo?: () => void; link?: { label: string; href: string } };
 
@@ -43,6 +49,11 @@ type Ctx = Derived & {
   /** modifie l'état d'un film (utilisé par le journal) ; message facultatif avec annulation */
   setFilmState: (m: FilmInput, patch: Partial<FilmState>, message?: string) => void;
   toast: (text: string, undo?: () => void, link?: { label: string; href: string }) => void;
+  /** vrai quand le serveur a refusé la session : bandeau « Se reconnecter » */
+  sessionExpired: boolean;
+  confirm: (o: ConfirmOptions) => Promise<boolean>;
+  ask: Ask | null;
+  answer: (ok: boolean) => void;
   toasts: Toast[];
   dismissToast: (id: number) => void;
 };
@@ -69,6 +80,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [owned, setOwned] = useState<Map<number, Format[]>>(new Map());
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [attempt, setAttempt] = useState(0);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [ask, setAsk] = useState<Ask | null>(null);
+  const answer = useCallback((ok: boolean) => setAsk((a) => (a?.resolve(ok), null)), []);
+  const confirm = useCallback((o: ConfirmOptions) => new Promise<boolean>((resolve) => setAsk({ ...o, resolve })), []);
   const statesRef = useRef(states);
   statesRef.current = states;
 
@@ -116,7 +131,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (alive) setStatus(acc.anonymous ? "guest" : "ready");
     })().catch((e: Error) => {
       if (!alive) return;
-      setError(e.message || "Impossible de charger tes données.");
+      setError(errorText(e));
       setStatus("error");
     });
     return () => {
@@ -131,11 +146,21 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") return;
       const u = session?.user;
       const cur = accountRef.current;
+      // déconnexion que l'utilisateur n'a pas demandée : la session a expiré
+      if (event === "SIGNED_OUT" && cur && !takeManualSignOut()) setSessionExpired(true);
+      if (event === "SIGNED_IN" && u && u.id !== cur?.id) setSessionExpired(false);
       const changed = (u?.id ?? null) !== (cur?.id ?? null) || (!!u && (u.email || null) !== (cur?.email ?? null));
       if (changed) setAttempt((x) => x + 1);
     });
     return () => data.subscription.unsubscribe();
   }, [sb]);
+
+  // le serveur a refusé le jeton d'un utilisateur connecté (émis par le client Supabase)
+  useEffect(() => {
+    const on = () => accountRef.current && setSessionExpired(true);
+    window.addEventListener(SESSION_EVENT, on);
+    return () => window.removeEventListener(SESSION_EVENT, on);
+  }, []);
 
   const refreshOwned = useCallback(() => {
     if (sb) listOwned(sb).then(setOwned, () => {});
@@ -169,7 +194,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         () => message && toast(message, revert),
         (e: Error) => {
           apply(before);
-          toast(`Échec de l'enregistrement : ${e.message}`);
+          toast(`Échec de l'enregistrement : ${errorText(e)}`);
         },
       );
     },
@@ -226,10 +251,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       unmarkSeen,
       setFilmState: patchFilm,
       toast,
+      sessionExpired,
+      confirm,
+      ask,
+      answer,
       toasts,
       dismissToast,
     }),
-    [derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, patchFilm, toast, toasts, dismissToast],
+    [sessionExpired, confirm, ask, answer, derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

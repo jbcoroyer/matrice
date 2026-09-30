@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -30,7 +31,7 @@ const asMovie = (it: ListItem) => ({
 /** Une liste : lisible par tous si elle est publique, modifiable par son auteur. */
 export default function ListPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { status, userId, seen, toast } = useProfile();
+  const { status, userId, seen, toast, confirm } = useProfile();
   const router = useRouter();
   const [data, setData] = useState<Data | null | undefined>(undefined);
   const [error, setError] = useState<unknown>(null);
@@ -87,7 +88,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
         for (const r of rows) dbPos.current.set(r.tmdb_id, r.position);
       })
       .catch((e: Error) => {
-        toast(`Échec du déplacement : ${e.message}`);
+        toast(`Échec du déplacement : ${errorText(e)}`);
         load();
       });
   };
@@ -115,7 +116,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
       setItems((l) => l.map((it) => (it.tmdb_id === m.id ? { ...it, position } : it)));
     } catch (e) {
       setItems((l) => l.filter((it) => it.tmdb_id !== m.id));
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
 
@@ -138,7 +139,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
             return n;
           });
         } catch (e) {
-          toast(`Échec : ${(e as Error).message}`);
+          toast(`Échec : ${errorText(e)}`);
         }
       });
     } catch (e) {
@@ -147,7 +148,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
         n.splice(index, 0, it);
         return n;
       });
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
 
@@ -159,7 +160,7 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
       await setItemNote(sb, id, it.tmdb_id, note);
     } catch (e) {
       setItems((l) => l.map((x) => (x.tmdb_id === it.tmdb_id ? it : x)));
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
 
@@ -167,12 +168,12 @@ export default function ListPage({ params }: { params: Promise<{ id: string }> }
     if (!data) return;
     const sb = supabase();
     if (mine && !data.list.is_public) {
-      if (!sb || !confirm("Cette liste est privée. La rendre publique pour pouvoir la partager ?\nToute personne ayant le lien pourra la voir, même sans compte.")) return;
+      if (!sb || !(await confirm({ title: "Rendre la liste publique ?", message: "Cette liste est privée. Pour la partager, il faut la rendre publique : toute personne ayant le lien pourra la voir, même sans compte.", confirmLabel: "Rendre publique et partager" }))) return;
       try {
         const list = await updateList(sb, id, { is_public: true });
         setData((d) => (d ? { ...d, list } : d));
       } catch (e) {
-        return toast(`Échec : ${(e as Error).message}`);
+        return toast(`Échec : ${errorText(e)}`);
       }
     }
     const url = `${location.origin}/listes/${id}`;

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
 import { addToList, createList, deleteList, listsWithFilm, myLists, removeFromList, updateList, type ListMeta, type ListSummary } from "@/lib/lists";
@@ -19,7 +20,7 @@ export function ListDialog({
   onSaved: (l: ListMeta) => void;
   onDeleted?: () => void;
 }) {
-  const { sb, userId, toast } = useProfile();
+  const { sb, userId, toast, confirm } = useProfile();
   const ref = useRef<HTMLDialogElement>(null);
   const [title, setTitle] = useState(list?.title ?? "");
   const [description, setDescription] = useState(list?.description ?? "");
@@ -41,20 +42,22 @@ export function ListDialog({
       onSaved(saved);
       onClose();
     } catch (err) {
-      setError((err as Error).message);
+      setError(errorText(err));
       setBusy(false);
     }
   };
 
   const remove = async () => {
-    if (!sb || !list || !confirm(`Supprimer définitivement la liste « ${list.title} » ?`)) return;
+    if (!sb || !list) return;
+    const ok = await confirm({ title: "Supprimer la liste ?", message: `« ${list.title} » sera supprimée définitivement, avec l'ordre et les notes de ses films. Les films eux-mêmes ne sont pas touchés.`, confirmLabel: "Supprimer la liste", danger: true });
+    if (!ok) return;
     setBusy(true);
     try {
       await deleteList(sb, list.id);
       toast("Liste supprimée");
       onDeleted?.();
     } catch (err) {
-      setError((err as Error).message);
+      setError(errorText(err));
       setBusy(false);
     }
   };
@@ -121,7 +124,7 @@ export function AddToListDialog({ film, onClose, onChange }: { film: FilmInput; 
         setLists(l);
         setInside(s);
       },
-      (e) => setError((e as Error).message),
+      (e) => setError(errorText(e)),
     );
   }, [sb, userId, film.id]);
   useEffect(() => {
@@ -150,7 +153,7 @@ export function AddToListDialog({ film, onClose, onChange }: { film: FilmInput; 
       setLists((ls) => ls?.map((x) => (x.id === l.id ? { ...x, count: x.count + (has ? -1 : 1) } : x)) ?? null);
     } catch (e) {
       flip(has);
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
 
@@ -165,7 +168,7 @@ export function AddToListDialog({ film, onClose, onChange }: { film: FilmInput; 
       setCreating("");
       toast(`Liste « ${l.title} » créée`);
     } catch (err) {
-      toast(`Échec : ${(err as Error).message}`);
+      toast(`Échec : ${errorText(err)}`);
     }
   };
 

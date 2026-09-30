@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { errorText } from "@/lib/errors";
 import { store } from "@/lib/store";
 import { openQuickLog } from "./QuickLog";
 import { useProfile } from "./ProfileProvider";
@@ -61,7 +62,7 @@ export function SkeletonGrid({ n = 10 }: { n?: number }) {
 }
 
 export function ErrorLine({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
-  const msg = error instanceof Error ? error.message : "Une erreur est survenue.";
+  const msg = errorText(error);
   return (
     <p className="status err">
       {msg}{" "}

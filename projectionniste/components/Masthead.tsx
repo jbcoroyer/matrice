@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { signOut } from "@/lib/auth";
 import { Bookmark, Compass, Disc, Journal, List, Plus, Search } from "./icons";
 import { JournalButton, openQuickLog } from "./QuickLog";
 import { useProfile } from "./ProfileProvider";
@@ -78,7 +79,7 @@ function ProfileMenu() {
             type="button"
             role="menuitem"
             onClick={async () => {
-              await sb?.auth.signOut();
+              if (sb) await signOut(sb);
               location.href = "/";
             }}
           >

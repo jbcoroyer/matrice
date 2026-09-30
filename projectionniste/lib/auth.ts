@@ -1,6 +1,7 @@
 // Comptes : transformer la session anonyme en compte, se connecter, se déconnecter.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { accountOf, type Account } from "./db";
+import { errorText } from "./errors";
 import { DbError } from "./supabase";
 
 function authError(e: { message: string; code?: string }): never {
@@ -12,7 +13,7 @@ function authError(e: { message: string; code?: string }): never {
   if (/email not confirmed/i.test(m)) throw new DbError("Email pas encore confirmé : clique sur le lien reçu par email.");
   if (/rate limit|too many/i.test(m)) throw new DbError("Trop de tentatives : réessaie dans quelques minutes.");
   if (/invalid.*email|unable to validate email/i.test(m)) throw new DbError("Adresse email invalide.");
-  throw new DbError(m);
+  throw new DbError(errorText(e));
 }
 
 /**
@@ -42,7 +43,16 @@ export async function signIn(sb: SupabaseClient, email: string, password: string
   if (error) authError(error);
 }
 
+let manualSignOut = false;
+/** Vrai (une seule fois) si la dernière déconnexion vient de l'utilisateur, et non d'une session expirée. */
+export const takeManualSignOut = () => {
+  const v = manualSignOut;
+  manualSignOut = false;
+  return v;
+};
+
 export async function signOut(sb: SupabaseClient) {
+  manualSignOut = true;
   await sb.auth.signOut();
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Classeur } from "@/components/Classeur";
 import { CollectionCard, Spine } from "@/components/CollectionCard";
@@ -61,7 +62,7 @@ function SharePanel() {
       setShare(await saveShare(sb!, userId!, patch));
     } catch (e) {
       setShare(before);
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
   const url = share?.share_code ? `${location.origin}/c/${share.share_code}` : "";
@@ -243,7 +244,7 @@ function Collection() {
       toast(on ? `« ${m.title} » retiré de tes envies` : `« ${m.title} » ajouté à tes envies`);
     } catch (e) {
       setWants(before);
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
 

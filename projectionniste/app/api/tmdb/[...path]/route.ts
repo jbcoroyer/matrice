@@ -1,3 +1,4 @@
+import { errorText } from "@/lib/errors";
 import { NextRequest, NextResponse } from "next/server";
 import { isAllowed, tmdbFetch, TmdbError, ttlFor } from "@/lib/tmdb-server";
 
@@ -19,6 +20,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
     });
   } catch (e) {
     const status = e instanceof TmdbError ? e.status : 502;
-    return NextResponse.json({ error: (e as Error).message }, { status });
+    return NextResponse.json({ error: errorText(e) }, { status });
   }
 }

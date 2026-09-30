@@ -20,6 +20,8 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
   const [hits, setHits] = useState<Hit[] | null>(null);
   const [open, setOpen] = useState(false);
   const [sel, setSel] = useState(-1);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const box = useRef<HTMLDivElement>(null);
   const listId = useId();
@@ -27,6 +29,8 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
+      // Échap ferme les suggestions où que soit le focus (par exemple après « Réessayer »)
+      if (e.key === "Escape") setOpen(false);
       if (e.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) && !t.isContentEditable) {
         e.preventDefault();
         input.current?.focus();
@@ -45,6 +49,7 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
 
   useEffect(() => {
     const term = q.trim();
+    setFailed(false);
     if (term.length < 2) {
       setHits(null);
       return;
@@ -61,13 +66,13 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
           setHits(list);
           setSel(-1);
         })
-        .catch(() => alive && setHits([]));
+        .catch(() => alive && (setHits(null), setFailed(true)));
     }, 220);
     return () => {
       alive = false;
       clearTimeout(t);
     };
-  }, [q]);
+  }, [q, attempt]);
 
   const hrefOf = (h: Hit) => (h.media_type === "movie" ? `/film/${h.id}` : `/personne/${h.id}`);
   const goAll = () => {
@@ -102,7 +107,7 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
     }
   };
 
-  const showList = open && q.trim().length >= 2 && hits !== null;
+  const showList = open && q.trim().length >= 2 && (hits !== null || failed);
 
   return (
     <div className="searchbar" ref={box} role="search">
@@ -130,8 +135,16 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
       </div>
       {showList ? (
         <ul className="suggest" id={listId} role="listbox">
-          {hits!.length === 0 ? <li className="empty">Rien trouvé pour « {q.trim()} ».</li> : null}
-          {hits!.map((h, i) => (
+          {failed ? (
+            <li className="empty" role="alert">
+              La recherche est indisponible pour le moment.{" "}
+              <button type="button" className="link-btn" onClick={() => setAttempt((a) => a + 1)}>
+                Réessayer
+              </button>
+            </li>
+          ) : null}
+          {hits && hits.length === 0 ? <li className="empty">Rien trouvé pour « {q.trim()} ».</li> : null}
+          {(hits ?? []).map((h, i) => (
             <li key={`${h.media_type}${h.id}`} id={`${listId}-${i}`} role="option" aria-selected={sel === i} onMouseEnter={() => setSel(i)}>
               <a
                 href={hrefOf(h)}
@@ -160,11 +173,13 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
               </a>
             </li>
           ))}
-          <li id={`${listId}-${hits!.length}`} role="option" aria-selected={sel === hits!.length} onMouseEnter={() => setSel(hits!.length)}>
-            <button type="button" className="all" onClick={goAll}>
-              Tous les résultats pour « {q.trim()} »
-            </button>
-          </li>
+          {hits ? (
+            <li id={`${listId}-${hits.length}`} role="option" aria-selected={sel === hits.length} onMouseEnter={() => setSel(hits.length)}>
+              <button type="button" className="all" onClick={goAll}>
+                Tous les résultats pour « {q.trim()} »
+              </button>
+            </li>
+          ) : null}
         </ul>
       ) : null}
     </div>

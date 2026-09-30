@@ -1,5 +1,6 @@
 "use client";
 
+import { errorText } from "@/lib/errors";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PickFilm } from "@/components/PickFilm";
@@ -123,7 +124,7 @@ function TopFive() {
       toast(`« ${m.title} » en n° ${slot} de ton top 5`);
       load();
     } catch (e) {
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
   const clear = async (slot: number, title?: string) => {
@@ -133,7 +134,7 @@ function TopFive() {
       toast(`${title ? `« ${title} »` : "Le film"} retiré de ton top 5`);
       load();
     } catch (e) {
-      toast(`Échec : ${(e as Error).message}`);
+      toast(`Échec : ${errorText(e)}`);
     }
   };
 
