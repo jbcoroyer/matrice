@@ -125,9 +125,9 @@ export function Onboarding() {
   return (
     <section className="onboard" aria-labelledby="onboard-title">
       <p className="label">Pour commencer</p>
-      <h1 id="onboard-title">
+      <h2 id="onboard-title">
         Bienvenue sur <span>Filmable</span>
-      </h1>
+      </h2>
       <ol className="onboard-steps">
         <li>
           <b>Importe ton Letterboxd</b>
@@ -159,5 +159,14 @@ export function Onboarding() {
         Masquer ce guide
       </button>
     </section>
+  );
+}
+
+/** Lien de retour en haut des pages secondaires. */
+export function BackLink({ href = "/decouvrir", label = "Découvrir" }: { href?: string; label?: string }) {
+  return (
+    <Link href={href} className="back">
+      ← {label}
+    </Link>
   );
 }

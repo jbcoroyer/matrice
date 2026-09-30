@@ -84,7 +84,8 @@ export function LogDialog({
       toast(
         entry ? "Entrée du journal modifiée" : `« ${film.title} » ajouté à ton journal`,
         undefined,
-        entry || location.pathname === "/journal" ? undefined : { label: "Voir dans le journal", href: "/journal" },
+        // un film vient d'être vu : Découvrir propose la suite
+        entry ? undefined : location.pathname === "/decouvrir" ? { label: "Voir dans le journal", href: "/journal" } : { label: "Et ensuite ?", href: "/decouvrir" },
       );
       onSaved?.(saved);
       onClose();

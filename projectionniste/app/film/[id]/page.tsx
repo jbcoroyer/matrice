@@ -5,7 +5,9 @@ import { cache } from "react";
 import { FadeImg, Poster } from "@/components/Poster";
 import { ScoreBox } from "@/components/FilmPersonal";
 import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
+import { FilmDoors } from "@/components/Doors";
 import { FilmSets } from "@/components/SetLinks";
+import { TrailMark } from "@/components/Trail";
 import { FilmReviews } from "@/components/Reviews";
 import { SeenBadge } from "@/components/SeenBadge";
 import { TitleDuo } from "@/components/TitleDuo";
@@ -145,6 +147,9 @@ export default async function FilmPage({ params }: Props) {
       </div>
 
       <FilmHistory film={film} />
+
+      <FilmDoors id={m.id} directors={dirs.map((x) => ({ id: x.id, name: x.name }))} saga={m.belongs_to_collection ? { id: m.belongs_to_collection.id, name: m.belongs_to_collection.name } : null} />
+      <TrailMark href={`/film/${m.id}`} label={m.title} />
 
       {dirs.length || cast.length ? (
         <section className="section">

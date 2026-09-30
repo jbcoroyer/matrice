@@ -7,14 +7,14 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil : les films à la une cette semaine (carrousel), humeurs, rangées À l'affiche, Tendances, Bientôt en salles, Les mieux notés ; aucun tri personnalisé |
+| `/decouvrir` | Accueil : « Aujourd'hui » (une proposition avec sa raison, trois par jour), reprise de l'exploration, trois chemins (un cinéaste, une sélection proche, un écart), « Ce soir ? » (une envie, un film), portes vers le catalogue, six films en salles ; `/decouvrir/populaires` : classements TMDB |
 | `/watchlist` | Ta watchlist, dans l'ordre d'ajout (le plus récent d'abord), filtres et tris |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
 | `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
 | `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
 | `/collection` | Ta cinémathèque physique : dernières entrées de face, étagère continue (un dos par exemplaire, intercalaires, index), une seule recherche (titre, cinéaste, 4K, scellé, prêté, pas vu…), feuille de chaque film avec ses exemplaires, « Tu cherches » ; `/collection/registre` pour les chiffres |
-| `/ensembles` | Catalogue de rayons et cycles (mouvements, palmarès, studios, sagas) ; `/ensembles/[clé]` : un ensemble, à posséder (rayon) ou à voir (cycle) |
+| `/ensembles` | Catalogue de rayons et cycles (mouvements, cinémas du monde, palmarès, studios, sagas) ; `/ensembles/[clé]` : un ensemble, à posséder (rayon) ou à voir (cycle) |
 | `/c/[code]` | Cinémathèque partagée, lisible sans compte (jamais tes films vus ni tes prêts) |
 | `/journal` | Journal daté ; onglets « Films vus » et « Cycles » (les ensembles que tu décides de voir, en programme de cinémathèque) |
 | `/film/[id]` | Fiche (lisible sans compte) : ta note, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques |
@@ -83,12 +83,16 @@ films vus, notes, watchlist, likes (→ favoris), journal (dates, revisionnages,
 critiques, listes (ordre et notes), films favoris du profil (→ top), nom. Les goûts (réalisateurs,
 acteurs, genres) sont réappris à partir des notes. Un nouvel import met à jour sans doublons.
 
-## Pas de recommandations
+## Découvrir sans note prédite
 
-Filmable ne prédit pas de note et ne trie pas les films selon tes goûts : Découvrir montre les
-mêmes classements à tout le monde (à l'affiche, tendances, sorties, mieux notés, humeurs), pour
-rester ouvert à tout type de cinéma. Le profil montre des « highlights » (réalisateur, acteur,
-genre, époque les plus vus, film le mieux noté), calculés en comptant les films vus.
+Filmable ne prédit pas de note. Découvrir propose peu de films, chacun avec une raison qu'on peut
+vérifier : la suite d'un cycle, le cinéaste de ton dernier film, un film possédé jamais vu, un
+film qui attend dans ta watchlist, un anniversaire de sortie, ou un coup de cœur écrit à la main
+(`lib/picks.ts`). Les chemins mènent à des ensembles (un cinéaste, une sélection proche des années
+que tu regardes, un écart vers ce que tu ne regardes jamais). Les tirages sont fixés pour la
+journée (`lib/discover.ts`, mis en cache dans le navigateur) et recalculés dès qu'un film est vu.
+Le profil montre des « highlights » (réalisateur, acteur, genre, époque les plus vus, film le
+mieux noté), calculés en comptant les films vus.
 
 ## Requêtes TMDB
 
@@ -104,7 +108,7 @@ s'affiche tout de suite ; les durées ne sont demandées à TMDB, 4 à la fois, 
 app/            routes (pages serveur pour film/personne, client pour les rubriques personnelles)
 app/api/tmdb/   proxy TMDB (liste blanche + cache)
 components/     cartes, grilles, en-tête, recherche, fiche, filmographie…
-lib/            client/serveur TMDB, humeurs, highlights, import Letterboxd
+lib/            client/serveur TMDB, Découvrir (discover, picks), ensembles, highlights, import Letterboxd
 supabase/       migrations SQL
 ```
 

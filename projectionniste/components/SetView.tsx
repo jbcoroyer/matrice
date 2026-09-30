@@ -7,7 +7,10 @@ import { frDate, plural } from "@/lib/format";
 import { countable, follow, markCompleted, mySet, personKey, resolveDef, resolveFilms, setExcluded, syncSet, unfollow, upcoming, type Mode, type MySet, type Role, type SetDef, type SetFilm } from "@/lib/sets";
 import { img } from "@/lib/tmdb";
 import type { Ranked } from "@/lib/types";
+import { nextIn } from "@/lib/discover";
+import { yearOf } from "@/lib/format";
 import { FilmCard } from "./FilmCard";
+import { TrailMark } from "./Trail";
 import { useProfile } from "./ProfileProvider";
 import { TitleDuo } from "./TitleDuo";
 import { ErrorLine, Loader } from "./ui";
@@ -131,6 +134,8 @@ export function SetView({ setKey }: { setKey: string }) {
   const person = def.source === "person" ? def.sourceRef : null;
   const role = def.rules.role as Role | undefined;
   const cover = films?.find((m) => m.backdrop_path)?.backdrop_path;
+  const counting = counted.filter((m) => !excluded.has(m.id));
+  const next = films ? (def.source === "tmdb_collection" ? counting.find((m) => !d.seen.has(m.id)) ?? null : nextIn(counting, signedIn ? d.seen : new Set())) : null;
   const list: Ranked[] = (films ?? []).map((m) => ({ ...m, _note: [m.caption, upcoming(m) ? "À venir" : "", excluded.has(m.id) ? "Ne compte pas" : ""].filter(Boolean).join(" · ") || undefined }));
 
   return (
@@ -161,6 +166,18 @@ export function SetView({ setKey }: { setKey: string }) {
         <p className="set-rule">
           {def.rule} {films ? <b>{plural(counted.length, "film")}{films.length > counted.length ? ` (et ${films.length - counted.length} à venir ou exclus)` : ""}.</b> : null}
         </p>
+
+        {next ? (
+          <Link href={`/film/${next.id}`} className="set-next">
+            {next.poster_path ? <img src={img(next.poster_path, "w92")} alt="" /> : null}
+            <span>
+              <span className="label">{signedIn && seenN ? "Et ensuite" : "Par où commencer"}</span>
+              <b>{next.title}</b>
+              <span className="dim"> · {yearOf(next)}</span>
+            </span>
+          </Link>
+        ) : null}
+        <TrailMark href={`/ensembles/${setKey}`} label={def.title} />
 
         {signedIn && films ? (
           <div className="set-modes">

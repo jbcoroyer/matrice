@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
 import { useProfile } from "@/components/ProfileProvider";
-import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
-import { BackLink } from "@/components/Rail";
+import { ErrorLine, ProfileGate, SecHead, SkeletonGrid, BackLink } from "@/components/ui";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged, Ranked } from "@/lib/types";
 
@@ -60,7 +59,7 @@ function Populaires() {
   return (
     <section className="section">
       <BackLink />
-      <SecHead as="h1" title="Tendances" aside="Classements TMDB" />
+      <SecHead as="h1" title="Classements TMDB" aside="Les mêmes pour tout le monde" />
       <div className="filterbar">
         <div className="seg" role="group" aria-label="Classement">
           {SOURCES.map((s) => (

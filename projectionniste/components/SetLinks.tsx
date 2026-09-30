@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { plural } from "@/lib/format";
+import { nextIn } from "@/lib/discover";
+import { yearOf } from "@/lib/format";
 import { personFilms, personKey, sagaKey, setsWithFilm, upcoming, type Role } from "@/lib/sets";
 import type { PersonCredits } from "@/lib/types";
 import { useProfile } from "./ProfileProvider";
@@ -39,6 +41,7 @@ export function Retrospective({ personId, credits, dept }: { personId: number; c
   if (ids.length < 3) return null;
   const seenN = ids.filter((id) => seen.has(id)).length;
   const ownN = ids.filter((id) => owned.has(id)).length;
+  const next = nextIn(films, status === "ready" ? seen : new Set());
   return (
     <section className="retro">
       <p className="label">Rétrospective</p>
@@ -52,6 +55,15 @@ export function Retrospective({ personId, credits, dept }: { personId: number; c
           <>{plural(ids.length, "film")} {role === "director" ? "réalisés" : "en rôle principal"}.</>
         )}
       </p>
+      {next ? (
+        <p className="retro-next">
+          {status === "ready" && seenN ? "Et ensuite" : "Par où commencer"} :{" "}
+          <Link href={`/film/${next.id}`}>
+            <b>{next.title}</b>
+          </Link>{" "}
+          · {yearOf(next)}
+        </p>
+      ) : null}
       <Link className="btn" href={`/ensembles/${personKey(personId, role)}`}>
         Voir tous ses films · rayon ou cycle
       </Link>

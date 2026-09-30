@@ -3,6 +3,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureFilms, filmRow } from "./db";
 import { EDITORIAL, type EditorialDef } from "./editorial";
+import { store } from "./store";
 import { check } from "./supabase";
 import { mapLimit, tmdb } from "./tmdb";
 import type { Movie, Paged, PersonCredit, PersonCredits } from "./types";
@@ -120,13 +121,37 @@ export async function resolveFilms(def: SetDef, signal?: AbortSignal): Promise<S
     return uniq([...first.results, ...more.flat()].filter((m) => !(m.genre_ids ?? []).includes(TV))).sort(byDate);
   }
   if (!ed?.films) return [];
+  const cached = cachedEditorial(ed.key);
+  if (cached) return cached;
   // sélection éditoriale : chaque titre est retrouvé sur TMDB (titre + année), une fois
+  let failed = 0;
   const found = await mapLimit(ed.films, 4, async ([q, year, caption]) => {
-    const r = await tmdb<Paged<Movie>>("search/movie", { query: q, year }, opts).catch(() => null);
+    const r = await tmdb<Paged<Movie>>("search/movie", { query: q, year }, opts).catch(() => (failed++, null));
     const hit = r?.results?.find((m) => (m.release_date || "").startsWith(String(year))) ?? r?.results?.[0];
     return hit ? ({ ...hit, caption } as SetFilm) : null;
   });
-  return uniq(found.filter((m): m is SetFilm => !!m));
+  const films = uniq(found.filter((m): m is SetFilm => !!m));
+  // gardé un mois dans le navigateur (seulement si TMDB a répondu à tout)
+  if (!failed && films.length) store.set(ED_PREFIX + ed.key, { sig: edSig(ed), at: Date.now(), films: films.map(slimSetFilm) } satisfies EdCache);
+  return films;
+}
+
+/* ---------- sélections éditoriales résolues, gardées dans le navigateur ---------- */
+
+const ED_PREFIX = "projo.ed.v1.";
+const ED_TTL = 30 * 86400000;
+type EdCache = { sig: string; at: number; films: SetFilm[] };
+const edSig = (ed: EditorialDef) => String([...JSON.stringify(ed.films ?? [])].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7));
+const slimSetFilm = ({ id, title, original_title, release_date, poster_path, backdrop_path, vote_average, vote_count, genre_ids, caption }: SetFilm): SetFilm => ({
+  id, title, original_title, release_date, poster_path, backdrop_path, vote_average, vote_count, genre_ids, caption,
+});
+
+/** Les films d'une sélection éditoriale s'ils ont déjà été retrouvés sur TMDB (sans requête). */
+export function cachedEditorial(key: string): SetFilm[] | null {
+  const ed = EDITORIAL.find((e) => e.key === key);
+  if (!ed?.films) return null;
+  const c = store.get<EdCache | null>(ED_PREFIX + key, null);
+  return c && c.sig === edSig(ed) && Date.now() - c.at < ED_TTL ? c.films : null;
 }
 
 /* ---------- ce que l'utilisateur suit (copie personnelle de l'ensemble) ---------- */

@@ -5,7 +5,7 @@
 
 export type EditorialDef = {
   key: string;
-  family: "Mouvements" | "Palmarès" | "Studios" | "Sagas";
+  family: "Mouvements" | "Cinémas du monde" | "Palmarès" | "Studios" | "Sagas";
   kicker: string;
   title: string;
   description: string;
@@ -16,7 +16,7 @@ export type EditorialDef = {
   saga?: number;
 };
 
-export const FAMILIES: EditorialDef["family"][] = ["Mouvements", "Palmarès", "Studios", "Sagas"];
+export const FAMILIES: EditorialDef["family"][] = ["Mouvements", "Cinémas du monde", "Palmarès", "Studios", "Sagas"];
 
 const PALMES: [string, number][] = [
   ["Sailor et Lula", 1990], ["Barton Fink", 1991], ["Les Meilleures Intentions", 1992], ["La Leçon de piano", 1993], ["Adieu ma concubine", 1993],
@@ -64,6 +64,108 @@ export const EDITORIAL: EditorialDef[] = [
     films: [
       ["Festen", 1998, "Dogme #1"], ["Les Idiots", 1998, "Dogme #2"], ["Mifune", 1999, "Dogme #3"], ["The King Is Alive", 2000, "Dogme #4"],
       ["Lovers", 1999, "Dogme #5"], ["Julien Donkey-Boy", 1999, "Dogme #6"], ["Italian for Beginners", 2000], ["Open Hearts", 2002],
+    ],
+  },
+  {
+    key: "expressionnisme-allemand",
+    family: "Mouvements",
+    kicker: "Mouvement",
+    title: "L'Expressionnisme allemand",
+    description: "Berlin après 1918 : décors peints, ombres démesurées, savants fous et vampires. Le cinéma découvre qu'il peut filmer l'angoisse.",
+    rule: "Une sélection de films de 1920 à 1931, dont L'Aurore tourné par Murnau à Hollywood.",
+    films: [
+      ["Das Cabinet des Dr. Caligari", 1920], ["Der Golem, wie er in die Welt kam", 1920], ["Der müde Tod", 1921], ["Nosferatu", 1922], ["Dr. Mabuse, der Spieler", 1922],
+      ["Der letzte Mann", 1924], ["Orlacs Hände", 1924], ["Das Wachsfigurenkabinett", 1924], ["Faust", 1926], ["Metropolis", 1927],
+      ["Sunrise: A Song of Two Humans", 1927], ["M - Eine Stadt sucht einen Mörder", 1931],
+    ],
+  },
+  {
+    key: "film-noir",
+    family: "Mouvements",
+    kicker: "Genre",
+    title: "Le Film noir",
+    description: "Détectives fatigués, femmes fatales, villes la nuit : l'Amérique des années 1940 et 1950 vue par l'ombre.",
+    rule: "Une sélection, du Faucon maltais à La Soif du mal (1941–1958).",
+    films: [
+      ["The Maltese Falcon", 1941], ["Double Indemnity", 1944], ["Laura", 1944], ["Murder, My Sweet", 1944], ["The Big Sleep", 1946], ["The Killers", 1946],
+      ["Gilda", 1946], ["Out of the Past", 1947], ["The Lady from Shanghai", 1947], ["The Third Man", 1949], ["The Asphalt Jungle", 1950], ["Sunset Boulevard", 1950],
+      ["In a Lonely Place", 1950], ["Kiss Me Deadly", 1955], ["Sweet Smell of Success", 1957], ["Touch of Evil", 1958],
+    ],
+  },
+  {
+    key: "neorealisme-italien",
+    family: "Mouvements",
+    kicker: "Mouvement",
+    title: "Le Néoréalisme italien",
+    description: "L'Italie en ruines, tournée dans la rue avec des acteurs souvent non professionnels : Rossellini, De Sica, Visconti, puis Fellini.",
+    rule: "Une sélection de films de 1945 à 1957.",
+    films: [
+      ["Roma città aperta", 1945], ["Paisà", 1946], ["Sciuscià", 1946], ["Germania anno zero", 1948], ["Ladri di biciclette", 1948], ["La terra trema", 1948],
+      ["Riso amaro", 1949], ["Stromboli", 1950], ["Miracolo a Milano", 1951], ["Bellissima", 1951], ["Umberto D.", 1952], ["Viaggio in Italia", 1954],
+      ["La strada", 1954], ["Le notti di Cabiria", 1957],
+    ],
+  },
+  {
+    key: "nouvel-hollywood",
+    family: "Mouvements",
+    kicker: "Mouvement",
+    title: "Le Nouvel Hollywood",
+    description: "Quand les studios laissent les clés à une génération de cinéastes : Penn, Coppola, Scorsese, Altman, Cassavetes. Des héros abîmés, une Amérique qui doute.",
+    rule: "Une sélection de films de 1967 à 1979.",
+    films: [
+      ["Bonnie and Clyde", 1967], ["The Graduate", 1967], ["Easy Rider", 1969], ["Midnight Cowboy", 1969], ["The Wild Bunch", 1969], ["Five Easy Pieces", 1970],
+      ["The Last Picture Show", 1971], ["The Godfather", 1972], ["Mean Streets", 1973], ["The Conversation", 1974], ["Chinatown", 1974], ["A Woman Under the Influence", 1974],
+      ["Nashville", 1975], ["Taxi Driver", 1976], ["Network", 1976], ["Days of Heaven", 1978], ["The Deer Hunter", 1978], ["Apocalypse Now", 1979],
+    ],
+  },
+  {
+    key: "japon-age-d-or",
+    family: "Cinémas du monde",
+    kicker: "Japon",
+    title: "L'Âge d'or japonais",
+    description: "Kurosawa, Ozu, Mizoguchi, Naruse, Kobayashi : en quinze ans, le cinéma japonais signe une bonne part des chefs-d'œuvre du siècle.",
+    rule: "Une sélection de films de 1950 à 1964.",
+    films: [
+      ["Rashomon", 1950], ["Ikiru", 1952], ["Tokyo Story", 1953], ["Ugetsu", 1953], ["Seven Samurai", 1954], ["Sansho the Bailiff", 1954], ["Floating Clouds", 1955],
+      ["The Burmese Harp", 1956], ["Floating Weeds", 1959], ["Harakiri", 1962], ["An Autumn Afternoon", 1962], ["High and Low", 1963], ["Woman in the Dunes", 1964], ["Onibaba", 1964],
+    ],
+  },
+  {
+    key: "hong-kong",
+    family: "Cinémas du monde",
+    kicker: "Hong Kong",
+    title: "Hong Kong, 1986–2004",
+    description: "Les fusillades chorégraphiées de John Woo, les néons et les chagrins de Wong Kar-wai, les polars de la rétrocession.",
+    rule: "Une sélection, du Syndicat du crime à 2046.",
+    films: [
+      ["A Better Tomorrow", 1986], ["The Killer", 1989], ["Days of Being Wild", 1990], ["Once Upon a Time in China", 1991], ["Hard Boiled", 1992], ["Chungking Express", 1994],
+      ["Fallen Angels", 1995], ["Comrades: Almost a Love Story", 1996], ["Happy Together", 1997], ["In the Mood for Love", 2000], ["Infernal Affairs", 2002], ["2046", 2004],
+    ],
+  },
+  {
+    key: "cinema-iranien",
+    family: "Cinémas du monde",
+    kicker: "Iran",
+    title: "Le Cinéma iranien",
+    description: "Kiarostami, Makhmalbaf, Panahi, Farhadi : des enfants, des routes, des voitures, et une manière unique de mêler fiction et réel.",
+    rule: "Une sélection de films de 1987 à 2016.",
+    films: [
+      ["Where Is the Friend's House?", 1987], ["Close-Up", 1990], ["And Life Goes On", 1992], ["Through the Olive Trees", 1994], ["The White Balloon", 1995],
+      ["A Moment of Innocence", 1996], ["Taste of Cherry", 1997], ["Children of Heaven", 1997], ["The Apple", 1998], ["The Wind Will Carry Us", 1999],
+      ["The Circle", 2000], ["Ten", 2002], ["Offside", 2006], ["A Separation", 2011], ["Taxi Tehran", 2015], ["The Salesman", 2016],
+    ],
+  },
+  {
+    key: "cinema-coreen",
+    family: "Cinémas du monde",
+    kicker: "Corée du Sud",
+    title: "Le Renouveau coréen",
+    description: "Park Chan-wook, Bong Joon-ho, Lee Chang-dong, Na Hong-jin : vingt ans de polars, de vengeances et de lutte des classes, jusqu'à la Palme d'or.",
+    rule: "Une sélection de films de 2000 à 2019.",
+    films: [
+      ["Joint Security Area", 2000], ["Sympathy for Mr. Vengeance", 2002], ["Memories of Murder", 2003], ["Oldboy", 2003], ["A Tale of Two Sisters", 2003],
+      ["Spring, Summer, Fall, Winter... and Spring", 2003], ["The Host", 2006], ["Secret Sunshine", 2007], ["The Chaser", 2008], ["Mother", 2009], ["Poetry", 2010],
+      ["I Saw the Devil", 2010], ["The Handmaiden", 2016], ["Train to Busan", 2016], ["The Wailing", 2016], ["Burning", 2018], ["Parasite", 2019],
     ],
   },
   {

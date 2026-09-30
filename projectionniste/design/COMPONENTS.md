@@ -21,14 +21,40 @@
 - **Casting et réalisation** en photos, tout cliquable.
 - **Générique** : rôles alignés à droite, noms à gauche, comme un générique de fin ; logos des
   **studios** (en blanc) qui mènent à `/studio/[id]`.
-- Critiques des membres. Pas de « films proches » : pas de recommandation dans Filmable.
+- **Où aller ensuite** (`FilmDoors`) : jusqu'à trois portes (même cinéaste, la saga dans l'ordre,
+  une sélection dont le film fait partie), chacune avec un photogramme, où tu en es et le film par
+  lequel continuer. Pas de « films proches » calculés : des liens qu'on peut expliquer.
+- Critiques des membres.
 - Sans compte : la fiche est lisible, les actions sont remplacées par « Créer un compte ».
 
-## À la une (`app/decouvrir/page.tsx`)
+## Découvrir (`app/decouvrir/page.tsx`, `lib/discover.ts`, `components/Today.tsx`, `Doors.tsx`, `Tonight.tsx`)
 
-Les films les plus regardés de la semaine (TMDB), les mêmes pour tout le monde. Carrousel : affiche centrale grande, voisines en retrait et inclinées ; fond d'ambiance tiré de
-l'affiche active ; texte à gauche (titre deux graisses, libellés, note TMDB, résumé),
-points de pagination, flèches clavier et glisser sur mobile.
+Rôle : **mettre sous les yeux un film, un cinéaste ou un coin de cinéma, avec une raison vraie de
+s'y intéresser aujourd'hui.** Une page qui se termine (pas de rangées, pas de flux infini, pas de
+filtres, pas de note prédite). Les tirages dépendent du jour et du compte : la page change le
+lendemain, pas à chaque visite ; elle se recalcule dès qu'un film est vu.
+
+- **Aujourd'hui** (`Today`) : une seule proposition à la fois, en grand, sur le photogramme du film
+  (fond fondu vers la gauche). Au-dessus du titre, une **phrase de raison** vérifiable, avec des liens :
+  « Tu as vu *Zodiac* samedi. *David Fincher* a aussi réalisé, en 1995 : ». Trois idées par jour au
+  plus, de trois natures : continuer (cycle en cours, cinéaste du dernier film vu), découvrir (coup
+  de cœur écrit à la main dans `lib/picks.ts`, anniversaire de sortie « il y a 50 ans cette semaine »),
+  ressortir (un film possédé jamais vu, un film qui attend dans la watchlist). « Une autre idée », puis
+  « C'est tout pour aujourd'hui ». Compte neuf : coups de cœur et anniversaires.
+- **Reprendre** (`TrailLine`) : si on explorait tout à l'heure, le fil « Zodiac › David Fincher › Se7en ».
+- **Trois chemins** (`Paths`) : des **portes** (photogramme 16:9, libellé, titre deux graisses, une
+  phrase, « Et ensuite : *Se7en* · 1995 ») vers une page d'ensemble : un cinéaste que tu regardes et dont
+  il te reste des films, une sélection proche des années que tu regardes, et **un écart** assumé
+  (« Aucun de ces 17 films parmi les 212 que tu as vus »). Compte neuf : « Des portes d'entrée ».
+- **Ce soir ?** (`Tonight`) : quatre envies écrites (pas des pastilles) : Moins de 1 h 40 · Possédé,
+  pas vu · Dans ma watchlist · Un classique. Une envie donne **un** film (photogramme, raison, fiche,
+  watchlist), « Un autre » deux fois au plus. Les envies impossibles (rien de possédé…) sont masquées.
+- **Mouvements, pays, palmarès** : six sélections du catalogue en liste typographique, avec les
+  années et où tu en es.
+- **En salles cette semaine** : six affiches, en bas ; « Classements TMDB » mène à
+  `/decouvrir/populaires`.
+- Les anciennes humeurs redirigent vers une sélection (« Noir coréen » → Renouveau coréen) ou vers
+  Découvrir. Après un film journalisé, le message propose « Et ensuite ? ».
 
 ## Cinémathèque (`app/collection/page.tsx`, `components/CollectionCard.tsx`)
 
@@ -102,9 +128,12 @@ Un **ensemble** de films (la filmographie d'un cinéaste, une saga, un studio, u
   rayon » et « Dans ton parcours : 9 sur 13 · Commencer le cycle ». « Ajuster » permet de ne pas
   compter un film (caméo, film introuvable). Pour une personne : Réalisation · Rôles principaux ·
   Toute la filmographie (sans apparitions, téléfilms, documentaires ni films introuvables).
-- **Catalogue** (`/ensembles`) : le même pour tout le monde (Mouvements, Palmarès, Studios, Sagas),
-  pas de recommandation ni de sélection sous licence. Portes d'entrée : bandeau dans Découvrir,
-  « Fait partie de la saga … » sur la fiche film, « Rétrospective » sur la fiche d'une personne.
+- **Catalogue** (`/ensembles`) : le même pour tout le monde (Mouvements, Cinémas du monde, Palmarès,
+  Studios, Sagas), pas de sélection sous licence. Portes d'entrée : chemins et portes de Découvrir,
+  « Où aller ensuite » sur la fiche film, « Rétrospective » (avec « Par où commencer ») sur la fiche
+  d'une personne. Chaque page d'ensemble dit **par où commencer** (le film le plus connu que tu n'as
+  pas vu ; dans une saga, le suivant dans l'ordre). Les sélections retrouvées sur TMDB sont gardées
+  un mois dans le navigateur.
 - **Fin** : un rayon complet garde « Complet · mars 2027 » ; un film sorti ensuite affiche
   « Complet en 2027 · 1 nouveau film depuis » sans effacer la date. Les cycles achevés restent,
   avec leurs dates, dans « Cycles achevés ».
@@ -131,7 +160,7 @@ dans une carte en verre.
   « Masquer ce guide » le range (mémorisé dans le navigateur).
 - **Page vide** (`EmptyState`) : un titre, une phrase qui dit à quoi sert la page, et de quoi la
   remplir (`StartActions` : Journaliser un film, Importer mon Letterboxd ; ou l'action propre à la
-  page : Parcourir les tendances, Ajouter mon premier exemplaire, Créer ma première liste).
+  page : Découvrir, Ajouter mon premier exemplaire, Créer ma première liste).
   Utilisé par Journal, Films vus, Watchlist, Collection, Bilan, Mon profil (« Ce que tu aimes ») et Listes.
 
 ## Erreurs, confirmations, session (`lib/errors.ts`, `components/Chrome.tsx`)

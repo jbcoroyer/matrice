@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Filmography } from "@/components/Filmography";
 import { Retrospective } from "@/components/SetLinks";
+import { TrailMark } from "@/components/Trail";
 import { Bio } from "@/components/Bio";
 import { Poster } from "@/components/Poster";
 import { frDate, truncate } from "@/lib/format";
@@ -62,6 +63,7 @@ export default async function PersonPage({ params }: Props) {
       </section>
       <Retrospective personId={p.id} credits={p.credits} dept={p.known_for_department || "Acting"} />
       <Filmography credits={p.credits} dept={p.known_for_department || "Acting"} name={p.name} />
+      <TrailMark href={`/personne/${p.id}`} label={p.name} />
     </div>
   );
 }
