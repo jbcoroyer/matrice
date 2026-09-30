@@ -199,7 +199,7 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .poster img.loaded { opacity: 1 }
 .poster .noimg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--text-3) }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 34px 20px }
-.card { position: relative; display: flex; flex-direction: column; min-width: 0 }
+.card { position: relative; display: flex; flex-direction: column; min-width: 0; container-type: inline-size }
 .card > a { display: flex; flex-direction: column; gap: 0 }
 .card .poster { transition: transform 0.3s var(--ease), box-shadow 0.3s }
 .card:hover .poster, .card > a:focus-visible .poster { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--line-2), 0 18px 40px -18px rgb(0 0 0 / 0.8) }
@@ -218,11 +218,13 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 /* possédé en physique : filet crème dans l'affiche et languette de billet avec le format */
 .poster.owned::before { content: ""; position: absolute; z-index: 2; inset: 6px; border-radius: calc(var(--r-md) - 6px); border: 1px solid rgb(237 228 204 / 0.6); pointer-events: none }
 .own-tab { position: absolute; z-index: 3; left: 0; bottom: 14px; height: 24px; max-width: 86%; padding: 0 12px 0 15px; display: flex; align-items: center; background: var(--cream); color: var(--on-cream); font-size: 10px; font-weight: 800; letter-spacing: 0.14em; white-space: nowrap; overflow: hidden; border-radius: 0 6px 6px 0; -webkit-mask: radial-gradient(circle at 0 50%, transparent 4px, #000 4.6px); mask: radial-gradient(circle at 0 50%, transparent 4px, #000 4.6px) }
-.card .quick { position: absolute; right: 10px; bottom: 10px; z-index: 3; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgb(255 255 255 / 0.2); background: rgb(12 12 14 / 0.72); backdrop-filter: blur(8px); color: #f3efe6; cursor: pointer; display: grid; place-items: center; opacity: 0; transition: opacity 0.2s, background 0.15s }
+/* posé en bas à droite de l'affiche (2:3 : hauteur = 150 % de la largeur de la carte) */
+.card .quick { position: absolute; right: 10px; top: calc(150cqw - 44px); z-index: 3; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgb(255 255 255 / 0.2); background: rgb(12 12 14 / 0.72); backdrop-filter: blur(8px); color: #f3efe6; cursor: pointer; display: grid; place-items: center; opacity: 0; transition: opacity 0.2s, background 0.15s }
 .card .quick svg { width: 16px; height: 16px }
 .card:hover .quick, .card .quick:focus-visible, .card .quick[aria-pressed="true"] { opacity: 1 }
 .card .quick[aria-pressed="true"] { background: var(--cream); border-color: var(--cream); color: var(--on-cream) }
-@media (hover: none) { .card .quick { opacity: 1 } }
+@media (hover: none), (max-width: 900px) { .card .quick { opacity: 1 } }
+@media (hover: none) { .card .quick { width: 40px; height: 40px; top: calc(150cqw - 50px) } .card .quick svg { width: 18px; height: 18px } }
 .sk { background: var(--bg-3); border-radius: var(--r-md) }
 .sk-line { height: 12px; margin-top: 8px; border-radius: 6px }
 .sk-line.w60 { width: 60% } .sk-line.w80 { width: 80% } .sk-line.w40 { width: 40% }
@@ -954,12 +956,12 @@ button.row-note:hover { color: var(--text) }
   .d-actions .btn.primary { flex: 1 1 auto }
   .dots { justify-content: center; margin: 0 0 12px; order: -1 }
 
-  .film-backdrop { height: 440px }
+  .film-backdrop { height: 480px }
   .film-backdrop::after { background: linear-gradient(to bottom, rgb(12 12 14 / 0.4), transparent 30%, rgb(12 12 14 / 0.65) 70%, var(--bg) 100%) }
   :root[data-theme="light"] .film-backdrop::after { background: linear-gradient(to bottom, rgb(246 244 239 / 0.4), transparent 30%, rgb(246 244 239 / 0.7) 70%, var(--bg) 100%) }
-  .film-in { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 150px }
-  .film-poster { width: 46% }
-  .film-title { font-size: 42px }
+  .film-in { grid-template-columns: 220px minmax(0, 1fr); gap: 32px; padding-top: 120px }
+  .film-poster { width: auto }
+  .film-title { font-size: 52px }
   .film-by { font-size: 15.5px }
   .film-actions { gap: 8px }
   .film-actions > .btn.primary { flex: 1 1 100% }
@@ -974,10 +976,10 @@ button.row-note:hover { color: var(--text) }
   .generique dd { font-size: 16px }
   .people-rail { grid-auto-columns: 122px; margin-right: calc(-1 * clamp(18px, 3.4vw, 44px)); padding-right: 18px }
   .review-grid { grid-template-columns: minmax(0, 1fr) }
-  .rail { grid-auto-columns: 42%; gap: 14px; margin-right: calc(-1 * clamp(18px, 3.4vw, 44px)); padding-right: 18px }
+  .rail { grid-auto-columns: 27%; gap: 14px; margin-right: calc(-1 * clamp(18px, 3.4vw, 44px)); padding-right: 18px }
   .rail-head h2 { font-size: 22px }
   .rail-head p { display: none }
-  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 14px }
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px 16px }
   .section { margin-top: 56px }
 
   .person-head { grid-template-columns: minmax(0, 1fr); padding-top: 24px }
@@ -997,6 +999,19 @@ button.row-note:hover { color: var(--text) }
   .tiles dd { font-size: 36px }
   .foot { margin-top: 60px }
   .filterbar .search-in { width: 100% }
+}
+
+/* téléphone : tout ce qui pousse les actions hors de l'écran est réduit */
+@media (max-width: 600px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 14px }
+  .rail { grid-auto-columns: 42% }
+  .film-backdrop { height: 360px }
+  .film-in { grid-template-columns: minmax(0, 1fr); gap: 18px; padding-top: 84px }
+  .film-poster { width: 38% }
+  .film-title { font-size: 40px; margin-top: 12px }
+  .film-by { margin-top: 10px }
+  .scorebar { margin-top: 18px }
+  .film-actions { margin-top: 20px }
 }
 
 @media (prefers-reduced-motion: reduce) {

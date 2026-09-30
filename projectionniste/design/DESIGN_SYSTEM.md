@@ -52,3 +52,13 @@ Rayons : `--r-xl` 28 (carrousel, fenêtres), `--r-lg` 22 (blocs, affiche de fich
   (Début/Fin) pour changer, Entrée ou Espace pour valider. Demi-étoiles de 22 × 44 px au minimum
   sur mobile.
 - Liens et boutons secondaires : zone cliquable de 36 px minimum. Échap ferme les menus.
+
+## Points de rupture
+
+- **≤ 900 px** : navigation en barre d'onglets flottante, grilles à 3 colonnes (rangées : ~27 % de
+  large), fiche film en deux colonnes (affiche 220 px à gauche, texte à droite).
+- **≤ 600 px** : grilles à 2 colonnes, rangées à 42 %, fiche film compacte (affiche à 38 %, bandeau
+  réduit) pour que « Ajouter au journal » soit visible sans défiler.
+- Le bouton « + / ✓ » des affiches est posé en bas à droite de l'**affiche** (pas de la carte :
+  `container-type` sur `.card`, hauteur = 150 % de la largeur). Toujours visible sur écran
+  tactile ou ≤ 900 px ; au survol seulement sur ordinateur. 40 px sur écran tactile.
