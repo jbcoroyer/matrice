@@ -19,6 +19,7 @@ import {
   directorName,
   formatLabel,
   getShare,
+  packagingLabel,
   groupEntries,
   listCollection,
   listWants,
@@ -134,7 +135,8 @@ function FilmSheet({ e, onClose, onEdit, onAddCopy }: { e: Entry; onClose: () =>
                   <div>
                     <p className="copy-main">
                       <b>{formatLabel(c.format)}</b>
-                      {[c.edition, c.publisher].filter(Boolean).map((x) => ` · ${x}`)}
+                      {[packagingLabel(c.packaging), c.edition, c.publisher].filter(Boolean).map((x) => ` · ${x}`)}
+                      {c.support_to_check ? <span className="dim"> · support à vérifier</span> : null}
                     </p>
                     {details.length ? <p className="copy-sub">{details.join(" · ")}</p> : null}
                     {c.lent_to ? (

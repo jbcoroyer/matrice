@@ -1152,3 +1152,4 @@ button.spine { border: 0; font: inherit; cursor: pointer; text-align: inherit }
 .divider { flex: none; align-self: flex-end; width: 34px; height: 232px; margin: 0 3px; padding-top: 10px; display: flex; justify-content: center; border-radius: 6px 6px 1px 1px; background: var(--bg-3); border: 1px solid var(--line-2); color: var(--text-2); font-size: 15px; font-weight: 700; letter-spacing: 0.02em; scroll-margin-top: calc(var(--header) + 16px) }
 .shelf-row .slot:has(.divider) { align-items: flex-end }
 @media (max-width: 900px) { .divider { height: 186px; width: 28px; font-size: 13px } }
+.support-check { margin: 8px 0 0; font-size: 13px }

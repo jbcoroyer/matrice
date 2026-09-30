@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, Loader, ProfileGate } from "@/components/ui";
-import { formatLabel, groupEntries, listCollection, type CollectionItem } from "@/lib/collection";
+import { formatLabel, groupEntries, listCollection, packagingLabel, type CollectionItem } from "@/lib/collection";
 import { plural } from "@/lib/format";
 
 const count = <K,>(keys: K[]) => {
@@ -29,6 +29,7 @@ function Registre() {
       films: films.length,
       copies: items.length,
       formats: count(items.map((i) => i.format)),
+      packagings: count(items.map((i) => i.packaging).filter((p) => p && p !== "standard")),
       publishers: count(items.map((i) => i.publisher?.trim()).filter((p): p is string => !!p)).slice(0, 12),
       numbered: items.filter((i) => i.edition_no),
       sealed: items.filter((i) => i.sealed).length,
@@ -68,6 +69,19 @@ function Registre() {
             ))}
           </dl>
         </div>
+        {r.packagings.length ? (
+          <div>
+            <h2 className="label">Éditions</h2>
+            <dl className="reg-list">
+              {r.packagings.map(([p, n]) => (
+                <div key={p}>
+                  <dt>{packagingLabel(p)}</dt>
+                  <dd>{n}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ) : null}
         {r.publishers.length ? (
           <div>
             <h2 className="label">Éditeurs</h2>

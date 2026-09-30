@@ -2,7 +2,7 @@
 
 import { errorText } from "@/lib/errors";
 import { useEffect, useRef, useState } from "react";
-import { CONDITIONS, deleteItem, fetchExtra, FORMATS, photoUrl, PUBLISHERS, removePhoto, restoreItem, saveItem, uploadPhoto, type CollectionItem, type Format } from "@/lib/collection";
+import { CONDITIONS, deleteItem, fetchExtra, FORMATS, PACKAGINGS, photoUrl, PUBLISHERS, removePhoto, restoreItem, saveItem, uploadPhoto, type CollectionItem, type Format, type Packaging } from "@/lib/collection";
 import { filmRow } from "@/lib/db";
 import { today } from "@/lib/format";
 import { useProfile, type FilmInput } from "./ProfileProvider";
@@ -35,6 +35,7 @@ export function CopyDialog({
   const { sb, userId, toast, refreshOwned } = useProfile();
   const ref = useRef<HTMLDialogElement>(null);
   const [format, setFormat] = useState<Format>(item?.format ?? lastFormat());
+  const [packaging, setPackaging] = useState<Packaging>(item?.packaging ?? "standard");
   const [edition, setEdition] = useState(item?.edition ?? "");
   const [publisher, setPublisher] = useState(item?.publisher ?? "");
   const [editionNo, setEditionNo] = useState(item?.edition_no ? String(item.edition_no) : "");
@@ -77,6 +78,7 @@ export function CopyDialog({
         filmRow(film),
         {
           format,
+          packaging,
           edition,
           publisher,
           edition_no: +editionNo || null,
@@ -148,19 +150,35 @@ export function CopyDialog({
           {item ? "Modifier l'exemplaire" : "Ajouter à ma collection"} <span className="dim">{film.title}</span>
         </h2>
         <div className="block">
-          Format
-          <div className="formats" role="radiogroup" aria-label="Format">
+          Support
+          <div className="formats" role="radiogroup" aria-label="Support">
             {FORMATS.map((f) => (
               <button key={f.k} type="button" role="radio" aria-checked={format === f.k} onClick={() => setFormat(f.k)}>
                 {f.l}
+              </button>
+            ))}
+            {format === "numerique" ? (
+              <button type="button" role="radio" aria-checked disabled>
+                Numérique
+              </button>
+            ) : null}
+          </div>
+          {item?.support_to_check ? <p className="note support-check">Support à vérifier : il a été deviné quand les steelbooks et collectors sont devenus des éditions.</p> : null}
+        </div>
+        <div className="block">
+          Édition
+          <div className="formats" role="radiogroup" aria-label="Édition">
+            {PACKAGINGS.map((p) => (
+              <button key={p.k} type="button" role="radio" aria-checked={packaging === p.k} onClick={() => setPackaging(p.k)}>
+                {p.l}
               </button>
             ))}
           </div>
         </div>
         <div className="form-grid">
           <label>
-            Édition <span className="dim">(facultatif)</span>
-            <input className="input" value={edition} maxLength={120} placeholder="Steelbook, coffret 4K, 30e anniversaire…" onChange={(e) => setEdition(e.target.value)} />
+            Nom de l'édition <span className="dim">(facultatif)</span>
+            <input className="input" value={edition} maxLength={120} placeholder="30e anniversaire, version restaurée…" onChange={(e) => setEdition(e.target.value)} />
           </label>
           <label>
             Éditeur <span className="dim">(facultatif)</span>

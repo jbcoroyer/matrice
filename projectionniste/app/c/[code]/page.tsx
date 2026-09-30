@@ -12,6 +12,8 @@ function asItem(p: PublicItem, i: number): CollectionItem {
     id: `${p.tmdb_id}-${i}`,
     tmdb_id: p.tmdb_id,
     format: p.format,
+    packaging: p.packaging ?? "standard",
+    support_to_check: false,
     edition: p.edition,
     publisher: p.publisher,
     edition_no: p.edition_no,
@@ -25,8 +27,6 @@ function asItem(p: PublicItem, i: number): CollectionItem {
     photo_path: p.photo_path,
     director: p.director,
     director_id: null,
-    saga_id: null,
-    saga_name: null,
     created_at: p.created_at,
     films: { title: p.film_title, release_date: p.release_date, poster_path: p.poster_path, genre_ids: p.genre_ids ?? [] },
   };

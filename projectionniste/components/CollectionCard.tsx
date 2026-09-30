@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { conditionLabel, formatCode, formatLabel, photoUrl, sealText, type CollectionItem, type Entry } from "@/lib/collection";
+import { conditionLabel, formatCode, formatLabel, packagingLabel, photoUrl, sealText, type CollectionItem, type Entry } from "@/lib/collection";
 import { entriesForFilm, type DiaryEntry } from "@/lib/diary";
 import { frDate, num1, splitTitle } from "@/lib/format";
 import { GENRE_FR } from "@/lib/genres";
@@ -147,6 +147,7 @@ export function CollectionCard({
                       <span className="tk">Format</span>
                       <span className="tv">
                         <b>{formatLabel(c.format)}</b>
+                        {packagingLabel(c.packaging) ? ` · ${packagingLabel(c.packaging)}` : ""}
                         {c.edition ? ` · ${c.edition}` : ""}
                       </span>
                     </div>
@@ -246,7 +247,7 @@ export function Spine({ entry, copy, seen, onOpen }: { entry: Entry; copy: Colle
       </span>
     );
   }
-  const label = `${entry.film.title} (${year(entry)}) · ${formatLabel(copy.format)}${copy.edition ? ` · ${copy.edition}` : ""}`;
+  const label = [`${entry.film.title} (${year(entry)})`, formatLabel(copy.format), packagingLabel(copy.packaging), copy.edition].filter(Boolean).join(" · ");
   const inner = (
     <>
       <span className="t">

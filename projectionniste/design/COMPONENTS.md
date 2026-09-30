@@ -71,6 +71,10 @@ profil). Planches de départ : `design/collection/`.
 - **Registre** (`/collection/registre`) : supports, éditeurs, entrées par année, éditions numérotées.
   Les chiffres ne sont plus sur la page principale.
 - Plus de numéro de collection (il changeait à chaque suppression), plus de modes Vitrine / Étagère.
+- **Support et édition** sont deux choix : support (4K UHD, Blu-ray, DVD, VHS, LaserDisc) et
+  édition (Standard, Steelbook, Coffret, Mediabook, Digibook, Collector). « Numérique » n'est plus
+  proposé. Les anciens « Steelbook » / « Collector » sont devenus des Blu-ray de cette édition,
+  marqués « support à vérifier ».
 
 ## Écran d'accueil (`components/AuthScreen.tsx`)
 

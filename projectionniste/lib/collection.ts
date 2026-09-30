@@ -6,22 +6,34 @@ import { check } from "./supabase";
 import { tmdb } from "./tmdb";
 import type { FilmRow, Movie, MovieDetail, PersonCredits } from "./types";
 
+/** Supports physiques proposés à la saisie. */
 export const FORMATS = [
   { k: "4k", l: "4K UHD", c: "4K" },
   { k: "bluray", l: "Blu-ray", c: "BD" },
   { k: "dvd", l: "DVD", c: "DVD" },
-  { k: "steelbook", l: "Steelbook", c: "SB" },
-  { k: "collector", l: "Édition collector", c: "COL" },
   { k: "vhs", l: "VHS", c: "VHS" },
   { k: "laserdisc", l: "LaserDisc", c: "LD" },
-  { k: "numerique", l: "Numérique", c: "NUM" },
 ] as const;
-export type Format = (typeof FORMATS)[number]["k"];
-export const formatLabel = (k: string) => FORMATS.find((f) => f.k === k)?.l ?? k;
+/** « numerique » n'est plus proposé (pas physique) mais d'anciens exemplaires peuvent l'avoir. */
+const LEGACY = [{ k: "numerique", l: "Numérique", c: "NUM" }] as const;
+export type Format = (typeof FORMATS)[number]["k"] | "numerique";
+
+/** L'édition, indépendante du support : un 4K peut être un steelbook. */
+export const PACKAGINGS = [
+  { k: "standard", l: "Standard" },
+  { k: "steelbook", l: "Steelbook" },
+  { k: "coffret", l: "Coffret" },
+  { k: "mediabook", l: "Mediabook" },
+  { k: "digibook", l: "Digibook" },
+  { k: "collector", l: "Collector" },
+] as const;
+export type Packaging = (typeof PACKAGINGS)[number]["k"];
+export const packagingLabel = (k: string | null | undefined) => (k && k !== "standard" ? PACKAGINGS.find((p) => p.k === k)?.l ?? "" : "");
+export const formatLabel = (k: string) => [...FORMATS, ...LEGACY].find((f) => f.k === k)?.l ?? k;
 /** Languette d'une affiche possédée : « 4K UHD », « BLU-RAY ×2 »… */
 export const ownedLabel = (formats: string[]) => `${formatLabel(formats[0]).toUpperCase()}${formats.length > 1 ? ` ×${formats.length}` : ""}`;
 /** Code court du médaillon de la carte (4K, BD, DVD…). */
-export const formatCode = (k: string) => FORMATS.find((f) => f.k === k)?.c ?? k.toUpperCase().slice(0, 3);
+export const formatCode = (k: string) => [...FORMATS, ...LEGACY].find((f) => f.k === k)?.c ?? k.toUpperCase().slice(0, 3);
 
 export const CONDITIONS = [
   { k: "neuf", l: "Neuf" },
@@ -37,10 +49,10 @@ export const PUBLISHERS = ["Criterion", "Carlotta", "Studiocanal", "Arrow", "Wil
 /** Finition d'une carte : le cadre dit ce qu'est l'exemplaire (noir, argent, or crème). */
 export type Finish = "std" | "premium" | "collector";
 const FINISH_RANK: Record<Finish, number> = { std: 0, premium: 1, collector: 2 };
-export function finishOf(c: Pick<CollectionItem, "format" | "edition" | "edition_no">): Finish {
+export function finishOf(c: Pick<CollectionItem, "format" | "packaging" | "edition" | "edition_no">): Finish {
   const ed = (c.edition || "").toLowerCase();
-  if (c.format === "collector" || c.edition_no || /collector|limit|numérot|numerot|coffret/.test(ed)) return "collector";
-  if (c.format === "4k" || c.format === "steelbook" || /steelbook|criterion|carlotta|digibook|mediabook/.test(ed)) return "premium";
+  if (c.packaging === "collector" || c.packaging === "coffret" || c.edition_no || /collector|limit|numérot|numerot|coffret/.test(ed)) return "collector";
+  if (c.format === "4k" || (c.packaging && c.packaging !== "standard") || /steelbook|criterion|carlotta|digibook|mediabook/.test(ed)) return "premium";
   return "std";
 }
 /** L'exemplaire le plus prestigieux d'un film : c'est lui qui donne son cadre à la carte. */
@@ -48,12 +60,8 @@ export function bestCopy(copies: CollectionItem[]): CollectionItem {
   return copies.slice().sort((a, b) => FINISH_RANK[finishOf(b)] - FINISH_RANK[finishOf(a)])[0];
 }
 /** Texte du sceau d'édition (haut de la carte), s'il y a lieu. */
-export function sealText(c: Pick<CollectionItem, "format" | "edition" | "publisher" | "edition_no">): string {
-  if (c.edition) return c.edition;
-  if (c.publisher) return c.publisher;
-  if (c.format === "steelbook") return "Steelbook";
-  if (c.format === "collector") return "Collector";
-  return "";
+export function sealText(c: Pick<CollectionItem, "packaging" | "edition" | "publisher">): string {
+  return c.edition || c.publisher || packagingLabel(c.packaging);
 }
 
 export type FilmMeta = { title: string; release_date: string | null; poster_path: string | null; genre_ids: number[] };
@@ -62,6 +70,9 @@ export type CollectionItem = {
   id: string;
   tmdb_id: number;
   format: Format;
+  packaging: Packaging;
+  /** support deviné lors de la séparation support / édition : à confirmer */
+  support_to_check: boolean;
   edition: string | null;
   publisher: string | null;
   edition_no: number | null;
@@ -75,16 +86,14 @@ export type CollectionItem = {
   photo_path: string | null;
   director: string | null;
   director_id: number | null;
-  saga_id: number | null;
-  saga_name: string | null;
   created_at: string;
   films: FilmMeta | null;
 };
 
-export type ItemInput = Pick<CollectionItem, "format" | "edition" | "publisher" | "edition_no" | "edition_of" | "sealed" | "condition" | "notes" | "acquired_on" | "lent_to" | "lent_on" | "photo_path">;
+export type ItemInput = Pick<CollectionItem, "format" | "packaging" | "edition" | "publisher" | "edition_no" | "edition_of" | "sealed" | "condition" | "notes" | "acquired_on" | "lent_to" | "lent_on" | "photo_path">;
 
 const COLS =
-  "id, tmdb_id, format, edition, publisher, edition_no, edition_of, sealed, condition, notes, acquired_on, lent_to, lent_on, photo_path, director, director_id, saga_id, saga_name, created_at, films(title, release_date, poster_path, genre_ids)";
+  "id, tmdb_id, format, packaging, support_to_check, edition, publisher, edition_no, edition_of, sealed, condition, notes, acquired_on, lent_to, lent_on, photo_path, director, director_id, created_at, films(title, release_date, poster_path, genre_ids)";
 
 export async function listCollection(sb: SupabaseClient): Promise<CollectionItem[]> {
   const out: CollectionItem[] = [];
@@ -108,17 +117,20 @@ export async function listOwned(sb: SupabaseClient): Promise<Map<number, Format[
     for (const r of rows) by.set(r.tmdb_id, [...(by.get(r.tmdb_id) ?? []), r.format]);
     if (rows.length < 1000) break;
   }
-  const rank = (f: Format) => ["collector", "steelbook", "4k", "bluray", "dvd", "laserdisc", "vhs", "numerique"].indexOf(f);
+  const rank = (f: Format) => ["4k", "bluray", "dvd", "laserdisc", "vhs", "numerique"].indexOf(f);
   for (const [k, v] of by) by.set(k, v.sort((a, b) => rank(a) - rank(b)));
   return by;
 }
 
-/** Réalisateur et saga d'un film, lus sur TMDB (pour la ligne de type des cartes et les séries). */
-export type FilmExtra = Pick<CollectionItem, "director" | "director_id" | "saga_id" | "saga_name">;
+/**
+ * Réalisateur d'un film, lu sur TMDB et rangé avec l'exemplaire (ligne de la carte, étagère par
+ * réalisateur). Il reste sur l'exemplaire : la table films est partagée et n'accepte que des ajouts.
+ */
+export type FilmExtra = Pick<CollectionItem, "director" | "director_id">;
 export async function fetchExtra(tmdbId: number): Promise<FilmExtra> {
-  const d = await tmdb<MovieDetail & { belongs_to_collection?: { id: number; name: string } | null }>(`movie/${tmdbId}`, { append_to_response: "credits" });
+  const d = await tmdb<MovieDetail>(`movie/${tmdbId}`, { append_to_response: "credits" });
   const dir = d.credits?.crew?.find((c) => c.job === "Director");
-  return { director: dir?.name ?? null, director_id: dir?.id ?? null, saga_id: d.belongs_to_collection?.id ?? null, saga_name: d.belongs_to_collection?.name ?? null };
+  return { director: dir?.name ?? null, director_id: dir?.id ?? null };
 }
 
 /** Complète les exemplaires qui n'ont pas encore de réalisateur (anciens ajouts). */
@@ -130,7 +142,7 @@ export async function backfillExtras(sb: SupabaseClient, items: CollectionItem[]
       const id = ids[next++];
       try {
         const x = await fetchExtra(id);
-        // même sans réalisateur trouvé, on note « saga vide » pour ne pas redemander à chaque visite
+        // même sans réalisateur trouvé, on note une chaîne vide pour ne pas redemander à chaque visite
         await sb.from("collection_items").update({ ...x, director: x.director ?? "" }).eq("tmdb_id", id);
         onItem(id, x);
       } catch {
@@ -145,6 +157,8 @@ export async function saveItem(sb: SupabaseClient, userId: string, film: FilmRow
   await ensureFilms(sb, [film]);
   const row = {
     format: input.format,
+    packaging: input.packaging,
+    support_to_check: false,
     edition: input.edition?.trim() || null,
     publisher: input.publisher?.trim() || null,
     edition_no: input.edition_no || null,
@@ -308,6 +322,7 @@ export type PublicItem = {
   poster_path: string | null;
   genre_ids: number[];
   format: Format;
+  packaging: Packaging;
   edition: string | null;
   publisher: string | null;
   edition_no: number | null;
