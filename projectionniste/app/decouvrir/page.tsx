@@ -6,7 +6,7 @@ import { Check, Plus } from "@/components/icons";
 import { useProfile } from "@/components/ProfileProvider";
 import { Rail } from "@/components/Rail";
 import { TitleDuo } from "@/components/TitleDuo";
-import { EmptyInvite } from "@/components/ui";
+import { Onboarding } from "@/components/ui";
 import { num1, runtime, truncate, yearOf } from "@/lib/format";
 import { GENRE_FR } from "@/lib/genres";
 import { useAsync, useRecs } from "@/lib/hooks";
@@ -164,9 +164,9 @@ export default function Decouvrir() {
 
   return (
     <>
-      <EmptyInvite />
-      {featured.length ? <Featured list={featured} /> : null}
-      <Rail
+      <Onboarding />
+      {featured.length && !d.empty ? <Featured list={featured} /> : null}
+      {d.empty ? null : <Rail
         title="Pour toi"
         sub={d.rated.size ? "D'après les films que tu as le mieux notés" : "Note quelques films pour affiner la sélection"}
         href="/decouvrir/pour-toi"
@@ -177,8 +177,8 @@ export default function Decouvrir() {
             Rien à proposer pour l'instant. <Link href="/parametres#import">Importe ton Letterboxd</Link> ou note quelques films.
           </>
         }
-      />
-      <Rail title="Tendances de la semaine" sub="Ce que tout le monde regarde, avec ton indice" href="/decouvrir/populaires" list={trending.data} loading={!trending.data} />
+      />}
+      <Rail title="Tendances de la semaine" sub={d.empty ? "Ce que tout le monde regarde cette semaine" : "Ce que tout le monde regarde, avec ton indice"} href="/decouvrir/populaires" list={trending.data} loading={!trending.data} />
     </>
   );
 }

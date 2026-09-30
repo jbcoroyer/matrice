@@ -8,7 +8,7 @@ import { EyeOff, Plus, Share } from "@/components/icons";
 import { PickFilm } from "@/components/PickFilm";
 import { Poster } from "@/components/Poster";
 import { useProfile, type FilmInput } from "@/components/ProfileProvider";
-import { ErrorLine, Loader, ProfileGate } from "@/components/ui";
+import { EmptyState, ErrorLine, Loader, ProfileGate } from "@/components/ui";
 import {
   addWant,
   backfillExtras,
@@ -454,10 +454,17 @@ function Collection() {
       ) : view === "classeur" ? (
         <Classeur entries={entriesOnly} wants={wantIds} onWant={toggleWant} openId={openDir} onOpen={openDirector} />
       ) : !all.length ? (
-        <div className="empty">
-          <p>Ta cinémathèque est vide.</p>
-          <p className="note">Ajoute tes DVD, Blu-ray, 4K, steelbooks… avec « Ajouter un exemplaire », ou depuis la fiche d'un film (bouton disque, à côté de ta note).</p>
-        </div>
+        <EmptyState
+          title="Ta cinémathèque est vide"
+          actions={
+            <button type="button" className="btn primary" onClick={() => setAdding("pick")}>
+              <Plus />
+              Ajouter mon premier exemplaire
+            </button>
+          }
+        >
+          Tes DVD, Blu-ray, 4K, steelbooks… Cherche un film pour ajouter son exemplaire, ou utilise le bouton disque sur la fiche d'un film.
+        </EmptyState>
       ) : !filtered.length ? (
         <p className="status">Aucun film ne correspond à ces filtres.</p>
       ) : view === "vitrine" ? (

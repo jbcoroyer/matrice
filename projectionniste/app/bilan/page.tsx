@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
 import { StarsText } from "@/components/Stars";
-import { ErrorLine, Loader, ProfileGate } from "@/components/ui";
+import { EmptyState, ErrorLine, Loader, ProfileGate, SecHead, StartActions } from "@/components/ui";
 import { filmFacts, people, summarize, yearEntries, type Facts, type YearEntry } from "@/lib/bilan";
 import { diaryIndex } from "@/lib/diary";
 import { frDate, num1 } from "@/lib/format";
@@ -125,11 +125,10 @@ function Bilan() {
   if (!years.length)
     return (
       <section className="section">
-        <h1>Bilan de l'année</h1>
-        <p className="lede">
-          Le bilan se construit à partir de ton <Link href="/journal">journal</Link> : enregistre tes visionnages avec leur date, ou importe ton
-          Letterboxd.
-        </p>
+        <SecHead as="h1" title="Bilan de l'année" />
+        <EmptyState title="Rien à raconter pour l'instant" actions={<StartActions />}>
+          Le bilan se construit à partir des visionnages datés de ton <Link className="link" href="/journal">journal</Link> : mois par mois, tes notes, tes meilleurs films, tes cinéastes.
+        </EmptyState>
       </section>
     );
 

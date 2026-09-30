@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DiaryList } from "@/components/DiaryEntries";
 import { useProfile } from "@/components/ProfileProvider";
 import { WatchedFilms } from "@/components/WatchedFilms";
-import { ErrorLine, Loader, ProfileGate, SecHead } from "@/components/ui";
+import { EmptyState, ErrorLine, Loader, ProfileGate, SecHead, StartActions } from "@/components/ui";
 import { JournalButton } from "@/components/QuickLog";
 import { DIARY_EVENT, diaryIndex, listEntries, type DiaryEntry, type DiaryFilter } from "@/lib/diary";
 
@@ -159,19 +159,13 @@ function Journal() {
       ) : !entries ? (
         <Loader text="Chargement du journal…" />
       ) : !entries.length ? (
-        <p className="status">
-          {active ? (
-            "Aucun visionnage ne correspond à ces filtres."
-          ) : (
-            <>
-              Ton journal est vide. Clique sur « Journaliser » pour noter le dernier film que tu as vu, ou{" "}
-              <Link className="link" href="/parametres#import">
-                importe ton Letterboxd
-              </Link>
-              .
-            </>
-          )}
-        </p>
+        active ? (
+          <p className="status">Aucun visionnage ne correspond à ces filtres.</p>
+        ) : (
+          <EmptyState title="Ton journal est vide" actions={<StartActions />}>
+            Chaque film que tu journalises garde sa date, ta note et ta critique. C'est aussi ce qui nourrit ton bilan de l'année.
+          </EmptyState>
+        )
       ) : (
         <>
           {groups.map((g) => (

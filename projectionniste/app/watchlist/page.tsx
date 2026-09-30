@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
-import { ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import Link from "next/link";
+import { EmptyState, ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
 import { GENRE_OPTIONS } from "@/lib/genres";
 import { genreIds } from "@/lib/predict";
 import { useWatchlistMovies } from "@/lib/hooks";
@@ -57,7 +58,21 @@ function Watchlist() {
       ) : wl.data?.length ? (
         <p className="status">Aucun film de ta watchlist ne correspond à ce genre.</p>
       ) : (
-        <p className="status">Ta watchlist est vide. Ajoute des films avec le bouton ＋ des affiches, ou importe ton Letterboxd dans Paramètres.</p>
+        <EmptyState
+          title="Ta watchlist est vide"
+          actions={
+            <>
+              <Link className="btn primary" href="/decouvrir">
+                Parcourir les tendances
+              </Link>
+              <Link className="btn ghost" href="/parametres#import">
+                Importer mon Letterboxd
+              </Link>
+            </>
+          }
+        >
+          Les films que tu veux voir un jour. Ajoute-en avec le bouton + des affiches, ou depuis la fiche d'un film.
+        </EmptyState>
       )}
     </section>
   );

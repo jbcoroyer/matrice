@@ -9,7 +9,7 @@ import { Poster } from "./Poster";
 import { useProfile } from "./ProfileProvider";
 
 export function FilmCard({ m }: { m: Ranked }) {
-  const { seen, watchlist, rated, owned, predict, toggleWatchlist } = useProfile();
+  const { seen, watchlist, rated, owned, predict, toggleWatchlist, empty } = useProfile();
   const p = m._pred ?? predict(m).v;
   const inWl = watchlist.has(m.id);
   const isSeen = seen.has(m.id);
@@ -30,7 +30,7 @@ export function FilmCard({ m }: { m: Ranked }) {
     <article className="card">
       <Link href={`/film/${m.id}`} prefetch={false}>
         <Poster path={m.poster_path} title={m.title} owned={formats?.length ? ownedLabel(formats) : null}>
-          {p > 0 && !isSeen ? (
+          {p > 0 && !isSeen && !empty ? (
             <span className="score-pill guess" title="Ton indice : la note que tu devrais lui donner" aria-label={`Ton indice : ${num1(p)}, estimé d'après tes goûts`}>
               {num1(p)}
             </span>

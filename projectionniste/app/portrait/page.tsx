@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PickFilm } from "@/components/PickFilm";
 import { Plus } from "@/components/icons";
 import { useProfile, type FilmInput } from "@/components/ProfileProvider";
-import { ProfileGate, SecHead } from "@/components/ui";
+import { EmptyState, ProfileGate, SecHead, StartActions } from "@/components/ui";
 import { genreFrFromName } from "@/lib/genres";
 import { num1 } from "@/lib/format";
 import { tmdb } from "@/lib/tmdb";
@@ -198,6 +198,7 @@ function Portrait() {
   const avg = ratings.length ? ratings.reduce((s, x) => s + x, 0) / ratings.length : 0;
   const fives = useMemo(() => [...rated.entries()].filter(([, r]) => r >= 5).map(([id]) => id), [rated]);
   const aff = profile!.aff;
+  const noAff = !Object.keys(aff.d).length && !Object.keys(aff.c).length && !Object.keys(aff.g).length;
   const favs = useAsync(
     async () => {
       const ids = fives.slice(0, 12);
@@ -260,7 +261,12 @@ function Portrait() {
 
       <section className="section">
         <SecHead title="Ce que tu aimes" aside="Écart à ta note moyenne, lissé" />
-        <div className="aff-cols">
+        {noAff ? (
+          <EmptyState title="Tes goûts apparaîtront ici" actions={<StartActions />}>
+            Note quelques films, ou importe ton Letterboxd : Filmable en déduit les réalisateurs, interprètes et genres qui te réussissent, et s'en sert pour ton indice.
+          </EmptyState>
+        ) : null}
+        {noAff ? null : <div className="aff-cols">
           <div>
             <h3 className="lbl">Réalisateurs qui te réussissent</h3>
             <AffList entries={top(aff.d, 12, 1)} people />
@@ -277,7 +283,7 @@ function Portrait() {
             <h3 className="lbl">Cinéastes qui te laissent froid</h3>
             <AffList entries={top(aff.d, 8, -1)} people />
           </div>
-        </div>
+        </div>}
       </section>
 
       {fives.length ? (

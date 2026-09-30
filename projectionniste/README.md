@@ -27,6 +27,8 @@ Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur ch
 le marquer vu et le noter (demi-étoiles). Le bouton **Journaliser** de l'en-tête (le + central de la barre d'onglets sur mobile) enregistre un visionnage depuis n'importe quelle page : recherche du film, puis date, note, critique. Chaque action peut
 être annulée depuis la notification.
 
+Un compte neuf (aucun film vu, noté ni en watchlist) voit un guide de démarrage en haut de Découvrir et des pages vides qui proposent quoi faire ; sans historique, il n'y a ni « Pour toi » ni indice.
+
 ## Démarrer
 
 ```bash

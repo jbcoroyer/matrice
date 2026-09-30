@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { store } from "@/lib/store";
+import { openQuickLog } from "./QuickLog";
 import { useProfile } from "./ProfileProvider";
 
 export function Loader({ text }: { text: string }) {
@@ -85,22 +88,75 @@ export function ProfileGate({ children }: { children: React.ReactNode }) {
   return <SkeletonGrid n={12} />;
 }
 
-/** Invitation à importer son historique quand la base est vide. */
-export function EmptyInvite() {
-  const { empty } = useProfile();
-  if (!empty) return null;
+/** Page vide : une phrase qui dit à quoi sert la page, et de quoi la remplir. */
+export function EmptyState({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) {
   return (
-    <section className="gate">
-      <h2>Bienvenue</h2>
-      <p className="note">
-        Ton historique est vide. Importe ton export Letterboxd (journal, notes, critiques, watchlist, listes) pour que les recommandations et
-        l'indice se calent sur tes goûts. Sinon, commence simplement à marquer des films comme vus.
-      </p>
-      <div className="row-actions">
-        <Link className="btn primary" href="/parametres#import">
-          Importer mon Letterboxd
-        </Link>
-      </div>
+    <div className="gate empty-state">
+      <h2>{title}</h2>
+      <p className="note">{children}</p>
+      {actions ? <div className="row-actions">{actions}</div> : null}
+    </div>
+  );
+}
+
+/** Les deux gestes qui remplissent presque toutes les pages : journaliser un film, importer Letterboxd. */
+export function StartActions() {
+  return (
+    <>
+      <button type="button" className="btn primary" onClick={openQuickLog}>
+        Journaliser un film
+      </button>
+      <Link className="btn ghost" href="/parametres#import">
+        Importer mon Letterboxd
+      </Link>
+    </>
+  );
+}
+
+const ONBOARD_KEY = "projo.v3.onboard";
+
+/** Premier lancement (aucun film vu, noté ni en watchlist) : trois gestes pour démarrer. */
+export function Onboarding() {
+  const { empty } = useProfile();
+  const [hidden, setHidden] = useState(true);
+  useEffect(() => setHidden(store.get(ONBOARD_KEY, false)), []);
+  if (!empty || hidden) return null;
+  return (
+    <section className="onboard" aria-labelledby="onboard-title">
+      <p className="label">Pour commencer</p>
+      <h1 id="onboard-title">
+        Bienvenue sur <span>Filmable</span>
+      </h1>
+      <ol className="onboard-steps">
+        <li>
+          <b>Importe ton Letterboxd</b>
+          <p>Notes, journal, critiques, watchlist et listes sont repris d'un coup. Les recommandations se calent tout de suite sur tes goûts.</p>
+          <Link className="btn primary" href="/parametres#import">
+            Importer
+          </Link>
+        </li>
+        <li>
+          <b>Ou journalise un premier film</b>
+          <p>Le dernier que tu as vu : la date, ta note, une critique si tu veux. Le journal nourrit ton bilan de l'année.</p>
+          <button type="button" className="btn" onClick={openQuickLog}>
+            Journaliser un film
+          </button>
+        </li>
+        <li>
+          <b>Note ce que tu connais</b>
+          <p>Dans les tendances ci-dessous, ouvre un film que tu as vu et donne-lui une note : « Pour toi » et l'indice apparaissent dès les premières.</p>
+        </li>
+      </ol>
+      <button
+        type="button"
+        className="link-btn quiet"
+        onClick={() => {
+          store.set(ONBOARD_KEY, true);
+          setHidden(true);
+        }}
+      >
+        Masquer ce guide
+      </button>
     </section>
   );
 }

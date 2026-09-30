@@ -8,7 +8,7 @@ import { img } from "@/lib/tmdb";
 import { listWatched, type WatchedFilm } from "@/lib/watched";
 import { Eye } from "./icons";
 import { useProfile } from "./ProfileProvider";
-import { ErrorLine, Loader } from "./ui";
+import { EmptyState, ErrorLine, Loader, StartActions } from "./ui";
 
 const decade = (d?: string | null) => {
   const y = +(d || "").slice(0, 4);
@@ -47,7 +47,11 @@ export function WatchedFilms() {
 
   if (error) return <ErrorLine error={error} />;
   if (!list) return <Loader text="Chargement de tes films vus…" />;
-  if (!rows?.length) return <p className="status">Aucun film vu pour l'instant. Marque un film comme vu depuis sa fiche, ou importe ton Letterboxd dans les paramètres.</p>;
+  if (!rows?.length) return (
+      <EmptyState title="Aucun film vu pour l'instant" actions={<StartActions />}>
+        Tous les films que tu marques comme vus, avec ou sans date, se retrouvent ici. Tu peux aussi le faire depuis la fiche d'un film.
+      </EmptyState>
+    );
 
   return (
     <>

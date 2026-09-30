@@ -78,3 +78,16 @@ dans une carte en verre.
 - **Mon profil** : menu, page `/portrait` (titre et onglet).
 - **Sélection du jour** : les cinq films du carrousel de Découvrir (recalculés chaque jour).
   « Tendances de la semaine » garde « semaine » : c'est le classement TMDB hebdomadaire.
+
+## Premier lancement et pages vides (`components/ui.tsx`)
+
+- **Guide de démarrage** (`Onboarding`, en haut de Découvrir) : tant qu'aucun film n'est vu, noté
+  ni en watchlist. « Bienvenue sur **Filmable** », trois gestes numérotés en grands chiffres légers
+  (importer Letterboxd, journaliser un premier film, noter ce qu'on connaît), sans cartes ni icônes.
+  « Masquer ce guide » le range (mémorisé dans le navigateur).
+- Sans historique, Découvrir n'affiche ni sélection du jour, ni « Pour toi », ni indice sur les
+  affiches (ils ne diraient rien de personnel) : seulement les tendances de la semaine.
+- **Page vide** (`EmptyState`) : un titre, une phrase qui dit à quoi sert la page, et de quoi la
+  remplir (`StartActions` : Journaliser un film, Importer mon Letterboxd ; ou l'action propre à la
+  page : Parcourir les tendances, Ajouter mon premier exemplaire, Créer ma première liste).
+  Utilisé par Journal, Films vus, Watchlist, Collection, Bilan, Mon profil (« Ce que tu aimes ») et Listes.
