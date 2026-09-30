@@ -10,7 +10,6 @@ import { img } from "@/lib/tmdb";
 import { Eye, EyeOff } from "./icons";
 import { useProfile } from "./ProfileProvider";
 
-const pad = (n: number) => String(n).padStart(3, "0");
 const year = (e: Entry) => (e.film.release_date || "").slice(0, 4);
 
 /** Ligne de type d'une carte : genre · réalisateur · année (comme « Créature — Elfe » sur une carte à jouer). */
@@ -28,19 +27,20 @@ const loanDays = (c: CollectionItem) => (c.lent_on ? Math.max(0, Math.round((Dat
  */
 export function CollectionCard({
   entry,
-  total,
   seen,
   rating,
   onEdit,
   lit,
+  still,
 }: {
   entry: Entry;
-  total: number;
   seen?: boolean;
   rating?: number | null;
   onEdit?: (item: CollectionItem) => void;
   /** reflet visible en permanence (captures) */
   lit?: boolean;
+  /** carte posée (feuille de consultation) : pas de retournement, le détail est à côté */
+  still?: boolean;
 }) {
   const { sb, userId } = useProfile();
   const [flipped, setFlipped] = useState(false);
@@ -91,7 +91,13 @@ export function CollectionCard({
         <div className="tcg-flip">
           <article className="tcg-face front" inert={flipped} aria-label={`Carte : ${entry.film.title}`}>
             <div className="tcg-in">
-              <button type="button" className={`tcg-art${loaned ? " loaned" : ""}`} onClick={() => setFlipped(true)} aria-label={`Retourner la carte de ${entry.film.title}`}>
+              <button
+                type="button"
+                className={`tcg-art${loaned ? " loaned" : ""}`}
+                onClick={() => !still && setFlipped(true)}
+                tabIndex={still ? -1 : undefined}
+                aria-label={still ? entry.film.title : `Retourner la carte de ${entry.film.title}`}
+              >
                 {entry.film.poster_path ? <img src={img(entry.film.poster_path, "w342")} alt="" loading="lazy" /> : <span className="noimg">{entry.film.title}</span>}
                 {sealed ? <span className="seal" /> : null}
                 <span className="tcg-medal">{formatCode(best.format)}</span>
@@ -111,8 +117,8 @@ export function CollectionCard({
                 <div className="tcg-type">{typeLine(entry)}</div>
                 <div className="tcg-foot">
                   <span className="tcg-no">
-                    N° {pad(entry.no)}
-                    <i> / {total}</i>
+                    {formatLabel(best.format)}
+                    {entry.copies.length > 1 ? <i> +{entry.copies.length - 1}</i> : null}
                   </span>
                   {rate}
                 </div>
@@ -123,7 +129,7 @@ export function CollectionCard({
           <article className="tcg-face back" inert={!flipped} aria-label={`Fiche de l'exemplaire : ${entry.film.title}`}>
             <div className="tcg-in">
               <div className="tcg-back-head">
-                <span className="label">Exemplaire · N° {pad(entry.no)}</span>
+                <span className="label">{entry.copies.length > 1 ? `${entry.copies.length} exemplaires` : "Exemplaire"}</span>
                 <button type="button" className="tcg-flipback" onClick={() => setFlipped(false)} aria-label="Retourner la carte">
                   ↺
                 </button>
@@ -228,31 +234,41 @@ export function CollectionCard({
 }
 
 /** Dos de boîtier pour la vue Étagère : la tranche prend la couleur de l'affiche. */
-export function Spine({ entry, copy, seen }: { entry: Entry; copy: CollectionItem; seen?: boolean }) {
+export function Spine({ entry, copy, seen, onOpen }: { entry: Entry; copy: CollectionItem; seen?: boolean; onOpen?: () => void }) {
   const [a, b] = splitTitle(entry.film.title);
   // une seule étagère pour tous les formats : même dos, même taille, on ne fait pas de différence
   if (copy.lent_to) {
     return (
       <span className="slot">
-        <span className="spine loan" title={`${entry.film.title} est prêté à ${copy.lent_to}`}>
+        <button type="button" className="spine loan" title={`${entry.film.title} est prêté à ${copy.lent_to}`} onClick={onOpen} disabled={!onOpen}>
           <span className="t">Prêté à {copy.lent_to}</span>
-        </span>
+        </button>
       </span>
     );
   }
+  const label = `${entry.film.title} (${year(entry)}) · ${formatLabel(copy.format)}${copy.edition ? ` · ${copy.edition}` : ""}`;
+  const inner = (
+    <>
+      <span className="t">
+        <b>{a}</b>
+        {b ? <span> {b}</span> : null}
+      </span>
+      <span className="y">{year(entry).slice(2)}</span>
+      <i className={`dot${seen === false ? "" : " off"}`} />
+    </>
+  );
+  if (onOpen)
+    return (
+      <span className="slot">
+        <button type="button" className="spine" title={label} aria-label={label} onClick={onOpen}>
+          {inner}
+        </button>
+      </span>
+    );
   return (
     <span className="slot">
-      <Link
-        href={`/film/${entry.tmdb_id}`}
-        className="spine"
-        title={`${entry.film.title} (${year(entry)}) · ${formatLabel(copy.format)}${copy.edition ? ` · ${copy.edition}` : ""}`}
-      >
-        <span className="t">
-          <b>{a}</b>
-          {b ? <span> {b}</span> : null}
-        </span>
-        <span className="y">{year(entry).slice(2)}</span>
-        <i className={`dot${seen === false ? "" : " off"}`} />
+      <Link href={`/film/${entry.tmdb_id}`} className="spine" title={label}>
+        {inner}
       </Link>
     </span>
   );

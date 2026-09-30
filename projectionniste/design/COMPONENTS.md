@@ -55,13 +55,22 @@ profil). Planches de départ : `design/collection/`.
   vrai foil. Pas d'arc-en-ciel holographique, pas de halo coloré. Les jetons `--f-*` et `--card-*`
   de `globals.css` portent cette matière, identique en thème clair et sombre.
 
-**Tri** : par réalisateur (nom de famille, puis date) dans toutes les vues, par défaut.
-
-**Trois vues** : Vitrine (cartes), Étagère (une seule étagère pour tous les formats : mêmes dos noirs,
-même taille, sans mention de format ; trou « prêté »), Classeur
-(un réalisateur par ligne : « 3 possédés sur 34, il en manque 31 » ; un clic ouvre ce qu'on
-possède et tout ce qui manque, avec un bouton « Envie »).
-**Envies** : films qu'on voudrait posséder en disque.
+**Page Collection** (`app/collection/page.tsx`, `lib/shelf.ts`) : une vidéothèque, pas un tableau.
+- En tête : « Ma cinémathèque », une phrase (« 187 films, 203 exemplaires »), **Ajouter** et un menu ⋯
+  (Partager, Registre, Classeur des réalisateurs, provisoire). Une ligne rappelle les prêts s'il y en a.
+- Jusqu'à 12 films : tout est de face (l'affiche dans le cadre de sa matière), sans aucun outil.
+- Au-delà : **Dernières entrées** de face, puis **l'étagère** : une seule, continue, un dos par
+  exemplaire, des **intercalaires** (lettre du réalisateur, du titre, décennie ou année d'entrée)
+  et un index des lettres. « Ranger par » apparaît à partir de 30 films.
+- **Une seule recherche**, qui comprend aussi les mots de collectionneur : 4K, Blu-ray, DVD, VHS,
+  steelbook, collector, scellé, prêté, pas vu (« kubrick 4k »).
+- Un boîtier (ou une affiche) ouvre la **feuille** du film (`?film=`) : la carte posée à gauche,
+  un exemplaire par ligne (édition, éditeur, n°, état, prêt, photo, Modifier), « Ajouter une autre
+  édition », et une seule ligne sur le visionnage.
+- **Tu cherches** : les envies, en liste de brocante (titre, pointillés, « Je l'ai trouvé »).
+- **Registre** (`/collection/registre`) : supports, éditeurs, entrées par année, éditions numérotées.
+  Les chiffres ne sont plus sur la page principale.
+- Plus de numéro de collection (il changeait à chaque suppression), plus de modes Vitrine / Étagère.
 
 ## Écran d'accueil (`components/AuthScreen.tsx`)
 

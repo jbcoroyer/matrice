@@ -95,7 +95,7 @@ export default function PublicCollection({ params }: { params: Promise<{ code: s
       </div>
       <div className="vitrine" style={{ marginTop: 40 }}>
         {shown.map((e) => (
-          <CollectionCard key={e.tmdb_id} entry={e} total={entries.length} />
+          <CollectionCard key={e.tmdb_id} entry={e} />
         ))}
       </div>
       <p className="note" style={{ marginTop: 40 }}>

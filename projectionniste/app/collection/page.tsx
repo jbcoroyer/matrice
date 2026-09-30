@@ -1,62 +1,195 @@
 "use client";
 
-import { errorText } from "@/lib/errors";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Classeur } from "@/components/Classeur";
 import { CollectionCard, Spine } from "@/components/CollectionCard";
 import { CopyDialog } from "@/components/CopyDialog";
-import { EyeOff, Plus, Share } from "@/components/icons";
+import { Dots, Plus, Search } from "@/components/icons";
 import { PickFilm } from "@/components/PickFilm";
-import { Poster } from "@/components/Poster";
 import { useProfile, type FilmInput } from "@/components/ProfileProvider";
-import { EmptyState, ErrorLine, Loader, ProfileGate } from "@/components/ui";
+import { TitleDuo } from "@/components/TitleDuo";
+import { ErrorLine, Loader, ProfileGate } from "@/components/ui";
 import {
   addWant,
   backfillExtras,
   compareByDirector,
+  conditionLabel,
   directorIdOf,
   directorName,
   formatLabel,
-  FORMATS,
   getShare,
   groupEntries,
   listCollection,
   listWants,
+  photoUrl,
   removeWant,
   saveShare,
   type CollectionItem,
   type Entry,
-  type Share as ShareT,
+  type Share,
   type Want,
 } from "@/lib/collection";
 import { filmRow } from "@/lib/db";
-import { yearOf } from "@/lib/format";
-import { GENRE_OPTIONS } from "@/lib/genres";
+import { entriesForFilm } from "@/lib/diary";
+import { errorText } from "@/lib/errors";
+import { frDate, num1, plural } from "@/lib/format";
+import { ARRANGE, matches, parseQuery, planks, type Arrange } from "@/lib/shelf";
+import { store } from "@/lib/store";
 import { img } from "@/lib/tmdb";
-import type { Movie } from "@/lib/types";
 
-type Mode = "cinematheque" | "envies";
-type View = "vitrine" | "etagere" | "classeur";
-type Quick = "tous" | "jamais" | "scelles" | "limitees" | "prets";
+/** Jusqu'à ce nombre de films, tout est présenté de face : pas d'étagère, pas d'outils. */
+const ALL_FACING = 12;
+/** À partir de ce nombre, on peut choisir comment l'étagère est rangée. */
+const ARRANGE_FROM = 30;
+const RECENT = 8;
+const ARRANGE_KEY = "projo.shelfArrange";
 
-const VIEW_KEY = "projo.collectionView";
-const STEP = 60;
+const loanDays = (c: CollectionItem) => (c.lent_on ? Math.max(0, Math.round((Date.now() - +new Date(c.lent_on + "T12:00:00")) / 86400000)) : null);
+const filmOf = (e: Entry): FilmInput => ({ id: e.tmdb_id, title: e.film.title, release_date: e.film.release_date ?? undefined, poster_path: e.film.poster_path, genre_ids: e.film.genre_ids });
 
-const decade = (d: string | null) => {
-  const y = +(d || "").slice(0, 4);
-  return y ? `${Math.floor(y / 10) * 10}` : "";
-};
+/** Un film présenté de face, dans le cadre de sa matière (noir, argent, or crème). */
+function Facing({ e, onOpen }: { e: Entry; onOpen: () => void }) {
+  const loaned = e.copies.find((c) => c.lent_to);
+  return (
+    <button type="button" className={`facing f-${e.finish}`} onClick={onOpen} aria-label={`${e.film.title}, ${plural(e.copies.length, "exemplaire")}`}>
+      <span className={`facing-art${loaned ? " loaned" : ""}`}>
+        {e.film.poster_path ? <img src={img(e.film.poster_path, "w342")} alt="" loading="lazy" /> : <span className="noimg">{e.film.title}</span>}
+        {loaned ? <span className="facing-tag">Prêté</span> : null}
+      </span>
+      <span className="facing-t">{e.film.title}</span>
+      <span className="facing-m">
+        {formatLabel(e.best.format)}
+        {e.copies.length > 1 ? ` · ${e.copies.length} exemplaires` : ""}
+      </span>
+    </button>
+  );
+}
 
-function SharePanel() {
+/** Feuille de consultation : on tire le boîtier de l'étagère, la carte sort avec ses exemplaires. */
+function FilmSheet({ e, onClose, onEdit, onAddCopy }: { e: Entry; onClose: () => void; onEdit: (c: CollectionItem) => void; onAddCopy: () => void }) {
+  const { sb, userId, seen, rated } = useProfile();
+  const ref = useRef<HTMLDialogElement>(null);
+  const [last, setLast] = useState<string | null | undefined>(undefined);
+  const isSeen = seen.has(e.tmdb_id);
+  const rating = rated.get(e.tmdb_id) ?? null;
+  const dirId = directorIdOf(e);
+  const dir = directorName(e);
+  const year = (e.film.release_date || "").slice(0, 4);
+  useEffect(() => ref.current?.showModal(), []);
+  useEffect(() => {
+    if (!isSeen || !sb || !userId) return;
+    entriesForFilm(sb, userId, e.tmdb_id).then(
+      (l) => setLast(l.map((v) => v.watched_on).filter(Boolean).sort().at(-1) ?? null),
+      () => setLast(null),
+    );
+  }, [isSeen, sb, userId, e.tmdb_id]);
+
+  return (
+    <dialog
+      ref={ref}
+      className="sheet"
+      aria-labelledby="sheet-title"
+      onClose={onClose}
+      onCancel={onClose}
+      onClick={(ev) => ev.target === ref.current && ref.current.close()}
+    >
+      <button type="button" className="sheet-x" aria-label="Fermer" onClick={() => ref.current?.close()}>
+        ✕
+      </button>
+      <div className="sheet-in">
+        <div className="sheet-card">
+          <CollectionCard entry={e} seen={isSeen} rating={rating} still />
+        </div>
+        <div className="sheet-info">
+          <p className="label">Dans ta collection depuis {frDate(e.added.slice(0, 10), { month: "long", year: "numeric" })}</p>
+          <h2 id="sheet-title">
+            <Link href={`/film/${e.tmdb_id}`}>
+              <TitleDuo title={e.film.title} />
+            </Link>
+          </h2>
+          <p className="sheet-by">
+            {dir ? (
+              <>
+                Un film de {dirId ? <Link href={`/personne/${dirId}`}>{dir}</Link> : <b>{dir}</b>}
+                {year ? ` · ${year}` : ""}
+              </>
+            ) : (
+              year
+            )}
+          </p>
+
+          <ul className="copies">
+            {e.copies.map((c) => {
+              const photo = sb ? photoUrl(sb, c.photo_path) : null;
+              const days = loanDays(c);
+              const details = [
+                c.edition_no ? `n° ${c.edition_no}${c.edition_of ? ` / ${c.edition_of}` : ""}` : "",
+                c.sealed ? "scellé" : conditionLabel(c.condition).toLowerCase(),
+                c.acquired_on ? `acquis le ${frDate(c.acquired_on)}` : "",
+              ].filter(Boolean);
+              return (
+                <li key={c.id}>
+                  {photo ? <img className="copy-photo" src={photo} alt={`Ton exemplaire de ${e.film.title}`} loading="lazy" /> : null}
+                  <div>
+                    <p className="copy-main">
+                      <b>{formatLabel(c.format)}</b>
+                      {[c.edition, c.publisher].filter(Boolean).map((x) => ` · ${x}`)}
+                    </p>
+                    {details.length ? <p className="copy-sub">{details.join(" · ")}</p> : null}
+                    {c.lent_to ? (
+                      <p className="copy-loan">
+                        Prêté à <b>{c.lent_to}</b>
+                        {days != null ? ` depuis ${plural(days, "jour")}` : ""}
+                      </p>
+                    ) : null}
+                    {c.notes ? <p className="copy-sub">{c.notes}</p> : null}
+                  </div>
+                  <button type="button" className="link-btn quiet" onClick={() => onEdit(c)} aria-label={`Modifier l'exemplaire ${formatLabel(c.format)}`}>
+                    Modifier
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="row-actions">
+            <button type="button" className="btn" onClick={onAddCopy}>
+              <Plus />
+              Ajouter une autre édition
+            </button>
+            <Link className="btn ghost" href={`/film/${e.tmdb_id}`}>
+              Ouvrir la fiche du film
+            </Link>
+          </div>
+
+          <p className="sheet-seen">
+            {isSeen ? (
+              <>
+                {last ? `Vu le ${frDate(last)}` : "Vu"}
+                {rating ? ` · ta note ${num1(rating)}` : ""}
+              </>
+            ) : (
+              "Pas encore vu"
+            )}
+          </p>
+        </div>
+      </div>
+    </dialog>
+  );
+}
+
+/** Partage de la collection : une page publique, sans journal, films vus ni prêts. */
+function ShareDialog({ onClose }: { onClose: () => void }) {
   const { sb, userId, toast } = useProfile();
-  const [share, setShare] = useState<ShareT | null | undefined>(undefined);
-  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDialogElement>(null);
+  const [share, setShare] = useState<Share | null | undefined>(undefined);
+  useEffect(() => ref.current?.showModal(), []);
   useEffect(() => {
     if (sb && userId) getShare(sb, userId).then(setShare, () => setShare(null));
   }, [sb, userId]);
-  const update = async (patch: Partial<ShareT>) => {
+  const update = async (patch: Partial<Share>) => {
     const before = share;
-    // affichage immédiat, confirmé (ou annulé) par la réponse du serveur
     setShare((s) => ({ share_code: "", enabled: false, title: null, description: null, show_notes: false, show_condition: true, view_count: 0, ...s, ...patch }));
     try {
       setShare(await saveShare(sb!, userId!, patch));
@@ -67,81 +200,97 @@ function SharePanel() {
   };
   const url = share?.share_code ? `${location.origin}/c/${share.share_code}` : "";
   return (
-    <div className="share">
-      <button type="button" className="btn" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        <Share />
-        Partager{share?.enabled ? " · activé" : ""}
-      </button>
-      {open ? (
-        <div className="share-box">
+    <dialog ref={ref} className="dialog" aria-labelledby="share-title" onClose={onClose} onCancel={onClose}>
+      <h2 id="share-title">Partager ma cinémathèque</h2>
+      <label className="check">
+        <input type="checkbox" checked={!!share?.enabled} onChange={(e) => update({ enabled: e.target.checked })} /> Page publique de ma cinémathèque
+      </label>
+      {share?.enabled ? (
+        <>
+          <div className="share-link">
+            <input className="input" readOnly aria-label="Lien de la page publique" value={url || "Création du lien…"} onFocus={(e) => e.target.select()} />
+            <button type="button" className="btn" onClick={() => navigator.clipboard.writeText(url).then(() => toast("Lien copié"))}>
+              Copier
+            </button>
+          </div>
           <label className="check">
-            <input type="checkbox" checked={!!share?.enabled} onChange={(e) => update({ enabled: e.target.checked })} /> Page publique de ma cinémathèque
+            <input type="checkbox" checked={share.show_condition} onChange={(e) => update({ show_condition: e.target.checked })} /> Afficher l'état des exemplaires
           </label>
-          {share?.enabled ? (
-            <>
-              <div className="share-link">
-                <input className="input" readOnly value={url || "Création du lien…"} onFocus={(e) => e.target.select()} />
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => {
-                    navigator.clipboard.writeText(url).then(() => toast("Lien copié"));
-                  }}
-                >
-                  Copier
-                </button>
-              </div>
-              <label className="check">
-                <input type="checkbox" checked={share.show_condition} onChange={(e) => update({ show_condition: e.target.checked })} /> Afficher l'état des exemplaires
-              </label>
-              <label className="check">
-                <input type="checkbox" checked={share.show_notes} onChange={(e) => update({ show_notes: e.target.checked })} /> Afficher mes notes et mes photos
-              </label>
-              <p className="note">
-                Seuls tes exemplaires sont visibles : ni ton journal, ni les films que tu as vus, ni tes prêts. {share.view_count ? `Vue ${share.view_count} fois.` : ""}
-              </p>
-            </>
-          ) : (
-            <p className="note">Désactivé : personne ne peut voir ta cinémathèque.</p>
-          )}
-        </div>
-      ) : null}
-    </div>
+          <label className="check">
+            <input type="checkbox" checked={share.show_notes} onChange={(e) => update({ show_notes: e.target.checked })} /> Afficher mes notes et mes photos
+          </label>
+          <p className="note">
+            Seuls tes exemplaires sont visibles : ni ton journal, ni les films que tu as vus, ni tes prêts.{share.view_count ? ` Vue ${share.view_count} fois.` : ""}
+          </p>
+        </>
+      ) : (
+        <p className="note">Désactivé : personne ne peut voir ta cinémathèque.</p>
+      )}
+      <div className="dialog-actions">
+        <span style={{ flex: 1 }} />
+        <button type="button" className="btn ghost" onClick={() => ref.current?.close()}>
+          Fermer
+        </button>
+      </div>
+    </dialog>
+  );
+}
+
+/** « Tu cherches » : les disques qu'on voudrait trouver, en liste de brocante. */
+function Wanted({ wants, onFound, onRemove, onAdd }: { wants: Want[]; onFound: (w: Want) => void; onRemove: (w: Want) => void; onAdd: () => void }) {
+  return (
+    <section className="wanted" aria-labelledby="wanted-title">
+      <div className="wanted-head">
+        <h2 id="wanted-title" className="label">
+          Tu cherches{wants.length ? ` · ${wants.length}` : ""}
+        </h2>
+        <button type="button" className="link-btn quiet" onClick={onAdd}>
+          <Plus /> Ajouter un film cherché
+        </button>
+      </div>
+      {wants.length ? (
+        <ul>
+          {wants.map((w) => (
+            <li key={w.tmdb_id}>
+              <Link href={`/film/${w.tmdb_id}`} className="wanted-t">
+                {w.films?.title}
+              </Link>
+              <span className="wanted-y">{(w.films?.release_date || "").slice(0, 4)}</span>
+              <span className="wanted-dots" aria-hidden="true" />
+              <button type="button" className="link-btn" onClick={() => onFound(w)}>
+                Je l'ai trouvé
+              </button>
+              <button type="button" className="link-btn quiet" aria-label={`Ne plus chercher ${w.films?.title ?? "ce film"}`} onClick={() => onRemove(w)}>
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="note">Les disques que tu voudrais trouver : une édition précise, un film qui manque à ton étagère. Ajoute-les ici ou depuis la fiche d'un film.</p>
+      )}
+    </section>
   );
 }
 
 function Collection() {
-  const { sb, userId, seen, rated, toast, refreshOwned } = useProfile();
-  const [mode, setMode] = useState<Mode>("cinematheque");
-  const [view, setView] = useState<View>("vitrine");
+  const { sb, userId, seen, toast, refreshOwned } = useProfile();
   const [items, setItems] = useState<CollectionItem[] | null>(null);
   const [wants, setWants] = useState<Want[] | null>(null);
-  const [openDir, setOpenDir] = useState<number | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [q, setQ] = useState("");
-  const [format, setFormat] = useState("");
-  const [quick, setQuick] = useState<Quick>("tous");
-  const [genre, setGenre] = useState(0);
-  const [dec, setDec] = useState("");
-  const [sort, setSort] = useState<"realisateur" | "recent" | "numero" | "titre" | "annee" | "note">("realisateur");
-  const [limit, setLimit] = useState(STEP);
+  const [arrange, setArrange] = useState<Arrange>("realisateur");
+  const [openId, setOpenId] = useState<number | null>(null);
   const [adding, setAdding] = useState<"pick" | FilmInput | null>(null);
   const [editing, setEditing] = useState<{ film: FilmInput; item: CollectionItem } | null>(null);
   const [finding, setFinding] = useState<FilmInput | null>(null);
+  const [pickWant, setPickWant] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [classeur, setClasseur] = useState(false);
+  const [openDir, setOpenDir] = useState<number | null>(null);
+  const menu = useRef<HTMLDetailsElement>(null);
 
-  useEffect(() => {
-    try {
-      const v = localStorage.getItem(VIEW_KEY);
-      if (v === "vitrine" || v === "etagere" || v === "classeur") setView(v);
-    } catch {}
-  }, []);
-  const pickView = (v: View) => {
-    if (openDir) openDirector(null);
-    setView(v);
-    try {
-      localStorage.setItem(VIEW_KEY, v);
-    } catch {}
-  };
+  useEffect(() => setArrange(store.get<Arrange>(ARRANGE_KEY, "realisateur")), []);
 
   const loadItems = useCallback(() => {
     if (sb) listCollection(sb).then(setItems, setError);
@@ -154,19 +303,40 @@ function Collection() {
     loadWants();
   }, [loadItems, loadWants]);
 
-  // un réalisateur ouvert dans le classeur a sa propre adresse (?realisateur=…) : le retour du navigateur fonctionne
+  // l'adresse suit ce qui est ouvert : ?film=… (feuille), ?vue=classeur, ?realisateur=… ; le retour du navigateur fonctionne
   useEffect(() => {
     const read = () => {
-      const id = +(new URLSearchParams(location.search).get("realisateur") || 0);
-      setOpenDir(id || null);
-      if (id) setView("classeur");
+      const p = new URLSearchParams(location.search);
+      setOpenId(+(p.get("film") || 0) || null);
+      const dir = +(p.get("realisateur") || 0) || null;
+      setOpenDir(dir);
+      setClasseur(p.get("vue") === "classeur" || !!dir);
     };
     read();
     window.addEventListener("popstate", read);
     return () => window.removeEventListener("popstate", read);
   }, []);
+  const go = (params: Record<string, string | number | null>) => {
+    const p = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) p.set(k, String(v));
+    const qs = p.toString();
+    history.pushState({}, "", qs ? `?${qs}` : location.pathname);
+  };
+  // on ne revient en arrière que si c'est nous qui avons ouvert la feuille ; arrivé par un lien, on retire juste ?film=
+  const pushedFilm = useRef(false);
+  const openFilm = (id: number | null) => {
+    if (id) {
+      go({ film: id });
+      pushedFilm.current = true;
+    } else if (new URLSearchParams(location.search).get("film")) {
+      if (pushedFilm.current) history.back();
+      else history.replaceState({}, "", location.pathname);
+      pushedFilm.current = false;
+    }
+    setOpenId(id);
+  };
   const openDirector = (id: number | null) => {
-    history.pushState({}, "", id ? `?realisateur=${id}` : location.pathname);
+    go(id ? { realisateur: id } : { vue: "classeur" });
     setOpenDir(id);
     window.scrollTo({ top: 0 });
   };
@@ -179,326 +349,274 @@ function Collection() {
     backfillExtras(sb, items, (id, x) => setItems((prev) => prev?.map((i) => (i.tmdb_id === id ? { ...i, ...x, director: x.director ?? "" } : i)) ?? prev));
   }, [sb, items, filled]);
 
-  const all = useMemo(() => (items ? groupEntries(items) : null), [items]);
+  const all = useMemo(() => (items ? groupEntries(items).sort(compareByDirector) : null), [items]);
   const total = all?.length ?? 0;
+  const recent = useMemo(() => (all ? all.slice().sort((a, b) => b.added.localeCompare(a.added)).slice(0, RECENT) : []), [all]);
+  const query = useMemo(() => parseQuery(q), [q]);
+  const searching = !!(query.text || query.labels.length);
+  const results = useMemo(() => (all && searching ? all.filter((e) => matches(e, query, seen)) : []), [all, query, searching, seen]);
+  const shelf = useMemo(() => (all ? planks(all, total >= ARRANGE_FROM ? arrange : "realisateur") : []), [all, arrange, total]);
+  const loans = useMemo(() => (all ?? []).flatMap((e) => e.copies.filter((c) => c.lent_to).map((c) => ({ e, c }))), [all]);
+  const opened = openId && all ? all.find((e) => e.tmdb_id === openId) ?? null : null;
 
-  const isLimited = (e: Entry) => e.copies.some((c) => c.edition_no || c.format === "collector" || /limit|collector|numérot|numerot/i.test(c.edition || ""));
-  const filtered = useMemo(() => {
-    if (!all) return null;
-    const needle = q.trim().toLowerCase();
-    const l = all.filter(
-      (e) =>
-        (!needle || e.film.title.toLowerCase().includes(needle) || (e.best.director || "").toLowerCase().includes(needle)) &&
-        (!format || e.copies.some((c) => c.format === format)) &&
-        (!genre || e.film.genre_ids.includes(genre)) &&
-        (!dec || decade(e.film.release_date) === dec) &&
-        (quick === "tous" ||
-          (quick === "jamais" && !seen.has(e.tmdb_id)) ||
-          (quick === "scelles" && e.copies.some((c) => c.sealed)) ||
-          (quick === "limitees" && isLimited(e)) ||
-          (quick === "prets" && e.copies.some((c) => c.lent_to))),
-    );
-    const cmp: Record<typeof sort, (a: Entry, b: Entry) => number> = {
-      realisateur: compareByDirector,
-      recent: (a, b) => b.added.localeCompare(a.added),
-      numero: (a, b) => a.no - b.no,
-      titre: (a, b) => a.film.title.localeCompare(b.film.title, "fr"),
-      annee: (a, b) => (b.film.release_date || "").localeCompare(a.film.release_date || ""),
-      note: (a, b) => (rated.get(b.tmdb_id) ?? 0) - (rated.get(a.tmdb_id) ?? 0),
-    };
-    return l.sort(cmp[sort]);
-  }, [all, q, format, genre, dec, quick, sort, seen, rated]);
+  const pickArrange = (a: Arrange) => {
+    setArrange(a);
+    store.set(ARRANGE_KEY, a);
+  };
 
-  useEffect(() => setLimit(STEP), [q, format, genre, dec, quick, sort, view, mode]);
-
-  const stats = useMemo(() => {
-    if (!all || !items) return null;
-    const formats = FORMATS.map((f) => [f.k, items.filter((i) => i.format === f.k).length] as const).filter(([, n]) => n);
-    return {
-      films: all.length,
-      copies: items.length,
-      never: all.filter((e) => !seen.has(e.tmdb_id)).length,
-      sealed: all.filter((e) => e.copies.some((c) => c.sealed)).length,
-      limited: all.filter(isLimited).length,
-      lent: all.filter((e) => e.copies.some((c) => c.lent_to)).length,
-      formats,
-      directors: new Set(all.map((e) => directorIdOf(e) ?? directorName(e)).filter(Boolean)).size,
-      decades: [...new Set(all.map((e) => decade(e.film.release_date)).filter(Boolean))].sort((a, b) => +b - +a),
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [all, items, seen]);
-
-  const wantIds = useMemo(() => new Set((wants ?? []).map((w) => w.tmdb_id)), [wants]);
-  const entriesOnly = all ?? [];
-
-  const toggleWant = async (m: Movie) => {
-    if (!sb || !userId) return;
-    const on = wantIds.has(m.id);
+  const removeWanted = async (w: Want) => {
+    if (!sb) return;
     const before = wants;
-    setWants((w) =>
-      on ? (w ?? []).filter((x) => x.tmdb_id !== m.id) : [{ tmdb_id: m.id, created_at: new Date().toISOString(), films: { title: m.title, release_date: m.release_date ?? null, poster_path: m.poster_path ?? null, genre_ids: m.genre_ids ?? [] } }, ...(w ?? [])],
-    );
+    setWants((l) => (l ?? []).filter((x) => x.tmdb_id !== w.tmdb_id));
     try {
-      if (on) await removeWant(sb, m.id);
-      else await addWant(sb, userId, filmRow(m));
-      toast(on ? `« ${m.title} » retiré de tes envies` : `« ${m.title} » ajouté à tes envies`);
+      await removeWant(sb, w.tmdb_id);
+      toast(`« ${w.films?.title ?? "Film"} » retiré de ce que tu cherches`, () => {
+        if (userId) addWant(sb, userId, filmRow({ id: w.tmdb_id, title: w.films?.title ?? "Film", release_date: w.films?.release_date ?? undefined, poster_path: w.films?.poster_path })).then(loadWants);
+      });
     } catch (e) {
       setWants(before);
       toast(`Échec : ${errorText(e)}`);
     }
   };
+  const toggleWant = async (m: FilmInput) => {
+    if (!sb || !userId) return;
+    const on = (wants ?? []).some((w) => w.tmdb_id === m.id);
+    try {
+      if (on) await removeWant(sb, m.id);
+      else await addWant(sb, userId, filmRow(m));
+      loadWants();
+      toast(on ? `« ${m.title} » retiré de ce que tu cherches` : `« ${m.title} » ajouté à ce que tu cherches`);
+    } catch (e) {
+      toast(`Échec : ${errorText(e)}`);
+    }
+  };
 
-  const openFilm = (e: Entry): FilmInput => ({ id: e.tmdb_id, title: e.film.title, release_date: e.film.release_date ?? undefined, poster_path: e.film.poster_path, genre_ids: e.film.genre_ids });
-  const onEdit = (e: Entry) => (item: CollectionItem) => setEditing({ film: openFilm(e), item });
-  const wantFilm = (w: Want): FilmInput => ({ id: w.tmdb_id, title: w.films?.title ?? "Film", release_date: w.films?.release_date ?? undefined, poster_path: w.films?.poster_path, genre_ids: w.films?.genre_ids });
+  const closeMenu = () => menu.current?.removeAttribute("open");
 
-  // une seule étagère pour tous les formats, dans l'ordre du tri (réalisateur par défaut)
-  const shelf = useMemo(() => {
-    if (!filtered) return [];
-    return filtered.flatMap((e) => e.copies.filter((c) => !format || c.format === format).map((c) => ({ e, c })));
-  }, [filtered, format]);
-
-  const newest = all?.length ? all[all.length - 1] : null;
-  const hasFilter = !!(q || format || genre || dec || quick !== "tous");
-  const QUICKS: { k: Quick; l: string; n?: number; icon?: "off" }[] = [
-    { k: "tous", l: "Tous", n: stats?.films },
-    { k: "jamais", l: "Jamais vus", n: stats?.never, icon: "off" },
-    { k: "scelles", l: "Scellés", n: stats?.sealed },
-    { k: "limitees", l: "Éditions limitées", n: stats?.limited },
-    ...(stats?.lent ? [{ k: "prets" as Quick, l: "Prêtés", n: stats.lent }] : []),
-  ];
+  if (classeur)
+    return (
+      <>
+        <Link href="/collection" className="back" onClick={() => setClasseur(false)}>
+          ← Ma cinémathèque
+        </Link>
+        {!all ? (
+          <Loader text="Chargement de ta cinémathèque…" />
+        ) : (
+          <Classeur entries={all} wants={new Set((wants ?? []).map((w) => w.tmdb_id))} onWant={toggleWant} openId={openDir} onOpen={openDirector} />
+        )}
+      </>
+    );
 
   return (
     <>
-      <div className="chero">
-        {newest?.film.poster_path ? (
+      <header className="coll-head">
+        {recent[0]?.film.poster_path ? (
           <div className="chero-bg" aria-hidden="true">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img(newest.film.poster_path, "w500")} alt="" />
+            <img src={img(recent[0].film.poster_path, "w500")} alt="" />
           </div>
         ) : null}
-        <div className="chero-top">
-          <div>
-            <div className="label">Collection physique</div>
-            <h1>
-              Ma <span>cinémathèque</span>
-            </h1>
-            <p className="lede">Ce que tu possèdes vraiment : disques, steelbooks, cassettes. Les films que tu as vus, eux, sont dans ton journal.</p>
-          </div>
-          <div className="btns">
-            <button type="button" className="btn primary" onClick={() => setAdding("pick")}>
-              <Plus />
-              Ajouter un exemplaire
-            </button>
-            <SharePanel />
-          </div>
-        </div>
-        {stats ? (
-          <>
-            <dl className="cnums">
-              <div>
-                <dd>{stats.films.toLocaleString("fr-FR")}</dd>
-                <dt className="label">Films</dt>
-              </div>
-              <div>
-                <dd>{stats.copies.toLocaleString("fr-FR")}</dd>
-                <dt className="label">Exemplaires</dt>
-              </div>
-              <div>
-                <dd>
-                  <EyeOff />
-                  {stats.never}
-                </dd>
-                <dt className="label">Jamais vus</dt>
-              </div>
-              <div>
-                <dd>{stats.directors || "–"}</dd>
-                <dt className="label">Réalisateurs</dt>
-              </div>
-            </dl>
-            {stats.formats.length ? (
-              <div className="fbar">
-                <div className="fbar-bar" aria-hidden="true">
-                  {stats.formats.map(([f, n], i) => (
-                    <i key={f} style={{ flex: n, opacity: Math.max(0.2, 0.95 - i * 0.2) }} />
-                  ))}
-                </div>
-                <div className="fbar-leg">
-                  {stats.formats.map(([f, n], i) => (
-                    <button key={f} type="button" aria-pressed={format === f} onClick={() => setFormat(format === f ? "" : f)}>
-                      <i style={{ opacity: Math.max(0.2, 0.95 - i * 0.2) }} />
-                      {formatLabel(f)} <b>{n}</b>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-
-      <div className="ctool">
-        <div className="seg" role="radiogroup" aria-label="Affichage">
-          <button type="button" role="radio" aria-checked={mode === "cinematheque"} onClick={() => setMode("cinematheque")}>
-            Mes exemplaires
-          </button>
-          <button type="button" role="radio" aria-checked={mode === "envies"} onClick={() => setMode("envies")}>
-            Envies{wants?.length ? ` · ${wants.length}` : ""}
-          </button>
-        </div>
-        {mode === "cinematheque" ? (
-          <div className="seg" role="radiogroup" aria-label="Vue">
-            <button type="button" role="radio" aria-checked={view === "vitrine"} onClick={() => pickView("vitrine")}>
-              Vitrine
-            </button>
-            <button type="button" role="radio" aria-checked={view === "etagere"} onClick={() => pickView("etagere")}>
-              Étagère
-            </button>
-            <button type="button" role="radio" aria-checked={view === "classeur"} onClick={() => pickView("classeur")}>
-              Classeur
-            </button>
-          </div>
-        ) : null}
-        {mode === "cinematheque" && view !== "classeur" && stats && stats.films ? (
-          <>
-            <span className="grow" />
-            <div className="qchips">
-            {QUICKS.map((c) => (
-              <button key={c.k} type="button" className={`chip${quick === c.k ? " on" : ""}`} aria-pressed={quick === c.k} onClick={() => setQuick(c.k)}>
-                {c.icon === "off" ? <EyeOff /> : null}
-                {c.l} <i style={{ fontStyle: "normal", opacity: 0.6 }}>{c.n}</i>
-              </button>
-            ))}
-            </div>
-          </>
-        ) : null}
-      </div>
-
-      {mode === "cinematheque" && view !== "classeur" && stats && stats.films ? (
-        <div className="filterbar cfilters">
-          <input className="input search-in" type="search" placeholder="Titre ou cinéaste" aria-label="Filtrer par titre ou cinéaste" value={q} onChange={(e) => setQ(e.target.value)} />
-          <label>
-            Genre
-            <select value={genre} onChange={(e) => setGenre(+e.target.value)}>
-              <option value={0}>Tous</option>
-              {GENRE_OPTIONS.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Décennie
-            <select value={dec} onChange={(e) => setDec(e.target.value)}>
-              <option value="">Toutes</option>
-              {stats.decades.map((d) => (
-                <option key={d} value={d}>
-                  {d}s
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Tri
-            <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)}>
-              <option value="realisateur">Réalisateur</option>
-              <option value="recent">Ajout récent</option>
-              <option value="numero">Numéro de collection</option>
-              <option value="titre">Titre</option>
-              <option value="annee">Année</option>
-              <option value="note">Ta note</option>
-            </select>
-          </label>
-          {hasFilter ? (
-            <button type="button" className="link-btn" onClick={() => (setQ(""), setFormat(""), setGenre(0), setDec(""), setQuick("tous"))}>
-              Effacer les filtres
-            </button>
+        <div>
+          <p className="label">Collection physique</p>
+          <h1>
+            Ma <span>cinémathèque</span>
+          </h1>
+          {total ? (
+            <p className="coll-count">
+              {plural(total, "film")}
+              {items && items.length > total ? `, ${plural(items.length, "exemplaire")}` : ""}
+            </p>
           ) : null}
-          {filtered ? <span className="count">{filtered.length} films</span> : null}
         </div>
+        <div className="coll-acts">
+          <button type="button" className="btn primary" onClick={() => setAdding("pick")}>
+            <Plus />
+            Ajouter
+          </button>
+          <details className="more-menu" ref={menu} onKeyDown={(e) => e.key === "Escape" && (closeMenu(), menu.current?.querySelector("summary")?.focus())}>
+            <summary className="btn icon" aria-label="Plus d'options" title="Plus d'options">
+              <Dots />
+            </summary>
+            <div className="menu">
+              <button type="button" onClick={() => (closeMenu(), setSharing(true))}>
+                Partager ma cinémathèque
+              </button>
+              <Link href="/collection/registre" onClick={closeMenu}>
+                Registre de la collection
+              </Link>
+              {total ? (
+                <Link href="/collection?vue=classeur" onClick={() => (closeMenu(), setClasseur(true))}>
+                  Classeur des réalisateurs
+                </Link>
+              ) : null}
+            </div>
+          </details>
+        </div>
+      </header>
+
+      {loans.length ? (
+        <p className="coll-loans">
+          {plural(loans.length, "film prêté", "films prêtés")} :{" "}
+          {loans.slice(0, 3).map(({ e, c }, i) => (
+            <span key={c.id}>
+              {i ? " · " : ""}
+              <button type="button" className="link-btn" onClick={() => openFilm(e.tmdb_id)}>
+                {e.film.title}
+              </button>{" "}
+              à {c.lent_to}
+              {loanDays(c) != null ? ` (${loanDays(c)} j)` : ""}
+            </span>
+          ))}
+          {loans.length > 3 ? ` et ${loans.length - 3} autres` : ""}
+        </p>
       ) : null}
 
       {error ? (
-        <ErrorLine error={error} />
-      ) : mode === "envies" ? (
-        !wants ? (
-          <Loader text="Chargement de tes envies…" />
-        ) : !wants.length ? (
-          <div className="empty">
-            <p>Aucune envie pour l'instant.</p>
-            <p className="note">Une envie, c'est un film que tu voudrais posséder en disque. Ajoute-en depuis une fiche film (menu ⋯) ou depuis les manques d'une série du classeur.</p>
-          </div>
-        ) : (
-          <div className="envies">
-            {wants.map((w) => (
-              <div key={w.tmdb_id} className="want">
-                <a href={`/film/${w.tmdb_id}`}>
-                  <Poster path={w.films?.poster_path} title={w.films?.title ?? ""} size="w342" />
-                  <h3>{w.films?.title}</h3>
-                  <div className="meta">{yearOf({ release_date: w.films?.release_date ?? undefined })}</div>
-                </a>
-                <div className="want-acts">
-                  <button type="button" className="btn primary" onClick={() => setFinding(wantFilm(w))}>
-                    Je l'ai trouvé
-                  </button>
-                  <button type="button" className="btn ghost" onClick={() => toggleWant({ id: w.tmdb_id, title: w.films?.title ?? "Film" })}>
-                    Retirer
-                  </button>
-                </div>
-              </div>
+        <ErrorLine error={error} onRetry={loadItems} />
+      ) : !all ? (
+        <Loader text="Chargement de ta cinémathèque…" />
+      ) : !total ? (
+        <section className="coll-empty">
+          <div className="empty-shelf" aria-hidden="true">
+            {Array.from({ length: 14 }, (_, i) => (
+              <i key={i} style={{ height: `${180 + ((i * 37) % 40)}px` }} />
             ))}
           </div>
-        )
-      ) : !all || !filtered ? (
-        <Loader text="Chargement de ta cinémathèque…" />
-      ) : view === "classeur" ? (
-        <Classeur entries={entriesOnly} wants={wantIds} onWant={toggleWant} openId={openDir} onOpen={openDirector} />
-      ) : !all.length ? (
-        <EmptyState
-          title="Ta cinémathèque est vide"
-          actions={
+          <h2>Ton étagère est vide</h2>
+          <p className="note">Tes DVD, Blu-ray, 4K, VHS : chaque disque que tu ranges ici prend sa place sur l'étagère.</p>
+          <div className="row-actions">
             <button type="button" className="btn primary" onClick={() => setAdding("pick")}>
               <Plus />
-              Ajouter mon premier exemplaire
+              Ajouter mon premier film
             </button>
-          }
-        >
-          Tes DVD, Blu-ray, 4K, steelbooks… Cherche un film pour ajouter son exemplaire, ou utilise le bouton disque sur la fiche d'un film.
-        </EmptyState>
-      ) : !filtered.length ? (
-        <p className="status">Aucun film ne correspond à ces filtres.</p>
-      ) : view === "vitrine" ? (
-        <>
-          <div className="vitrine">
-            {filtered.slice(0, limit).map((e) => (
-              <CollectionCard key={e.tmdb_id} entry={e} total={total} seen={seen.has(e.tmdb_id)} rating={rated.get(e.tmdb_id) ?? null} onEdit={onEdit(e)} />
-            ))}
-          </div>
-          {filtered.length > limit ? (
-            <div className="more" style={{ marginTop: 36, textAlign: "center" }}>
-              <button type="button" className="btn ghost" onClick={() => setLimit(limit + STEP)}>
-                Voir plus ({filtered.length - limit})
-              </button>
-            </div>
-          ) : null}
-        </>
-      ) : (
-        <section className="shelf">
-          <h2>
-            Toute ma cinémathèque <span className="dim">{shelf.length}</span>
-          </h2>
-          <div className="shelf-row">
-            {shelf.map(({ e, c }) => (
-              <Spine key={c.id} entry={e} copy={c} seen={seen.has(e.tmdb_id)} />
-            ))}
           </div>
         </section>
+      ) : total <= ALL_FACING ? (
+        <div className="facing-grid">
+          {all
+            .slice()
+            .sort((a, b) => b.added.localeCompare(a.added))
+            .map((e) => (
+              <Facing key={e.tmdb_id} e={e} onOpen={() => openFilm(e.tmdb_id)} />
+            ))}
+        </div>
+      ) : (
+        <>
+          <section aria-labelledby="recent-title">
+            <h2 id="recent-title" className="label coll-h">
+              Dernières entrées
+            </h2>
+            <div className="facing-row">
+              {recent.map((e) => (
+                <Facing key={e.tmdb_id} e={e} onOpen={() => openFilm(e.tmdb_id)} />
+              ))}
+            </div>
+          </section>
+
+          <section className="coll-shelf" aria-labelledby="shelf-title">
+            <div className="shelf-tools">
+              <h2 id="shelf-title" className="label coll-h">
+                L'étagère
+              </h2>
+              <label className="shelf-search">
+                <Search />
+                <input
+                  type="search"
+                  value={q}
+                  placeholder="Chercher : titre, cinéaste, 4K, scellé, prêté, pas vu…"
+                  aria-label="Chercher dans ma collection"
+                  onChange={(e) => setQ(e.target.value)}
+                />
+              </label>
+              {total >= ARRANGE_FROM && !searching ? (
+                <label className="shelf-arrange">
+                  Ranger par
+                  <select value={arrange} onChange={(e) => pickArrange(e.target.value as Arrange)}>
+                    {ARRANGE.map((a) => (
+                      <option key={a.k} value={a.k}>
+                        {a.l}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+            </div>
+
+            {searching ? (
+              <>
+                <p className="shelf-found" aria-live="polite">
+                  {results.length ? plural(results.length, "film") : "Aucun film"}
+                  {query.labels.length ? ` · ${query.labels.join(" · ")}` : ""}
+                  {query.text ? ` · « ${query.text} »` : ""}{" "}
+                  <button type="button" className="link-btn quiet" onClick={() => setQ("")}>
+                    Effacer
+                  </button>
+                </p>
+                <div className="facing-grid">
+                  {results.slice(0, 60).map((e) => (
+                    <Facing key={e.tmdb_id} e={e} onOpen={() => openFilm(e.tmdb_id)} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                {shelf.length > 1 ? (
+                  <nav className="shelf-index" aria-label="Aller à">
+                    {shelf.map((p) => (
+                      <a key={p.key} href={`#planche-${p.key}`}>
+                        {p.key === "~" ? "?" : p.key}
+                      </a>
+                    ))}
+                  </nav>
+                ) : null}
+                <div className="shelf-row">
+                  {shelf.map((p) => (
+                    <Fragment key={p.key}>
+                      {shelf.length > 1 ? (
+                        <span className="slot">
+                          <span className="divider" id={`planche-${p.key}`} title={p.label}>
+                            {p.key === "~" ? "?" : p.key}
+                          </span>
+                        </span>
+                      ) : null}
+                      {p.copies.map(({ e, c }) => (
+                        <Spine key={c.id} entry={e} copy={c} onOpen={() => openFilm(e.tmdb_id)} />
+                      ))}
+                    </Fragment>
+                  ))}
+                </div>
+              </>
+            )}
+          </section>
+        </>
       )}
 
+      {wants && (total || wants.length) ? (
+        <Wanted wants={wants} onFound={(w) => setFinding({ id: w.tmdb_id, title: w.films?.title ?? "Film", release_date: w.films?.release_date ?? undefined, poster_path: w.films?.poster_path })} onRemove={removeWanted} onAdd={() => setPickWant(true)} />
+      ) : null}
+
+      {opened ? (
+        <FilmSheet
+          key={opened.tmdb_id}
+          e={opened}
+          onClose={() => openFilm(null)}
+          onEdit={(c) => setEditing({ film: filmOf(opened), item: c })}
+          onAddCopy={() => setAdding(filmOf(opened))}
+        />
+      ) : null}
+      {sharing ? <ShareDialog onClose={() => setSharing(false)} /> : null}
       {adding === "pick" ? <PickFilm onClose={() => setAdding(null)} onPick={(m) => setAdding(m)} /> : null}
-      {adding && adding !== "pick" ? <CopyDialog film={adding} onClose={() => setAdding(null)} onSaved={loadItems} onNext={() => setAdding("pick")} /> : null}
+      {adding && adding !== "pick" ? <CopyDialog film={adding} onClose={() => setAdding(null)} onSaved={loadItems} onNext={opened ? undefined : () => setAdding("pick")} /> : null}
       {editing ? <CopyDialog film={editing.film} item={editing.item} onClose={() => setEditing(null)} onSaved={loadItems} /> : null}
+      {pickWant ? (
+        <PickFilm
+          title="Quel film cherches-tu ?"
+          onClose={() => setPickWant(false)}
+          onPick={(m) => {
+            setPickWant(false);
+            toggleWant(m);
+          }}
+        />
+      ) : null}
       {finding ? (
         <CopyDialog
           film={finding}
