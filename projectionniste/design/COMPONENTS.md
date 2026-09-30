@@ -61,8 +61,9 @@ profil). Planches de départ : `design/collection/`.
   (Partager, Registre, Ouvrir un rayon). Une ligne rappelle les prêts s'il y en a.
 - Jusqu'à 12 films : tout est de face (l'affiche dans le cadre de sa matière), sans aucun outil.
 - Au-delà : **Dernières entrées** de face, puis **l'étagère** : une seule, continue, un dos par
-  exemplaire, des **intercalaires** (lettre du réalisateur, du titre, décennie ou année d'entrée)
-  et un index des lettres. « Ranger par » apparaît à partir de 30 films.
+  exemplaire, rangée par **ordre alphabétique des titres** (sans l'article : « Le Mépris » à M),
+  des **intercalaires** (lettre du titre, du réalisateur, décennie ou année d'entrée) et un index
+  des lettres. « Ranger par » (Titre, Réalisateur, Année, Entrée) apparaît à partir de 30 films.
 - **Une seule recherche**, qui comprend aussi les mots de collectionneur : 4K, Blu-ray, DVD, VHS,
   steelbook, collector, scellé, prêté, pas vu (« kubrick 4k »).
 - Un boîtier (ou une affiche) ouvre la **feuille** du film (`?film=`) : la carte posée à gauche,
@@ -84,8 +85,10 @@ Un **ensemble** de films (la filmographie d'un cinéaste, une saga, un studio, u
 - **Rayon** (posséder) : vit dans la **Collection**. Une étagère avec les boîtiers possédés et des
   **places vides en pointillé** ; « 11 / 14 » en chiffres légers ; pas de barre de progression.
   Plusieurs éditions d'un film comptent pour un. Trois rayons à l'affiche, les autres repliés.
-  Le but est d'avoir **vu et possédé** : chaque boîtier porte un petit œil s'il est vu (un manquant
-  déjà vu est plus lisible qu'un inconnu) ; « 2 / 35 possédés · 5 vus · 1 vu et possédé ». Les cycles
+  Le but est d'avoir **vu et possédé**, et le rayon **se colore en avançant** : un boîtier vu
+  prend la couleur de son affiche et un petit œil (place vide vue : en transparence ; vu et possédé :
+  en pleine couleur) ; le reste reste neutre. La couleur vient du film, jamais de l'interface.
+  « 2 / 35 possédés · 5 vus · 1 vu et possédé », et une légende sous l'étagère. Les cycles
   pas encore ouverts en rayon sont rappelés sous les rayons. Dans un cycle, « possédé » marque les films qu'on a.
 - **Cycle** (voir) : vit dans le **Journal** (onglet Cycles). Un **programme de cinémathèque** :
   une ligne par séance (année, titre, « vu le 12/03/2026 » et la note, ou « à voir · Journaliser »),

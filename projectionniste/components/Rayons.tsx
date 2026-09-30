@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { frDate, plural, splitTitle } from "@/lib/format";
+import { img } from "@/lib/tmdb";
 import { followedIn, markCompleted, mySets, setItems, type MySet, type SetItem } from "@/lib/sets";
 import { Eye } from "./icons";
 import { useProfile } from "./ProfileProvider";
@@ -24,6 +25,8 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
   const shownMissing = new Set(missing.slice(0, room).map((f) => f.tmdb_id));
   const f = r.follow;
   const complete = total > 0 && done === total;
+  const firstSeen = r.films.find((x) => seen.has(x.tmdb_id) && x.films?.poster_path);
+  const legendPoster = firstSeen ? ({ "--p": `url(${img(firstSeen.films!.poster_path!, "w92")})` } as React.CSSProperties) : undefined;
   return (
     <div className={`rayon${lit ? " lit" : ""}`} id={`rayon-${r.set.key}`}>
       <div className="rayon-head">
@@ -50,6 +53,8 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
           const [a, b] = splitTitle(title);
           const year = (film.release_date || film.films?.release_date || "").slice(0, 4);
           const state = `${mine ? "possédé" : "à trouver"}, ${isSeen ? "vu" : "pas encore vu"}`;
+          // vu : la couleur de l'affiche remplit le boîtier (vu et possédé : entièrement)
+          const poster = isSeen && film.films?.poster_path ? ({ "--p": `url(${img(film.films.poster_path, "w185")})` } as React.CSSProperties) : undefined;
           const inner = (
             <>
               <span className="t">
@@ -60,11 +65,11 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
             </>
           );
           return mine ? (
-            <button key={film.tmdb_id} type="button" role="listitem" className={`rspine${isSeen ? " seen" : ""}`} title={`${title} (${year}) · ${state}`} aria-label={`${title}, ${state}`} onClick={() => onOpen(film.tmdb_id)}>
+            <button key={film.tmdb_id} type="button" role="listitem" className={`rspine${isSeen ? " seen" : ""}`} style={poster} title={`${title} (${year}) · ${state}`} aria-label={`${title}, ${state}`} onClick={() => onOpen(film.tmdb_id)}>
               {inner}
             </button>
           ) : (
-            <Link key={film.tmdb_id} role="listitem" href={`/film/${film.tmdb_id}`} className={`rspine ghost${isSeen ? " seen" : ""}`} title={`${title} (${year}) · ${state}`} aria-label={`${title}, ${state}`}>
+            <Link key={film.tmdb_id} role="listitem" href={`/film/${film.tmdb_id}`} className={`rspine ghost${isSeen ? " seen" : ""}`} style={poster} title={`${title} (${year}) · ${state}`} aria-label={`${title}, ${state}`}>
               {inner}
             </Link>
           );
@@ -76,7 +81,7 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
         ) : null}
       </div>
       <p className="rayon-legend" aria-hidden="true">
-        <i className="lg-own" /> possédé <i className="lg-ghost" /> à trouver <Eye /> vu
+        <i className="lg-ghost" /> à trouver <i className="lg-own" /> possédé <i className="lg-seen" style={legendPoster} /> vu <i className="lg-both" style={legendPoster} /> vu et possédé
       </p>
       {complete && f.completed_at ? (
         <p className="rayon-done">

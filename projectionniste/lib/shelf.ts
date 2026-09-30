@@ -1,11 +1,11 @@
 // Étagère de la collection : recherche en langage courant, rangement et découpage en planches.
-import { directorName, type CollectionItem, type Entry } from "./collection";
+import { compareByDirector, directorName, type CollectionItem, type Entry } from "./collection";
 
 export type Arrange = "realisateur" | "titre" | "annee" | "entree";
 
 export const ARRANGE: { k: Arrange; l: string }[] = [
-  { k: "realisateur", l: "Réalisateur" },
   { k: "titre", l: "Titre" },
+  { k: "realisateur", l: "Réalisateur" },
   { k: "annee", l: "Année de sortie" },
   { k: "entree", l: "Date d'entrée" },
 ];
@@ -50,6 +50,10 @@ export function matches(e: Entry, q: Query, seen: Set<number>): boolean {
   return q.text.split(" ").every((w) => hay.includes(w));
 }
 
+/** « Le Parrain » se range au P, « L'Avventura » au A (articles ignorés). */
+const sortKey = (t: string) => fold(t).replace(/^(le|la|les|the|un|une|a|an)\s+/, "").replace(/^l'/, "").trim();
+export const compareTitles = (a: Entry, b: Entry) => sortKey(a.film.title).localeCompare(sortKey(b.film.title), "fr", { sensitivity: "base" }) || (a.film.release_date || "").localeCompare(b.film.release_date || "");
+
 const surname = (name: string) => name.trim().split(/\s+/).at(-1) ?? "";
 const letterOf = (s: string) => {
   const c = fold(s).replace(/^(le|la|les|l'|the|un|une|a|an)\s+/, "").replace(/^l'/, "").trim()[0] ?? "";
@@ -60,13 +64,13 @@ export type Plank = { key: string; label: string; copies: { e: Entry; c: Collect
 
 /** Une planche par lettre (réalisateur, titre), par décennie (année) ou par année d'entrée. */
 export function planks(entries: Entry[], by: Arrange): Plank[] {
-  const cmpTitle = (a: Entry, b: Entry) => a.film.title.localeCompare(b.film.title, "fr", { sensitivity: "base" });
+  const cmpTitle = compareTitles;
   const year = (e: Entry) => +(e.film.release_date || "0").slice(0, 4);
   const sorted = entries.slice();
+  if (by === "realisateur") sorted.sort(compareByDirector);
   if (by === "titre") sorted.sort(cmpTitle);
   if (by === "annee") sorted.sort((a, b) => year(a) - year(b) || cmpTitle(a, b));
   if (by === "entree") sorted.sort((a, b) => b.added.localeCompare(a.added));
-  // « realisateur » : l'ordre reçu est déjà celui des noms de famille (compareByDirector)
   const keyOf = (e: Entry): [string, string] => {
     if (by === "realisateur") {
       const d = directorName(e);

@@ -13,7 +13,6 @@ import { ErrorLine, Loader, ProfileGate } from "@/components/ui";
 import {
   addWant,
   backfillExtras,
-  compareByDirector,
   conditionLabel,
   directorIdOf,
   directorName,
@@ -35,7 +34,7 @@ import { filmRow } from "@/lib/db";
 import { entriesForFilm } from "@/lib/diary";
 import { errorText } from "@/lib/errors";
 import { frDate, num1, plural } from "@/lib/format";
-import { ARRANGE, matches, parseQuery, planks, type Arrange } from "@/lib/shelf";
+import { ARRANGE, compareTitles, matches, parseQuery, planks, type Arrange } from "@/lib/shelf";
 import { store } from "@/lib/store";
 import { img } from "@/lib/tmdb";
 
@@ -44,7 +43,8 @@ const ALL_FACING = 12;
 /** À partir de ce nombre, on peut choisir comment l'étagère est rangée. */
 const ARRANGE_FROM = 30;
 const RECENT = 8;
-const ARRANGE_KEY = "projo.shelfArrange";
+// v2 : l'ordre alphabétique des titres devient le rangement par défaut
+const ARRANGE_KEY = "projo.shelfArrange.v2";
 
 const loanDays = (c: CollectionItem) => (c.lent_on ? Math.max(0, Math.round((Date.now() - +new Date(c.lent_on + "T12:00:00")) / 86400000)) : null);
 const filmOf = (e: Entry): FilmInput => ({ id: e.tmdb_id, title: e.film.title, release_date: e.film.release_date ?? undefined, poster_path: e.film.poster_path, genre_ids: e.film.genre_ids });
@@ -281,7 +281,7 @@ function Collection() {
   const [wants, setWants] = useState<Want[] | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [q, setQ] = useState("");
-  const [arrange, setArrange] = useState<Arrange>("realisateur");
+  const [arrange, setArrange] = useState<Arrange>("titre");
   const [openId, setOpenId] = useState<number | null>(null);
   const [adding, setAdding] = useState<"pick" | FilmInput | null>(null);
   const [editing, setEditing] = useState<{ film: FilmInput; item: CollectionItem } | null>(null);
@@ -291,7 +291,7 @@ function Collection() {
   const [rayon, setRayon] = useState<string | null>(null);
   const menu = useRef<HTMLDetailsElement>(null);
 
-  useEffect(() => setArrange(store.get<Arrange>(ARRANGE_KEY, "realisateur")), []);
+  useEffect(() => setArrange(store.get<Arrange>(ARRANGE_KEY, "titre")), []);
 
   const loadItems = useCallback(() => {
     if (sb) listCollection(sb).then(setItems, setError);
@@ -343,13 +343,14 @@ function Collection() {
     backfillExtras(sb, items, (id, x) => setItems((prev) => prev?.map((i) => (i.tmdb_id === id ? { ...i, ...x, director: x.director ?? "" } : i)) ?? prev));
   }, [sb, items, filled]);
 
-  const all = useMemo(() => (items ? groupEntries(items).sort(compareByDirector) : null), [items]);
+  // ordre alphabétique des titres (articles ignorés), comme dans un bac de vidéothèque
+  const all = useMemo(() => (items ? groupEntries(items).sort(compareTitles) : null), [items]);
   const total = all?.length ?? 0;
   const recent = useMemo(() => (all ? all.slice().sort((a, b) => b.added.localeCompare(a.added)).slice(0, RECENT) : []), [all]);
   const query = useMemo(() => parseQuery(q), [q]);
   const searching = !!(query.text || query.labels.length);
   const results = useMemo(() => (all && searching ? all.filter((e) => matches(e, query, seen)) : []), [all, query, searching, seen]);
-  const shelf = useMemo(() => (all ? planks(all, total >= ARRANGE_FROM ? arrange : "realisateur") : []), [all, arrange, total]);
+  const shelf = useMemo(() => (all ? planks(all, total >= ARRANGE_FROM ? arrange : "titre") : []), [all, arrange, total]);
   const loans = useMemo(() => (all ?? []).flatMap((e) => e.copies.filter((c) => c.lent_to).map((c) => ({ e, c }))), [all]);
   const ownedIds = useMemo(() => new Set((all ?? []).map((e) => e.tmdb_id)), [all]);
   const opened = openId && all ? all.find((e) => e.tmdb_id === openId) ?? null : null;
