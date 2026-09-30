@@ -84,7 +84,9 @@ Un **ensemble** de films (la filmographie d'un cinéaste, une saga, un studio, u
 éditoriale) se suit de deux façons, jamais confondues :
 - **Rayon** (posséder) : vit dans la **Collection**. Une étagère avec les boîtiers possédés et des
   **places vides en pointillé** ; « 11 / 14 » en chiffres légers ; pas de barre de progression.
-  Plusieurs éditions d'un film comptent pour un. Trois rayons à l'affiche, les autres repliés.
+  Plusieurs éditions d'un film comptent pour un. Trois rayons à l'affiche, les autres repliés. Chaque rayon a la largeur de son étagère : les
+  courts (Alien, Dogme 95) se rangent **côte à côte**, un long (Oscars) prend la ligne ; une seule
+  légende sous l'ensemble. La saga Alien réunit les sept films (TMDB sépare les quatre premiers des préquelles).
   Le but est d'avoir **vu et possédé**, et le rayon **se colore en avançant** : la couleur de l'affiche monte dans le boîtier
   **jusqu'à mi-hauteur** s'il est vu **ou** possédé, et le **remplit entièrement** s'il est vu **et**
   possédé. Un vu porte l'œil ; une place vide vue reste en pointillé, affiche en transparence ; un

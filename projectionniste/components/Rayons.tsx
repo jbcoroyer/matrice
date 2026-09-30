@@ -25,8 +25,6 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
   const shownMissing = new Set(missing.slice(0, room).map((f) => f.tmdb_id));
   const f = r.follow;
   const complete = total > 0 && done === total;
-  const firstSeen = r.films.find((x) => (seen.has(x.tmdb_id) || owned.has(x.tmdb_id)) && x.films?.poster_path);
-  const legendPoster = firstSeen ? ({ "--p": `url(${img(firstSeen.films!.poster_path!, "w92")})` } as React.CSSProperties) : undefined;
   return (
     <div className={`rayon${lit ? " lit" : ""}`} id={`rayon-${r.set.key}`}>
       <div className="rayon-head">
@@ -81,9 +79,6 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
           </Link>
         ) : null}
       </div>
-      <p className="rayon-legend" aria-hidden="true">
-        <i className="lg-ghost" /> à trouver <i className="lg-own" style={legendPoster} /> possédé <i className="lg-seen" style={legendPoster} /> vu <i className="lg-both" style={legendPoster} /> vu et possédé
-      </p>
       {complete && f.completed_at ? (
         <p className="rayon-done">
           Complet · {frDate(f.completed_at.slice(0, 10), { month: "long", year: "numeric" })}
@@ -97,6 +92,11 @@ function RayonShelf({ r, owned, seen, onOpen, lit }: { r: Rayon; owned: Set<numb
     </div>
   );
 }
+
+const shown0 = (rs: Rayon[], owned: Set<number>, seen: Set<number>) => {
+  for (const r of rs) for (const f of r.films) if ((seen.has(f.tmdb_id) || owned.has(f.tmdb_id)) && f.films?.poster_path) return f.films.poster_path;
+  return null;
+};
 
 /** Les rayons de la collection : les ensembles qu'on a choisi de compléter, avec leurs places vides. */
 export function Rayons({ owned, onOpen, highlight }: { owned: Set<number>; onOpen: (id: number) => void; highlight: string | null }) {
@@ -141,6 +141,9 @@ export function Rayons({ owned, onOpen, highlight }: { owned: Set<number>; onOpe
   }, [highlight, ordered.length]);
 
   if (!sets) return null;
+  // une vraie affiche du rayon pour la légende
+  const sample = shown0(ordered, owned, seen);
+  const legendPoster = sample ? ({ "--p": `url(${img(sample, "w92")})` } as React.CSSProperties) : undefined;
   const shown = all ? ordered : ordered.slice(0, SHOWN);
   return (
     <section className="rayons" aria-labelledby="rayons-title">
@@ -154,9 +157,14 @@ export function Rayons({ owned, onOpen, highlight }: { owned: Set<number>; onOpe
       </div>
       {rayons.length ? (
         <>
-          {shown.map((r) => (
-            <RayonShelf key={r.set.id} r={r} owned={owned} seen={seen} onOpen={onOpen} lit={r.set.key === highlight} />
-          ))}
+          <div className="rayons-grid">
+            {shown.map((r) => (
+              <RayonShelf key={r.set.id} r={r} owned={owned} seen={seen} onOpen={onOpen} lit={r.set.key === highlight} />
+            ))}
+          </div>
+          <p className="rayon-legend" aria-hidden="true">
+            <i className="lg-ghost" /> à trouver <i className="lg-own" style={legendPoster} /> possédé <i className="lg-seen" style={legendPoster} /> vu <i className="lg-both" style={legendPoster} /> vu et possédé
+          </p>
           {ordered.length > SHOWN ? (
             <button type="button" className="link-btn" onClick={() => setAll((v) => !v)}>
               {all ? "Ne montrer que les trois premiers" : `Autres rayons (${ordered.length - SHOWN})`}

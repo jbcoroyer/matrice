@@ -13,6 +13,8 @@ import { TitleDuo } from "./TitleDuo";
 import { ErrorLine, Loader } from "./ui";
 
 const DAY = 86400000;
+/** Les ensembles copiés avant cette date sont remis à jour une fois (la sélection éditoriale a changé). */
+const EDITORIAL_REV = +new Date("2026-09-30T13:50:00Z");
 const ROLE_TAB: Record<Role, string> = { director: "Réalisation", main: "Rôles principaux", all: "Toute la filmographie" };
 
 /** Où vit chaque intention : le rayon dans la Collection, le cycle dans le Journal. */
@@ -81,7 +83,7 @@ export function SetView({ setKey }: { setKey: string }) {
 
   // ensemble suivi : sa copie est remise à jour (au plus une fois par jour)
   useEffect(() => {
-    if (!d.sb || !def || !films || !mine || (mine.synced_at && Date.now() - +new Date(mine.synced_at) < DAY)) return;
+    if (!d.sb || !def || !films || !mine || (mine.synced_at && +new Date(mine.synced_at) > EDITORIAL_REV && Date.now() - +new Date(mine.synced_at) < DAY)) return;
     syncSet(d.sb, def, films).then(loadMine, () => {});
   }, [d.sb, def, films, mine, loadMine]);
 

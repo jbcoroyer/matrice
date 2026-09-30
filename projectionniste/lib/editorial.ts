@@ -93,7 +93,19 @@ export const EDITORIAL: EditorialDef[] = [
     rule: "Les longs métrages du studio (au moins 20 votes sur TMDB).",
     company: 10342,
   },
-  { key: "saga-8091", family: "Sagas", kicker: "Saga", title: "Alien", description: "Du Nostromo à Romulus.", rule: "Tous les films de la saga, dans l'ordre de sortie.", saga: 8091 },
+  {
+    key: "saga-8091",
+    family: "Sagas",
+    kicker: "Saga",
+    title: "Alien",
+    description: "Du Nostromo à Romulus.",
+    rule: "Les sept films Alien, dans l'ordre de sortie (sans les crossovers Alien vs. Predator).",
+    // TMDB sépare les quatre premiers des préquelles : on réunit toute la saga
+    films: [
+      ["Alien, le huitième passager", 1979], ["Aliens, le retour", 1986], ["Alien 3", 1992], ["Alien, la résurrection", 1997],
+      ["Prometheus", 2012], ["Alien: Covenant", 2017], ["Alien: Romulus", 2024],
+    ],
+  },
   { key: "saga-230", family: "Sagas", kicker: "Saga", title: "Le Parrain", description: "La trilogie de Francis Ford Coppola.", rule: "Les trois films, dans l'ordre de sortie.", saga: 230 },
   { key: "saga-264", family: "Sagas", kicker: "Saga", title: "Retour vers le futur", description: "Robert Zemeckis, 1985–1990.", rule: "Les trois films, dans l'ordre de sortie.", saga: 264 },
   { key: "saga-119", family: "Sagas", kicker: "Saga", title: "Le Seigneur des anneaux", description: "La trilogie de Peter Jackson.", rule: "Tous les films de la saga, dans l'ordre de sortie.", saga: 119 },

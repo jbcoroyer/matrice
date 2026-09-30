@@ -103,22 +103,22 @@ export async function resolveDef(key: string): Promise<SetDef | null> {
 /** Les films d'un ensemble, lus à la source (TMDB ou sélection éditoriale), par date de sortie. */
 export async function resolveFilms(def: SetDef, signal?: AbortSignal): Promise<SetFilm[]> {
   const opts = { signal };
+  const ed = EDITORIAL.find((e) => e.key === def.key);
   if (def.source === "person") {
     const c = await tmdb<PersonCredits>(`person/${def.sourceRef}/movie_credits`, {}, opts);
     return uniq(personFilms(c, def.rules.role as Role)).sort(byDate);
   }
-  if (def.source === "tmdb_collection") {
+  if (def.source === "tmdb_collection" && !ed?.films) {
     const c = await tmdb<{ parts: Movie[] }>(`collection/${def.sourceRef}`, {}, opts);
     return uniq(c.parts ?? []).sort(byDate);
   }
-  if (def.source === "tmdb_company") {
+  if (def.source === "tmdb_company" && !ed?.films) {
     const first = await tmdb<Paged<Movie>>("discover/movie", { with_companies: def.sourceRef, sort_by: "primary_release_date.asc", "vote_count.gte": 20, page: 1 }, opts);
     const more = await mapLimit(Array.from({ length: Math.min(first.total_pages, 5) - 1 }, (_, i) => i + 2), 2, (page) =>
       tmdb<Paged<Movie>>("discover/movie", { with_companies: def.sourceRef, sort_by: "primary_release_date.asc", "vote_count.gte": 20, page }, opts).then((p) => p.results, () => [] as Movie[]),
     );
     return uniq([...first.results, ...more.flat()].filter((m) => !(m.genre_ids ?? []).includes(TV))).sort(byDate);
   }
-  const ed = EDITORIAL.find((e) => e.key === def.key);
   if (!ed?.films) return [];
   // sélection éditoriale : chaque titre est retrouvé sur TMDB (titre + année), une fois
   const found = await mapLimit(ed.films, 4, async ([q, year, caption]) => {
