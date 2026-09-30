@@ -6,7 +6,8 @@ import { DiaryList } from "@/components/DiaryEntries";
 import { useProfile } from "@/components/ProfileProvider";
 import { WatchedFilms } from "@/components/WatchedFilms";
 import { ErrorLine, Loader, ProfileGate, SecHead } from "@/components/ui";
-import { diaryIndex, listEntries, type DiaryEntry, type DiaryFilter } from "@/lib/diary";
+import { JournalButton } from "@/components/QuickLog";
+import { DIARY_EVENT, diaryIndex, listEntries, type DiaryEntry, type DiaryFilter } from "@/lib/diary";
 
 const PAGE = 100;
 
@@ -52,6 +53,11 @@ function Journal() {
     setEntries(null);
     refresh();
   }, [refresh]);
+  // une entrée ajoutée depuis le bouton « Journaliser » apparaît tout de suite, sans vider la liste
+  useEffect(() => {
+    window.addEventListener(DIARY_EVENT, refresh);
+    return () => window.removeEventListener(DIARY_EVENT, refresh);
+  }, [refresh]);
 
   const set = (patch: DiaryFilter) => setFilter((f) => ({ ...f, ...patch }));
   const f = filter ?? {};
@@ -96,6 +102,7 @@ function Journal() {
             Films vus
           </button>
         </div>
+        <JournalButton className="in-page" />
       </div>
       {tab === "vus" ? (
         <WatchedFilms />
@@ -157,7 +164,7 @@ function Journal() {
             "Aucun visionnage ne correspond à ces filtres."
           ) : (
             <>
-              Ton journal est vide. Ouvre un film et clique sur « Ajouter au journal », ou{" "}
+              Ton journal est vide. Clique sur « Journaliser » pour noter le dernier film que tu as vu, ou{" "}
               <Link className="link" href="/parametres#import">
                 importe ton Letterboxd
               </Link>

@@ -23,7 +23,7 @@ export async function buildRecs(profile: Profile, d: Derived, { force = false } 
   const sig = signature(profile, d);
   const cached = store.get<Cached | null>(KEYS.recs, null);
   if (!force && cached && cached.day === today() && cached.v === VERSION && cached.sig === sig && cached.list.length)
-    return cached.list.filter((m) => !d.seen.has(m.id) && !d.hidden.has(m.id));
+    return cached.list.filter((m) => !d.seen.has(m.id));
 
   const { mu, aff } = profile;
   const all = [...d.rated.entries()].sort((a, b) => b[1] - a[1]);
@@ -100,7 +100,7 @@ export async function buildRecs(profile: Profile, d: Derived, { force = false } 
 
   const slim = out.map(slimMovie);
   if (slim.length) store.set(KEYS.recs, { day: today(), v: VERSION, sig, list: slim } satisfies Cached);
-  return slim.filter((m) => !d.hidden.has(m.id));
+  return slim;
 }
 
 /** Garde seulement ce dont les cartes ont besoin (le cache tient dans le localStorage). */

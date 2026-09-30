@@ -21,10 +21,10 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 | `/personne/[id]` | Biographie et filmographie classée par ton indice |
 | `/studio/[id]` | Studio : logo et films, triés par popularité, date ou note |
 | `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
-| Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal (`/journal`), Paramètres (`/parametres`), déconnexion |
+| Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal, Bilan, Paramètres (`/parametres`), déconnexion ; sur mobile aussi Mes listes |
 
 Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur chaque affiche), le mettre en favori,
-le marquer vu et le noter (demi-étoiles), ou l'écarter (« Pas pour moi »). Chaque action peut
+le marquer vu et le noter (demi-étoiles). Le bouton **Journaliser** de l'en-tête (le + central de la barre d'onglets sur mobile) enregistre un visionnage depuis n'importe quelle page : recherche du film, puis date, note, critique. Chaque action peut
 être annulée depuis la notification.
 
 ## Démarrer

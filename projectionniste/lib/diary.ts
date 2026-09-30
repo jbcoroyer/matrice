@@ -19,6 +19,10 @@ export type DiaryEntry = {
   films?: { title: string; release_date: string | null; poster_path: string | null } | null;
 };
 
+/** Prévient les pages ouvertes (fiche, journal…) qu'une entrée du journal a changé. */
+export const DIARY_EVENT = "projo:diary";
+export const diaryChanged = (id: number) => window.dispatchEvent(new CustomEvent(DIARY_EVENT, { detail: id }));
+
 export type EntryInput = Pick<DiaryEntry, "watched_on" | "rating" | "rewatch" | "liked" | "review" | "spoilers" | "review_public" | "tags">;
 
 const COLS = "id, tmdb_id, watched_on, rating, rewatch, liked, review, spoilers, review_public, tags, created_at, films(title, release_date, poster_path)";

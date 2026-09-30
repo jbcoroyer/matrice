@@ -38,7 +38,18 @@ export function PickFilm({
   return (
     <dialog ref={ref} className="dialog" onClose={onClose} onCancel={onClose}>
       <h2>{title}</h2>
-      <input ref={input} className="input" autoFocus placeholder="Titre du film" value={q} onChange={(e) => setQ(e.target.value)} />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const first = hits.find((m) => !picked?.has(m.id));
+          if (first) {
+            onPick(first);
+            if (picked) input.current?.select();
+          }
+        }}
+      >
+        <input ref={input} className="input" autoFocus placeholder="Titre du film" aria-label="Titre du film" value={q} onChange={(e) => setQ(e.target.value)} />
+      </form>
       <ul className="pick-list">
         {hits.map((m) => {
           const has = picked?.has(m.id);

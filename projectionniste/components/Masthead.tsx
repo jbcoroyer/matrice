@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Bookmark, Compass, Disc, List, Search } from "./icons";
+import { Bookmark, Compass, Disc, Journal, List, Plus, Search } from "./icons";
+import { JournalButton, openQuickLog } from "./QuickLog";
 import { useProfile } from "./ProfileProvider";
 import { SearchBox } from "./SearchBox";
 
 const RUBRIQUES = [
   { href: "/decouvrir", label: "Découvrir", icon: Compass },
+  { href: "/journal", label: "Journal", icon: Journal },
   { href: "/watchlist", label: "Watchlist", icon: Bookmark },
   { href: "/listes", label: "Listes", icon: List },
   { href: "/collection", label: "Collection", icon: Disc },
@@ -48,7 +50,7 @@ function ProfileMenu() {
   }, [open]);
 
   const name = profile?.owner || account?.email?.split("@")[0] || "";
-  const mine = ["/portrait", "/journal", "/bilan", "/parametres"].includes(path);
+  const mine = ["/portrait", "/bilan", "/parametres"].includes(path);
   const item = (href: string, label: string) => (
     <Link role="menuitem" href={href} aria-current={path === href ? "page" : undefined}>
       {label}
@@ -68,6 +70,7 @@ function ProfileMenu() {
           </div>
           {item("/portrait", "Mon profil")}
           {item("/journal", "Journal")}
+          <span className="only-mobile">{item("/listes", "Mes listes")}</span>
           {item("/bilan", "Bilan de l'année")}
           {item("/parametres", "Paramètres")}
           <hr />
@@ -115,6 +118,10 @@ export function Masthead() {
             </nav>
             <span className="tools">
               <SearchBox />
+              <Link href="/recherche" className="search-link" aria-label="Rechercher un film ou une personne">
+                <Search />
+              </Link>
+              <JournalButton />
               <ProfileMenu />
             </span>
           </>
@@ -129,15 +136,21 @@ export function TabBar() {
   const path = usePathname();
   const { status } = useProfile();
   if (status !== "ready") return null;
-  const tabs = [...RUBRIQUES, { href: "/recherche", label: "Chercher", icon: Search }];
+  // Découvrir · Journal · + · Watchlist · Collection (Listes est dans le menu du profil, la recherche dans l'en-tête)
+  const tabs = RUBRIQUES.filter((r) => r.href !== "/listes");
+  const link = (t: (typeof tabs)[number]) => (
+    <Link key={t.href} href={t.href} aria-current={isCurrent(path, t.href) ? "page" : undefined}>
+      <t.icon />
+      {t.label}
+    </Link>
+  );
   return (
     <nav className="tabbar" aria-label="Rubriques">
-      {tabs.map((t) => (
-        <Link key={t.href} href={t.href} aria-current={isCurrent(path, t.href) ? "page" : undefined}>
-          <t.icon />
-          {t.label}
-        </Link>
-      ))}
+      {tabs.slice(0, 2).map(link)}
+      <button type="button" className="tab-plus" onClick={openQuickLog} aria-label="Journaliser un film">
+        <Plus />
+      </button>
+      {tabs.slice(2).map(link)}
     </nav>
   );
 }

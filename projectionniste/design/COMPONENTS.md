@@ -1,5 +1,14 @@
 # Composants signature
 
+## Navigation (`components/Masthead.tsx`, `components/QuickLog.tsx`)
+
+- Ordinateur : Découvrir · **Journal** · Watchlist · Listes · Collection, puis recherche, bouton
+  crème **Journaliser** et avatar.
+- Mobile : barre flottante Découvrir · Journal · **+** · Watchlist · Collection. Le + est un rond
+  crème un peu surélevé ; la loupe est dans l'en-tête ; Listes est dans le menu du profil.
+- **Journaliser** ouvre la recherche d'un film (Entrée choisit le premier résultat), puis
+  « J'ai vu… », puis une notification avec « Voir dans le journal ».
+
 ## Fiche film (`app/film/[id]/page.tsx`)
 
 - Image du film en fond pleine largeur, fondue vers le noir ; affiche arrondie posée dessus.
@@ -8,7 +17,7 @@
 - Barre de notes : pastille crème (ton indice ou ta note), TMDB, moyenne des membres, et ce qui
   fait bouger l'indice.
 - Actions en pilules : Ajouter au journal, Vu, Watchlist, note en étoiles, coup de cœur, liste,
-  collection, menu « … » (top 5, partager, pas pour moi).
+  collection, menu « … » (top 5, partager, envie de l'avoir en disque).
 - Synopsis + **Qui l'a vu** (membres, moyenne, notes ; chacun peut se masquer).
 - **Casting et réalisation** en photos, tout cliquable.
 - **Générique** : rôles alignés à droite, noms à gauche, comme un générique de fin ; logos des

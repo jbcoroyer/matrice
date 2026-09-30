@@ -31,7 +31,7 @@ function bucket(credits: PersonCredits) {
 
 /** Filmographie classée par indice : ce qu'il te reste à voir de ce cinéaste ou de cette actrice. */
 export function Filmography({ credits, dept, name }: { credits: PersonCredits; dept: string; name: string }) {
-  const { status, seen, predict, hidden } = useProfile();
+  const { status, seen, predict } = useProfile();
   const b = useMemo(() => bucket(credits), [credits]);
   const first = (TABS.find((t) => t.k === dept && b[t.k].length) || TABS.find((t) => b[t.k].length))?.k ?? "Acting";
   const [tab, setTab] = useState<Tab>(first);
@@ -50,7 +50,7 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
       }
       byId.set(c.id, { ...c, _note: note || undefined });
     }
-    let l = [...byId.values()].filter((m) => !hidden.has(m.id));
+    let l = [...byId.values()];
     if (status === "ready") l = l.map((m) => ({ ...m, _pred: predict(m).v }));
     if (unseen) l = l.filter((m) => !seen.has(m.id));
     // les films à peine votés (courts, inédits) descendent en bas du classement
@@ -58,7 +58,7 @@ export function Filmography({ credits, dept, name }: { credits: PersonCredits; d
     if (sort === "date") l.sort((a, b) => (b.release_date || "9999").localeCompare(a.release_date || "9999"));
     if (sort === "pop") l.sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0));
     return l;
-  }, [b, tab, sort, unseen, status, seen, hidden, predict]);
+  }, [b, tab, sort, unseen, status, seen, predict]);
 
   const all = new Set(b[tab].map((c) => c.id));
   const seenCount = [...all].filter((id) => seen.has(id)).length;

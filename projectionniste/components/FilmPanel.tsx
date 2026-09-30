@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
-import { clearTopSlot, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
+import { clearTopSlot, DIARY_EVENT, diaryChanged, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
 import { addWant, formatLabel, isWanted, itemsForFilm, removeWant, type CollectionItem } from "@/lib/collection";
 import { listsWithFilm } from "@/lib/lists";
 import { CopyDialog } from "./CopyDialog";
@@ -13,8 +13,6 @@ import { LogDialog } from "./LogDialog";
 import { useProfile, type FilmInput } from "./ProfileProvider";
 import { Stars } from "./Stars";
 
-export const DIARY_EVENT = "projo:diary";
-const diaryChanged = (id: number) => window.dispatchEvent(new CustomEvent(DIARY_EVENT, { detail: id }));
 
 /** Actions de la fiche : journal, vu, watchlist, note, favori, liste, collection, partage, top 5, pas pour moi. */
 export function FilmPanel({ film }: { film: FilmInput }) {
@@ -59,7 +57,6 @@ export function FilmPanel({ film }: { film: FilmInput }) {
   const isSeen = d.seen.has(film.id);
   const isFav = d.favorites.has(film.id);
   const inWl = d.watchlist.has(film.id);
-  const isHidden = d.hidden.has(film.id);
   const rating = d.rated.get(film.id) || 0;
   const mySlot = top.find((t) => t.tmdb_id === film.id)?.slot;
   const closeMore = () => more.current?.removeAttribute("open");
@@ -156,17 +153,6 @@ export function FilmPanel({ film }: { film: FilmInput }) {
             {!copies.length ? (
               <button type="button" onClick={toggleWanted}>
                 {wanted ? "Retirer de mes envies" : "Envie de l'avoir en disque"}
-              </button>
-            ) : null}
-            {!isSeen ? (
-              <button
-                type="button"
-                onClick={() => {
-                  d.toggleHidden(film);
-                  closeMore();
-                }}
-              >
-                {isHidden ? "Proposer à nouveau" : "Pas pour moi"}
               </button>
             ) : null}
           </div>

@@ -31,7 +31,7 @@ export function MoodResults({ slug }: { slug: string }) {
     const have = new Set(prev.map((m) => m.id));
     const fresh = pages
       .flatMap((p) => p?.results ?? [])
-      .filter((m) => m.poster_path && !d.seen.has(m.id) && !d.hidden.has(m.id) && !have.has(m.id) && (have.add(m.id), true))
+      .filter((m) => m.poster_path && !d.seen.has(m.id) && !have.has(m.id) && (have.add(m.id), true))
       .map((m) => ({ ...m, _pred: d.predict(m).v }))
       .sort((a, b) => b._pred - a._pred);
     setPage(from + BATCH);

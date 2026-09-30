@@ -14,7 +14,7 @@ import type { Credits, FilmState, Movie, Profile, Settings } from "@/lib/types";
 /** signedOut : personne n'est connecté ; guest : ancienne session anonyme, à transformer en compte */
 type Status = "loading" | "ready" | "error" | "signedOut" | "guest";
 
-type Toast = { id: number; text: string; undo?: () => void };
+type Toast = { id: number; text: string; undo?: () => void; link?: { label: string; href: string } };
 
 /** Film tel qu'on le reçoit des pages (au minimum un id et un titre). */
 export type FilmInput = Partial<Movie> & { id: number; title: string };
@@ -40,10 +40,9 @@ type Ctx = Derived & {
   toggleFavorite: (m: FilmInput) => void;
   markSeen: (m: FilmInput, rating?: number) => void;
   unmarkSeen: (m: FilmInput) => void;
-  toggleHidden: (m: FilmInput) => void;
   /** modifie l'état d'un film (utilisé par le journal) ; message facultatif avec annulation */
   setFilmState: (m: FilmInput, patch: Partial<FilmState>, message?: string) => void;
-  toast: (text: string, undo?: () => void) => void;
+  toast: (text: string, undo?: () => void, link?: { label: string; href: string }) => void;
   toasts: Toast[];
   dismissToast: (id: number) => void;
 };
@@ -73,9 +72,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const statesRef = useRef(states);
   statesRef.current = states;
 
-  const toast = useCallback((text: string, undo?: () => void) => {
+  const toast = useCallback((text: string, undo?: () => void, link?: { label: string; href: string }) => {
     const id = Date.now() + Math.random();
-    setToasts((t) => [...t.slice(-2), { id, text, undo }]);
+    setToasts((t) => [...t.slice(-2), { id, text, undo, link }]);
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 5000);
   }, []);
   const dismissToast = useCallback((id: number) => setToasts((t) => t.filter((x) => x.id !== id)), []);
@@ -202,14 +201,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     [patchFilm],
   );
   const unmarkSeen = useCallback((m: FilmInput) => patchFilm(m, { watched: false, rating: null }, `« ${m.title} » n'est plus marqué comme vu`), [patchFilm]);
-  const toggleHidden = useCallback(
-    (m: FilmInput) => {
-      const on = !cur(m.id).hidden;
-      patchFilm(m, { hidden: on }, on ? `« ${m.title} » ne sera plus proposé` : `« ${m.title} » revient dans tes sélections`);
-    },
-    [patchFilm],
-  );
-
   const derived = useMemo(() => derive(profile, states, titles), [profile, states, titles]);
 
   const value = useMemo<Ctx>(
@@ -233,13 +224,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toggleFavorite,
       markSeen,
       unmarkSeen,
-      toggleHidden,
       setFilmState: patchFilm,
       toast,
       toasts,
       dismissToast,
     }),
-    [derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, toggleHidden, patchFilm, toast, toasts, dismissToast],
+    [derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

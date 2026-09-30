@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { frDate, plural } from "@/lib/format";
 import { authorName, filmReviews, myLikes, setLike, type Review } from "@/lib/reviews";
 import { ReviewText } from "./DiaryEntries";
-import { DIARY_EVENT } from "./FilmPanel";
+import { DIARY_EVENT } from "@/lib/diary";
 import { useProfile } from "./ProfileProvider";
 import { StarsText } from "./Stars";
 

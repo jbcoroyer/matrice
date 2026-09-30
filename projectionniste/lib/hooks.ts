@@ -37,7 +37,7 @@ export function useRecs(force = 0) {
   const ready = d.status === "ready" && !!d.profile;
   return useAsync<Ranked[]>(
     () => buildRecs(d.profile!, d, { force: force > 0 }),
-    [d.profile, d.rated.size, d.seen.size, d.hidden.size, force],
+    [d.profile, d.rated.size, d.seen.size, force],
     ready,
   );
 }

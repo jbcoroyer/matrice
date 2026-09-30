@@ -59,10 +59,10 @@ export function ScoreBox({ movie, credits }: { movie: Movie; credits: Credits })
 
 /** « Dans le même esprit » : recommandations + similaires, déjà-vus retirés, classés par indice. */
 export function FilmRecs({ list }: { title: string; list: Movie[] }) {
-  const { status, seen, hidden, predict } = useProfile();
+  const { status, seen, predict } = useProfile();
   if (status !== "ready") return null;
   const recs: Ranked[] = list
-    .filter((m) => !seen.has(m.id) && !hidden.has(m.id))
+    .filter((m) => !seen.has(m.id))
     .map((m) => ({ ...m, _pred: predict(m).v }))
     .sort((a, b) => b._pred - a._pred)
     .slice(0, 16);

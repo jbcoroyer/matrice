@@ -80,7 +80,11 @@ export function LogDialog({
       if (rating && !entry) patch.rating = rating;
       if (liked) patch.favorite = true;
       setFilmState(film, patch);
-      toast(entry ? "Entrée du journal modifiée" : `« ${film.title} » ajouté à ton journal`);
+      toast(
+        entry ? "Entrée du journal modifiée" : `« ${film.title} » ajouté à ton journal`,
+        undefined,
+        entry || location.pathname === "/journal" ? undefined : { label: "Voir dans le journal", href: "/journal" },
+      );
       onSaved?.(saved);
       onClose();
     } catch (err) {

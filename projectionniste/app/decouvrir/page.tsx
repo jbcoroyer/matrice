@@ -107,16 +107,6 @@ function Featured({ list }: { list: Ranked[] }) {
             <Link className="btn" href={`/film/${m.id}`}>
               Voir la fiche
             </Link>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => {
-                d.toggleHidden(m);
-                go(i + 1);
-              }}
-            >
-              Pas pour moi
-            </button>
           </div>
           <div className="dots" role="tablist" aria-label="Sélection">
             {list.map((f, k) => (
@@ -157,7 +147,7 @@ function Featured({ list }: { list: Ranked[] }) {
 export default function Decouvrir() {
   const d = useProfile();
   const recs = useRecs();
-  const withPoster = (recs.data ?? []).filter((m) => m.poster_path && !d.hidden.has(m.id) && !d.seen.has(m.id));
+  const withPoster = (recs.data ?? []).filter((m) => m.poster_path && !d.seen.has(m.id));
   const featured = withPoster.slice(0, FEATURED);
   const trending = useAsync<Ranked[]>(
     async () => {

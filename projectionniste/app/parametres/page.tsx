@@ -90,20 +90,6 @@ function LetterboxdImport() {
   );
 }
 
-function Hidden() {
-  const { hidden, titles, toggleHidden } = useProfile();
-  if (!hidden.size) return <p className="note">Aucun film écarté. « Pas pour moi », sur une fiche, retire un film de toutes les sélections.</p>;
-  return (
-    <div className="hidden-list">
-      {[...hidden].map((id) => (
-        <button key={id} type="button" title="Proposer à nouveau" onClick={() => toggleHidden({ id, title: titles[id] || `Film ${id}` })}>
-          {titles[id] || `Film ${id}`}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function ProfileName() {
   const { sb, userId, profile, reload, toast } = useProfile();
   const [name, setName] = useState(profile?.owner ?? "");
@@ -239,7 +225,6 @@ const SECTIONS = [
   { id: "profil", l: "Profil" },
   { id: "import", l: "Import Letterboxd" },
   { id: "apparence", l: "Apparence" },
-  { id: "ecartes", l: "Films écartés" },
   { id: "compte", l: "Compte" },
 ];
 
@@ -297,7 +282,6 @@ function Settings() {
         )}
         {sec("import", "Import Letterboxd", null, <LetterboxdImport />)}
         {sec("apparence", "Apparence", null, <Appearance />)}
-        {sec("ecartes", "Films écartés", null, <Hidden />)}
         {sec(
           "compte",
           "Compte",

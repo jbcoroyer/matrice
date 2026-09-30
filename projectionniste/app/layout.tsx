@@ -4,6 +4,7 @@ import { AuthGate } from "@/components/AuthScreen";
 import { FooterStats, Toaster } from "@/components/Chrome";
 import { Masthead, TabBar } from "@/components/Masthead";
 import { ProfileProvider } from "@/components/ProfileProvider";
+import { QuickLogHost } from "@/components/QuickLog";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </footer>
           <TabBar />
+          <QuickLogHost />
           <Toaster />
         </ProfileProvider>
       </body>

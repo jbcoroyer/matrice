@@ -3,7 +3,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { check, chunks } from "./supabase";
 import type { FilmRow, FilmState, Movie, Profile, Settings, Taste } from "./types";
 
-export const EMPTY_STATE: FilmState = { watched: false, watchlist: false, favorite: false, hidden: false, rating: null };
+export const EMPTY_STATE: FilmState = { watched: false, watchlist: false, favorite: false, rating: null };
 
 export type Account = { id: string; email: string | null; pendingEmail: string | null; anonymous: boolean };
 
@@ -67,12 +67,12 @@ export async function loadFilmStates(sb: SupabaseClient) {
     const rows = check(
       await sb
         .from("user_films")
-        .select("tmdb_id, watched, watchlist, favorite, hidden, rating, films(title)")
+        .select("tmdb_id, watched, watchlist, favorite, rating, films(title)")
         .order("tmdb_id")
         .range(from, from + 999),
     ) as unknown as UserFilmRow[];
     for (const r of rows) {
-      states.set(r.tmdb_id, { watched: r.watched, watchlist: r.watchlist, favorite: r.favorite, hidden: r.hidden, rating: r.rating == null ? null : +r.rating });
+      states.set(r.tmdb_id, { watched: r.watched, watchlist: r.watchlist, favorite: r.favorite, rating: r.rating == null ? null : +r.rating });
       if (r.films?.title) titles[r.tmdb_id] = r.films.title;
     }
     if (rows.length < 1000) break;

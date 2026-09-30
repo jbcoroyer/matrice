@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useProfile } from "./ProfileProvider";
 
 export function Toaster() {
@@ -20,6 +21,11 @@ export function Toaster() {
             >
               Annuler
             </button>
+          ) : null}
+          {t.link ? (
+            <Link className="undo" href={t.link.href} onClick={() => dismissToast(t.id)}>
+              {t.link.label}
+            </Link>
           ) : null}
           <button type="button" aria-label="Fermer" onClick={() => dismissToast(t.id)}>
             ✕

@@ -82,7 +82,7 @@ export type Profile = {
 };
 
 /** État d'un film pour l'utilisateur (table user_films). */
-export type FilmState = { watched: boolean; watchlist: boolean; favorite: boolean; hidden: boolean; rating: number | null };
+export type FilmState = { watched: boolean; watchlist: boolean; favorite: boolean; rating: number | null };
 
 /** Ligne de la table films (cache TMDB). */
 export type FilmRow = {

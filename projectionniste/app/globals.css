@@ -111,6 +111,10 @@ main { min-height: 70vh; padding-top: var(--header); padding-bottom: 40px }
 
 /* ---------- barre d'onglets mobile ---------- */
 .tabbar { display: none }
+.search-link, .only-mobile { display: none }
+.log-btn { height: 42px; padding: 0 18px; font-size: 14px }
+.log-btn svg { width: 16px; height: 16px }
+.log-btn.in-page { display: none }
 
 /* ---------- blocs communs ---------- */
 .section { margin: 72px 0 0 }
@@ -567,9 +571,6 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .drop b { display: block; margin-bottom: 4px; color: var(--text) }
 .drop input { position: absolute; opacity: 0; pointer-events: none; width: 1px }
 .row-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px }
-.hidden-list { display: flex; flex-wrap: wrap; gap: 8px }
-.hidden-list button { height: 32px; padding: 0 13px; background: none; border: 1px solid var(--line-2); border-radius: 999px; cursor: pointer; font-size: 13.5px; color: var(--text-2) }
-.hidden-list button:hover { text-decoration: line-through; color: var(--text) }
 .inline-form { display: flex; flex-direction: column; gap: 10px; max-width: 400px }
 .inline-form .btn { align-self: flex-start }
 .kv { display: flex; gap: 14px; font-size: 14.5px; margin: 0 0 14px }
@@ -917,7 +918,11 @@ button.row-note:hover { color: var(--text) }
 @media (max-width: 900px) {
   :root { --header: 60px }
   body { padding-bottom: 92px }
-  nav.rubriques, .top .searchbar { display: none }
+  nav.rubriques, .top .searchbar, .top .log-btn { display: none }
+  .log-btn.in-page { display: inline-flex }
+  .search-link { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line-2); color: var(--text-2) }
+  .search-link svg { width: 17px; height: 17px }
+  .only-mobile { display: contents }
   .mobile-search { display: block; padding-top: 20px }
   .brand { font-size: 21px }
   .avatar { width: 36px; height: 36px }
@@ -926,6 +931,9 @@ button.row-note:hover { color: var(--text) }
   .tabbar a[aria-current="page"] { color: var(--text) }
   .tabbar a[aria-current="page"]::after { content: ""; position: absolute; bottom: -3px; width: 4px; height: 4px; border-radius: 50%; background: var(--cream) }
   .tabbar svg { width: 22px; height: 22px }
+  .tab-plus { flex: none; width: 52px; height: 52px; margin-top: -14px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--cream); color: var(--on-cream); box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.7); cursor: pointer }
+  .tab-plus svg { width: 24px; height: 24px; stroke-width: 2.2 }
+  .tab-plus:active { transform: scale(0.96) }
   .toasts { bottom: calc(env(safe-area-inset-bottom, 0px) + 92px) }
 
   .d-in { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 0; padding-top: 8px }
@@ -998,4 +1006,4 @@ button.row-note:hover { color: var(--text) }
 .photo-pick { display: flex; align-items: center; gap: 12px; margin-top: 8px; flex-wrap: wrap }
 .photo-pick img { width: 96px; height: 72px; object-fit: cover; border-radius: 10px }
 @media (max-width: 600px) { .form-grid { grid-template-columns: minmax(0, 1fr) } }
-.tabs-row { margin: 0 0 22px }
+.tabs-row { margin: 0 0 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px }
