@@ -2,16 +2,18 @@
 -- Watchlist : ordre d'ajout.
 -- On garde la date à laquelle un film est entré dans la watchlist, pour l'afficher
 -- du plus récemment ajouté au plus ancien (updated_at bouge à chaque changement).
+-- Script idempotent.
 -- ---------------------------------------------------------------------------
 
-alter table public.user_films add column watchlisted_at timestamptz;
+alter table public.user_films add column if not exists watchlisted_at timestamptz;
 
 -- films déjà en watchlist : on part de leur dernière modification
-update public.user_films set watchlisted_at = updated_at where watchlist;
+update public.user_films set watchlisted_at = updated_at where watchlist and watchlisted_at is null;
 
 create or replace function public.set_watchlisted_at()
 returns trigger
 language plpgsql
+set search_path = ''
 as $$
 begin
   if new.watchlist then
@@ -25,7 +27,8 @@ begin
 end;
 $$;
 
+drop trigger if exists user_films_watchlisted on public.user_films;
 create trigger user_films_watchlisted before insert or update on public.user_films
   for each row execute function public.set_watchlisted_at();
 
-create index user_films_watchlist_order on public.user_films (user_id, watchlisted_at desc) where watchlist;
+create index if not exists user_films_watchlist_order on public.user_films (user_id, watchlisted_at desc) where watchlist;
