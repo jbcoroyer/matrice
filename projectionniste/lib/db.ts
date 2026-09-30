@@ -80,6 +80,41 @@ export async function loadFilmStates(sb: SupabaseClient) {
   return { states, titles };
 }
 
+/** La watchlist telle qu'elle est en base : une seule requête, sans passer par TMDB. */
+export async function loadWatchlistFilms(sb: SupabaseClient): Promise<Movie[]> {
+  const out: Movie[] = [];
+  for (let from = 0; ; from += 1000) {
+    const rows = check(
+      await sb
+        .from("user_films")
+        .select("tmdb_id, updated_at, films(title, original_title, release_date, poster_path, backdrop_path, genre_ids, runtime)")
+        .eq("watchlist", true)
+        .order("updated_at", { ascending: false })
+        .order("tmdb_id")
+        .range(from, from + 999),
+    ) as unknown as {
+      tmdb_id: number;
+      films: { title: string; original_title: string | null; release_date: string | null; poster_path: string | null; backdrop_path: string | null; genre_ids: number[]; runtime: number | null } | null;
+    }[];
+    for (const r of rows) {
+      const f = r.films;
+      if (!f) continue;
+      out.push({
+        id: r.tmdb_id,
+        title: f.title,
+        original_title: f.original_title ?? undefined,
+        release_date: f.release_date ?? undefined,
+        poster_path: f.poster_path,
+        backdrop_path: f.backdrop_path,
+        genre_ids: f.genre_ids,
+        runtime: f.runtime ?? undefined,
+      });
+    }
+    if (rows.length < 1000) break;
+  }
+  return out;
+}
+
 /** Convertit un film TMDB en ligne de cache. */
 export function filmRow(m: Partial<Movie> & { id: number; title: string }): FilmRow {
   return {

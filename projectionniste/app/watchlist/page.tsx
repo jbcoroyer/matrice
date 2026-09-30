@@ -9,9 +9,9 @@ import { genreIds } from "@/lib/predict";
 import { useWatchlistMovies } from "@/lib/hooks";
 
 function Watchlist() {
-  const wl = useWatchlistMovies();
   const [genre, setGenre] = useState(0);
   const [sort, setSort] = useState<"pred" | "short" | "recent" | "old">("pred");
+  const wl = useWatchlistMovies(sort === "short");
   const sorted = useMemo(() => {
     if (!wl.data) return undefined;
     let l = wl.data.slice();
@@ -47,7 +47,11 @@ function Watchlist() {
             <option value="old">Plus anciens</option>
           </select>
         </label>
-        {sorted ? <span className="count">{sorted.length} films</span> : null}
+        {sorted ? (
+          <span className="count" aria-live="polite">
+            {sorted.length} films{wl.refining ? " · affinage de l'indice…" : ""}
+          </span>
+        ) : null}
       </div>
       {error ? (
         <ErrorLine error={error} onRetry={wl.reload} />

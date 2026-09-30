@@ -10,7 +10,7 @@ import { useAsync, useRecs } from "@/lib/hooks";
 import { BackLink } from "@/components/Rail";
 import { MoodChips } from "@/components/MoodChips";
 import { clearRecs } from "@/lib/recs";
-import { tmdb } from "@/lib/tmdb";
+import { mapLimit, tmdb } from "@/lib/tmdb";
 import type { Movie, Ranked } from "@/lib/types";
 
 const DECADES = [
@@ -51,7 +51,7 @@ function PourToi() {
   const runtimeFiltered = useAsync<Ranked[]>(
     async () => {
       const l = filtered!.slice(0, 120);
-      const det = await Promise.all(l.map((m) => tmdb<Movie>(`movie/${m.id}`).catch(() => null)));
+      const det = await mapLimit(l, 6, (m) => tmdb<Movie>(`movie/${m.id}`).catch(() => null));
       return l.filter((_, i) => det[i]?.runtime && det[i]!.runtime! <= maxRt);
     },
     [filtered, maxRt],

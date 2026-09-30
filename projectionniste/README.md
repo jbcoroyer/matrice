@@ -92,6 +92,14 @@ film isolé ; l'import Letterboxd les réapprend à partir de tes notes (`learnA
 pondérées par ta note et le rang, puis reclasse par indice en limitant le poids de chaque film
 source (diversité). Recalculé une fois par jour ou quand ton historique change.
 
+## Requêtes TMDB
+
+`lib/tmdb.ts` : au plus 6 requêtes en même temps, jusqu'à 3 essais (réseau, 429, 5xx) avec pause
+croissante, annulation des requêtes en attente quand la page change, réponses gardées en mémoire.
+Les notes TMDB déjà vues sont gardées 14 jours dans le navigateur (`lib/votes.ts`). La watchlist
+vient de la base en une requête et s'affiche tout de suite ; seules les notes inconnues sont
+demandées, 4 à la fois, pour affiner l'indice. « Pour toi » part de 60 films au plus.
+
 ## Structure
 
 ```

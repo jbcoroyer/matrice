@@ -29,6 +29,8 @@ export async function buildRecs(profile: Profile, d: Derived, { force = false } 
   const all = [...d.rated.entries()].sort((a, b) => b[1] - a[1]);
   let seeds = all.filter(([, r]) => r >= 4.5);
   if (seeds.length < 12) seeds = all.slice(0, 40);
+  // au plus 60 films de départ, les mieux notés : une requête chacun, inutile d'en faire des centaines
+  seeds = seeds.slice(0, 60);
 
   const agg = new Map<number, { m: Ranked; s: number; from: [number, string, number, number][] }>();
   let fatal: unknown = null;
