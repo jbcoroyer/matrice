@@ -88,6 +88,7 @@ function Programme({ c, onBack, onChange }: { c: Cycle; onBack: () => void; onCh
                 {title}
               </Link>
               {f.caption ? <span className="prog-cap">{f.caption}</span> : null}
+              {d.owned.has(f.tmdb_id) ? <span className="prog-own" title="Tu le possèdes">possédé</span> : null}
               <span className="prog-dots" aria-hidden="true" />
               {seen ? (
                 <span className="prog-seen">

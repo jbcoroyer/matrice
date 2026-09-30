@@ -84,6 +84,9 @@ Un **ensemble** de films (la filmographie d'un cinéaste, une saga, un studio, u
 - **Rayon** (posséder) : vit dans la **Collection**. Une étagère avec les boîtiers possédés et des
   **places vides en pointillé** ; « 11 / 14 » en chiffres légers ; pas de barre de progression.
   Plusieurs éditions d'un film comptent pour un. Trois rayons à l'affiche, les autres repliés.
+  Le but est d'avoir **vu et possédé** : chaque boîtier porte un petit œil s'il est vu (un manquant
+  déjà vu est plus lisible qu'un inconnu) ; « 2 / 35 possédés · 5 vus · 1 vu et possédé ». Les cycles
+  pas encore ouverts en rayon sont rappelés sous les rayons. Dans un cycle, « possédé » marque les films qu'on a.
 - **Cycle** (voir) : vit dans le **Journal** (onglet Cycles). Un **programme de cinémathèque** :
   une ligne par séance (année, titre, « vu le 12/03/2026 » et la note, ou « à voir · Journaliser »),
   et des cases comme des tickets poinçonnés dans la liste des cycles. « Vu » = `user_films.watched` ;
