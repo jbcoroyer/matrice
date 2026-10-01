@@ -166,7 +166,15 @@ carte en verre. Pas de liste de fonctions : la promesse d'abord.
 
 ## Premier lancement et pages vides (`components/ui.tsx`)
 
-- **Premier lancement** (`Onboarding`, en haut de Découvrir, tant qu'on a vu moins de 5 films) :
+- **Présentation** (`Welcome`, plein écran, à la première connexion d'un compte vide ; rouvrable depuis
+  Paramètres → Présentation) : cinq écrans en cartes, avec « Passer la présentation » et la flèche
+  droite/gauche. 1 *Bienvenue* : la promesse et quatre cartes (Découvrir, Parcours, Journal, Collection) ;
+  2 *Un journal en deux clics* (maquette d'un journal) ; 3 *Des étagères qui se colorent* (maquette d'un
+  parcours, légende vu / possédé / les deux) ; 4 *Trouve quoi voir* (maquette d'« Aujourd'hui » et de la
+  phrase libre) ; 5 *Tu viens de Letterboxd ?* avec **le dépôt de l'export directement dans l'écran**
+  (explications, progression, résultat), « Plus tard » ou « Commencer à zéro ». Mémorisée sur le compte
+  (`profiles.settings.onboarded`) et dans le navigateur.
+- **Marque ce que tu connais** (`Onboarding`, en haut de Découvrir, tant qu'on a vu moins de 5 films) :
   « Marque ce que *tu connais* » : dix-huit affiches de films très connus à cocher (enregistrés comme
   vus tout de suite). Dès deux films cochés, un **premier chemin** apparaît (« Tu as déjà vu 2 de ses
   9 films »). Import Letterboxd, Voir les parcours, Masquer ce guide (mémorisé).

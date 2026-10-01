@@ -3,6 +3,7 @@ import "@fontsource-variable/urbanist";
 import { AuthGate } from "@/components/AuthScreen";
 import { ConfirmHost, FooterStats, SessionBanner, Toaster } from "@/components/Chrome";
 import { Masthead, TabBar } from "@/components/Masthead";
+import { Welcome } from "@/components/Welcome";
 import { ProfileProvider } from "@/components/ProfileProvider";
 import { QuickLogHost } from "@/components/QuickLog";
 import "./globals.css";
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <ProfileProvider>
           <Masthead />
+          <Welcome />
           <main className="wrap" id="main">
             <AuthGate>{children}</AuthGate>
           </main>
