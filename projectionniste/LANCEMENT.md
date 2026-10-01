@@ -49,3 +49,11 @@ Cases à cocher dans l'ordre. **[moi]** = fait par Claude dans le code ; **[toi]
 
 ## Applis mobiles
 Voir `MOBILE.md` : essais sur téléphone (installation du site, Android Studio, iOS) avant la mise en ligne.
+
+## Déploiement Vercel (essais, bêta)
+- [ ] **[toi]** vercel.com → Add New → Project → importer `jbcoroyer/matrice` ; **Root Directory : `projectionniste`**
+- [ ] **[toi]** Environment Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (valeurs publiques) et `TMDB_TOKEN` (secret : à copier depuis ton `.env.local`)
+- [ ] **[toi]** Settings → Environments → Production → Branch Tracking : `claude/determined-dijkstra-molkiu` (ou fusionner la branche dans `main`). Sinon la branche n'est qu'un « preview », protégé par une connexion Vercel
+- [ ] **[toi]** Supabase → Authentication → URL Configuration : adresse `https://….vercel.app` dans *Site URL* et `https://….vercel.app/**` dans *Redirect URLs*
+- [ ] `vercel.json` : région Paris (`cdg1`) et en-tête `noindex` (la bêta ne doit pas être référencée) ; **retirer l'en-tête `X-Robots-Tag` au lancement public**
+- Plan Hobby gratuit : réservé à un usage non commercial. Convient à la bêta gratuite ; prévoir Pro (20 $/mois) si l'appli devient un produit.
