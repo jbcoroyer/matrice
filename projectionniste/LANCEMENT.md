@@ -51,8 +51,9 @@ Cases à cocher dans l'ordre. **[moi]** = fait par Claude dans le code ; **[toi]
 Voir `MOBILE.md` : essais sur téléphone (installation du site, Android Studio, iOS) avant la mise en ligne.
 
 ## Déploiement Vercel (essais, bêta)
-- [ ] **[toi]** vercel.com → Add New → Project → importer `jbcoroyer/matrice` ; **Root Directory : `projectionniste`**
-- [ ] **[toi]** Environment Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (valeurs publiques) et `TMDB_TOKEN` (secret : à copier depuis ton `.env.local`)
+- [x] Projet Vercel `fillmography` créé et relié à `jbcoroyer/matrice` (Root Directory `projectionniste`, protection « Vercel Authentication » désactivée pour que les téléphones y accèdent)
+- [x] Variables `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` renseignées
+- [ ] **[toi]** Variable `TMDB_TOKEN` (secret : à copier depuis ton `.env.local`, Production + Preview) puis Redeploy
 - [ ] **[toi]** Settings → Environments → Production → Branch Tracking : `claude/determined-dijkstra-molkiu` (ou fusionner la branche dans `main`). Sinon la branche n'est qu'un « preview », protégé par une connexion Vercel
 - [ ] **[toi]** Supabase → Authentication → URL Configuration : adresse `https://….vercel.app` dans *Site URL* et `https://….vercel.app/**` dans *Redirect URLs*
 - [ ] `vercel.json` : région Paris (`cdg1`) et en-tête `noindex` (la bêta ne doit pas être référencée) ; **retirer l'en-tête `X-Robots-Tag` au lancement public**
