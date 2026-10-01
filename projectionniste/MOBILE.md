@@ -36,7 +36,15 @@ seulement un raccourci. Pour un essai complet, ouvre un tunnel HTTPS temporaire 
 winget install Cloudflare.cloudflared
 cloudflared tunnel --url http://localhost:3000
 ```
-Il affiche une adresse `https://….trycloudflare.com` : ouvre-la sur le téléphone. Elle change à chaque lancement
+Si ton réseau bloque le port 7844 (réseau d'entreprise, école : la commande boucle sur « Failed to dial »), utilise un tunnel qui passe
+par le port 443, par exemple Pinggy (ssh est déjà dans Windows ; à la question du mot de passe, appuie sur Entrée) :
+```powershell
+ssh -p 443 -R0:localhost:3000 free.pinggy.io
+```
+ou `npx localtunnel --port 3000` (première visite : saisir comme mot de passe l'IP publique de ton PC, `curl.exe ifconfig.me`).
+En dernier recours, connecte le PC au partage de connexion de ton téléphone.
+
+Cloudflare affiche une adresse `https://….trycloudflare.com` : ouvre-la sur le téléphone. Elle change à chaque lancement
 (réinstalle l'appli si besoin). `npm run dev` doit tourner dans l'autre terminal.
 
 ## 1. Android : l'appli native (Android Studio)

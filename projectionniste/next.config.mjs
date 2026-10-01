@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   // essais depuis un téléphone ou l'émulateur Android sur le même réseau (npm run dev)
-  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*", "*.trycloudflare.com"],
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "172.*.*.*", "*.trycloudflare.com", "*.pinggy.link", "*.pinggy.io", "*.loca.lt"],
   async redirects() {
     return [
       { source: "/pour-toi", destination: "/decouvrir", permanent: true },
