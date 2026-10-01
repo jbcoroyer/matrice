@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: { default: BRAND.name, template: `%s · ${BRAND.name}` },
   description: BRAND.description,
   applicationName: BRAND.name,
+  icons: { apple: "/icons/apple-touch-icon.png" },
   appleWebApp: { capable: true, title: BRAND.name, statusBarStyle: "black-translucent" },
   ...(BRAND.url ? { metadataBase: new URL(BRAND.url) } : {}),
 };

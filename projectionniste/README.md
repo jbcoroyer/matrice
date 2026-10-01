@@ -115,3 +115,6 @@ supabase/       migrations SQL
 ```
 
 Données et images : TMDB. Ce produit utilise l'API TMDB sans être approuvé ni certifié par TMDB.
+
+## Mobile
+Installation sur téléphone (PWA) et applis Android/iOS (Capacitor) : voir `MOBILE.md`.

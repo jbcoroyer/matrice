@@ -46,3 +46,6 @@ Cases à cocher dans l'ordre. **[moi]** = fait par Claude dans le code ; **[toi]
 
 ## 6. Bêta fermée
 - [ ] **[toi]** Inviter 5 à 10 collectionneurs ; recueillir leurs retours pendant 3 à 4 semaines
+
+## Applis mobiles
+Voir `MOBILE.md` : essais sur téléphone (installation du site, Android Studio, iOS) avant la mise en ligne.

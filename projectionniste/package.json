@@ -7,9 +7,18 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "mobile:sync": "cap sync",
+    "mobile:android": "cap run android",
+    "mobile:android:studio": "cap open android",
+    "mobile:ios": "cap open ios",
+    "mobile:assets": "capacitor-assets generate --ios --android --iconBackgroundColor \"#0c0c0e\" --splashBackgroundColor \"#0c0c0e\""
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3",
     "@fontsource-variable/urbanist": "^5.3.0",
     "@supabase/supabase-js": "^2.117.2",
     "next": "^15.5.5",
@@ -17,6 +26,10 @@
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
     "@types/node": "^24.7.2",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",

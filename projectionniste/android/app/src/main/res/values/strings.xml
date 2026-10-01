@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fillmography</string>
+    <string name="title_activity_main">Fillmography</string>
+    <string name="package_name">com.fillmography.app</string>
+    <string name="custom_url_scheme">com.fillmography.app</string>
+</resources>
