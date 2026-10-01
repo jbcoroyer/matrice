@@ -6,7 +6,7 @@ Validée par le propriétaire du projet le 29/09/2026, à partir de ses référe
 
 | Question | Choix |
 |---|---|
-| Nom | **Fillmography** — mot-marque seul, « **Fill**mography » (gras + léger), pas de pictogramme |
+| Nom | **Fillmography** — mot-marque seul dans l'interface, « **Fill**mography » (gras + léger), jamais de pictogramme à côté du nom. Le pictogramme (disque dans son boîtier, `assets/pictogramme.svg`) sert uniquement d'icône : favicon, icône d'appli, écran de démarrage |
 | Ambiance | **Sombre d'abord** ; le clair existe, secondaire |
 | Accent | **Crème / ivoire**, utilisé très rarement |
 | Typographie | **Sans-serif géométrique douce** (Urbanist) |

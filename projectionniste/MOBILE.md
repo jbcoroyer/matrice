@@ -75,7 +75,7 @@ Pour distribuer à des testeurs (TestFlight) puis publier : compte **Apple Devel
 
 ## Ce qui est fait
 
-- Icône, écran de démarrage, couleur de la barre d'état, orientation portrait (icônes provisoires : un « F » ; à remplacer par ton logo : dépose `assets/icon-only.png`, `icon-foreground.png`, `icon-background.png`, `splash.png` (1024 et 2732 px) puis `npm run mobile:assets`).
+- Icône, écran de démarrage, couleur de la barre d'état, orientation portrait (le pictogramme vient de `assets/pictogramme.svg` ; pour le changer, remplace les PNG de `assets/` (`icon-only`, `icon-foreground`, `icon-background` en 1024 px, `splash` en 2732 px) puis `npm run mobile:assets`, et mets à jour `public/icons/`).
 - Encoche et barre d'état gérées (marge haute `--safe-top`), barre d'onglets au-dessus de la zone du geste.
 - Page de secours en français quand le site est injoignable (`mobile/www/index.html`).
 
