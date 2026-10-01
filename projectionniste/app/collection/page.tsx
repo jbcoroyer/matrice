@@ -420,9 +420,6 @@ function Collection() {
               <button type="button" onClick={() => (closeMenu(), setSharing(true))}>
                 Partager ma cinémathèque
               </button>
-              <Link href="/collection/registre" onClick={closeMenu}>
-                Registre de la collection
-              </Link>
               <Link href="/parcours" onClick={closeMenu}>
                 Mes parcours
               </Link>

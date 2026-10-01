@@ -95,7 +95,7 @@ function Journal() {
               {index.years.length ? (
                 <>
                   {" · "}
-                  <Link className="link" href={`/bilan?annee=${f.year ?? index.years[0][0]}`}>
+                  <Link className="link" href={`/portrait?vue=annee&annee=${f.year ?? index.years[0][0]}`}>
                     Bilan {f.year ?? index.years[0][0]}
                   </Link>
                 </>
@@ -136,6 +136,9 @@ function Journal() {
             ))}
           </select>
         </label>
+        <details className="more-filters" open={!!(f.tag || f.minRating || f.reviews || f.rewatch)}>
+          <summary className="link-btn quiet">Plus de filtres</summary>
+          <div className="filterbar inner">
         <label>
           Étiquette
           <select value={f.tag ?? ""} onChange={(e) => set({ tag: e.target.value || undefined })}>
@@ -163,6 +166,8 @@ function Journal() {
         <label>
           <input type="checkbox" checked={!!f.rewatch} onChange={(e) => set({ rewatch: e.target.checked || undefined })} /> Revisionnages
         </label>
+          </div>
+        </details>
         {active ? (
           <button type="button" className="link-btn" onClick={() => setFilter({})}>
             Tout afficher

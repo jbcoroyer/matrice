@@ -81,6 +81,12 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
     setOpen(false);
     router.push(`/recherche?q=${encodeURIComponent(term)}`);
   };
+  // une phrase (« dans le style de Scorsese, mafia, après 2010 ») se décrit sur Découvrir : une seule barre de recherche
+  const desc = q.trim().split(/\s+/).length >= 3;
+  const goEnvie = () => {
+    setOpen(false);
+    router.push(`/decouvrir?envie=${encodeURIComponent(q.trim())}`);
+  };
   const go = (h: Hit) => {
     setOpen(false);
     setQ("");
@@ -90,16 +96,18 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     const n = hits?.length ?? 0;
+    const last = n + (desc ? 1 : 0);
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setOpen(true);
-      setSel((s) => (s + 1 > n ? 0 : s + 1));
+      setSel((s) => (s + 1 > last ? 0 : s + 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSel((s) => (s - 1 < 0 ? n : s - 1));
+      setSel((s) => (s - 1 < 0 ? last : s - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (hits && sel >= 0 && sel < n) go(hits[sel]);
+      else if (desc && sel === n + 1) goEnvie();
       else goAll();
     } else if (e.key === "Escape") {
       setOpen(false);
@@ -177,6 +185,13 @@ export function SearchBox({ initial = "" }: { initial?: string }) {
             <li id={`${listId}-${hits.length}`} role="option" aria-selected={sel === hits.length} onMouseEnter={() => setSel(hits.length)}>
               <button type="button" className="all" onClick={goAll}>
                 Tous les résultats pour « {q.trim()} »
+              </button>
+            </li>
+          ) : null}
+          {hits && desc ? (
+            <li id={`${listId}-${hits.length + 1}`} role="option" aria-selected={sel === hits.length + 1} onMouseEnter={() => setSel(hits.length + 1)}>
+              <button type="button" className="all" onClick={goEnvie}>
+                Trouver un film qui correspond : « {q.trim()} »
               </button>
             </li>
           ) : null}

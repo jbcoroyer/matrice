@@ -8,7 +8,6 @@ import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, Loader } from "@/components/ui";
 import { setPassword, signOut } from "@/lib/auth";
 import { updateProfile } from "@/lib/db";
-import { profileHref } from "@/lib/publicProfile";
 import { importLetterboxd, type Progress } from "@/lib/letterboxd";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 
@@ -95,26 +94,20 @@ function LetterboxdImport() {
 function ProfileName() {
   const { sb, userId, profile, reload, toast } = useProfile();
   const [name, setName] = useState(profile?.owner ?? "");
-  const [handle, setHandle] = useState(profile?.username ?? "");
-  const [bio, setBio] = useState(profile?.bio ?? "");
   const [busy, setBusy] = useState(false);
-  const cleanHandle = handle.trim().toLowerCase();
-  const handleOk = !cleanHandle || /^[a-z0-9_]{3,24}$/.test(cleanHandle);
-  const dirty = name.trim() !== (profile?.owner ?? "") || cleanHandle !== (profile?.username ?? "") || bio.trim() !== (profile?.bio ?? "");
+  const dirty = name.trim() !== (profile?.owner ?? "");
   return (
     <form
       className="stack-form"
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!handleOk) return;
         setBusy(true);
         try {
-          await updateProfile(sb!, userId!, { display_name: name.trim() || null, username: cleanHandle || null, bio: bio.trim() || null });
+          await updateProfile(sb!, userId!, { display_name: name.trim() || null });
           await reload();
-          toast("Profil enregistré");
+          toast("Nom enregistré");
         } catch (err) {
-          const m = errorText(err);
-          toast(`Échec : ${m === "Cet élément existe déjà." ? "ce pseudo est déjà pris." : m}`);
+          toast(`Échec : ${errorText(err)}`);
         } finally {
           setBusy(false);
         }
@@ -124,57 +117,14 @@ function ProfileName() {
         Nom affiché
         <input className="input" value={name} maxLength={60} placeholder="Ton prénom ou un pseudo" onChange={(e) => setName(e.target.value)} />
       </label>
-      <label className="block">
-        Pseudo (adresse de ton profil public)
-        <input className="input" value={handle} maxLength={24} placeholder="ex. marie_cine" autoCapitalize="none" spellCheck={false} aria-invalid={!handleOk} onChange={(e) => setHandle(e.target.value)} />
-        <span className="note">{handleOk ? (cleanHandle ? `filmable.app/u/${cleanHandle}` : "3 à 24 caractères : lettres, chiffres et _. Facultatif.") : "3 à 24 caractères : lettres, chiffres et _ seulement."}</span>
-      </label>
-      <label className="block">
-        Présentation
-        <textarea className="input" rows={3} value={bio} maxLength={500} placeholder="Deux lignes sur tes goûts, visibles sur ton profil public." onChange={(e) => setBio(e.target.value)} />
-      </label>
-      <div className="row-actions">
-        {dirty ? (
-          <button type="submit" className="btn primary" disabled={busy || !handleOk}>
+      {dirty ? (
+        <div className="row-actions">
+          <button type="submit" className="btn primary" disabled={busy}>
             Enregistrer
           </button>
-        ) : null}
-        <Link className="btn ghost" href={profileHref(userId!, profile?.username)}>
-          Voir mon profil public
-        </Link>
-      </div>
+        </div>
+      ) : null}
     </form>
-  );
-}
-
-/** Visibilité dans « Qui l'a vu » sur les fiches de films. */
-function Activity() {
-  const { sb, userId, profile, reload, toast } = useProfile();
-  const [on, setOn] = useState(profile?.showActivity ?? true);
-  return (
-    <label className="switch-row">
-      <input
-        type="checkbox"
-        checked={on}
-        onChange={async (e) => {
-          const v = e.target.checked;
-          setOn(v);
-          try {
-            await updateProfile(sb!, userId!, { show_activity: v });
-            await reload();
-            toast(v ? "Les autres membres voient les films que tu as vus" : "Tes films vus sont masqués aux autres membres");
-          } catch (err) {
-            setOn(!v);
-            toast(`Échec : ${errorText(err)}`);
-          }
-        }}
-      />
-      <span className="sw" aria-hidden />
-      <span>
-        Apparaître dans « Qui l'a vu »
-        <small>Les autres membres voient ton nom et ta note sur les fiches des films que tu as vus. Tes critiques publiques restent visibles dans tous les cas.</small>
-      </span>
-    </label>
   );
 }
 
@@ -244,7 +194,7 @@ function Password({ highlight }: { highlight?: boolean }) {
 }
 
 const SECTIONS = [
-  { id: "profil", l: "Profil" },
+  { id: "profil", l: "Nom" },
   { id: "import", l: "Import Letterboxd" },
   { id: "apparence", l: "Apparence" },
   { id: "compte", l: "Compte" },
@@ -295,11 +245,10 @@ function Settings() {
         ) : null}
         {sec(
           "profil",
-          "Profil",
+          "Nom affiché",
           null,
           <>
             <ProfileName />
-            <Activity />
           </>,
         )}
         {sec("import", "Import Letterboxd", null, <LetterboxdImport />)}

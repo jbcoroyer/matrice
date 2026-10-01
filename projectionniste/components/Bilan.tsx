@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/components/ProfileProvider";
 import { StarsText } from "@/components/Stars";
-import { EmptyState, ErrorLine, Loader, ProfileGate, SecHead, StartActions } from "@/components/ui";
+import { EmptyState, ErrorLine, Loader, SecHead, StartActions } from "@/components/ui";
 import { filmFacts, people, summarize, yearEntries, type Facts, type YearEntry } from "@/lib/bilan";
 import { diaryIndex } from "@/lib/diary";
 import { frDate, num1 } from "@/lib/format";
@@ -83,7 +83,8 @@ function Film({ e, note }: { e: YearEntry; note?: React.ReactNode }) {
   );
 }
 
-function Bilan() {
+/** Le bilan d'une année, calculé à partir du journal (onglet « Une année » de Mes chiffres). */
+export function Bilan() {
   const { sb, userId } = useProfile();
   const [years, setYears] = useState<[number, number][] | null>(null);
   const [year, setYear] = useState<number | null>(null);
@@ -106,7 +107,7 @@ function Bilan() {
     let live = true;
     setEntries(null);
     setFacts(null);
-    history.replaceState(null, "", `/bilan?annee=${year}`);
+    history.replaceState(null, "", `/portrait?vue=annee&annee=${year}`);
     yearEntries(sb, userId, year).then((l) => {
       if (!live) return;
       setEntries(l);
@@ -125,7 +126,7 @@ function Bilan() {
   if (!years.length)
     return (
       <section className="section">
-        <SecHead as="h1" title="Bilan de l'année" />
+        <SecHead title="Bilan de l'année" />
         <EmptyState title="Rien à raconter pour l'instant" actions={<StartActions />}>
           Le bilan se construit à partir des visionnages datés de ton <Link className="link" href="/journal">journal</Link> : mois par mois, tes notes, tes meilleurs films, tes cinéastes.
         </EmptyState>
@@ -140,9 +141,9 @@ function Bilan() {
   return (
     <section className="section bilan">
       <div className="page-head">
-        <h1>
+        <h2>
           Ton année <span>{year}</span>
-        </h1>
+        </h2>
         <div className="year-nav">
           <button type="button" className="btn ghost" disabled={!prev} onClick={() => prev && setYear(prev)} aria-label="Année précédente">
             ←
@@ -349,13 +350,5 @@ function Bilan() {
         </>
       )}
     </section>
-  );
-}
-
-export default function Page() {
-  return (
-    <ProfileGate>
-      <Bilan />
-    </ProfileGate>
   );
 }

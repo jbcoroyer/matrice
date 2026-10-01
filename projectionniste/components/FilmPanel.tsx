@@ -4,7 +4,7 @@ import { errorText } from "@/lib/errors";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { filmRow } from "@/lib/db";
-import { clearTopSlot, DIARY_EVENT, diaryChanged, entriesForFilm, loadTop, setTopSlot, type DiaryEntry, type TopFilm } from "@/lib/diary";
+import { DIARY_EVENT, diaryChanged, entriesForFilm, type DiaryEntry } from "@/lib/diary";
 import { addWant, formatLabel, isWanted, itemsForFilm, removeWant, type CollectionItem } from "@/lib/collection";
 import { listsWithFilm } from "@/lib/lists";
 import { CopyDialog } from "./CopyDialog";
@@ -16,11 +16,10 @@ import { useProfile, type FilmInput } from "./ProfileProvider";
 import { Stars } from "./Stars";
 
 
-/** Actions de la fiche : journal, vu, watchlist, note, favori, liste, collection, partage, top 5, pas pour moi. */
+/** Actions de la fiche : trois gestes visibles (vu, watchlist, disque), la note, et un menu « Plus » (journal daté, coup de cœur, liste, partage). */
 export function FilmPanel({ film }: { film: FilmInput }) {
   const d = useProfile();
   const [logging, setLogging] = useState(false);
-  const [top, setTop] = useState<TopFilm[]>([]);
   const [copies, setCopies] = useState<CollectionItem[]>([]);
   const [copy, setCopy] = useState<CollectionItem | "new" | null>(null);
   const [inLists, setInLists] = useState(0);
@@ -53,29 +52,12 @@ export function FilmPanel({ film }: { film: FilmInput }) {
   useEffect(() => {
     if (d.sb && d.userId && signedIn) listsWithFilm(d.sb, d.userId, film.id).then((s) => setInLists(s.size), () => {});
   }, [d.sb, d.userId, signedIn, film.id]);
-  useEffect(() => {
-    if (d.sb && d.userId && signedIn) loadTop(d.sb, d.userId).then(setTop, () => {});
-  }, [d.sb, d.userId, signedIn]);
 
   const isSeen = d.seen.has(film.id);
   const isFav = d.favorites.has(film.id);
   const inWl = d.watchlist.has(film.id);
   const rating = d.rated.get(film.id) || 0;
-  const mySlot = top.find((t) => t.tmdb_id === film.id)?.slot;
   const closeMore = () => more.current?.removeAttribute("open");
-
-  const pickSlot = async (v: string) => {
-    if (!d.sb || !d.userId) return;
-    try {
-      if (v === "0") mySlot && (await clearTopSlot(d.sb, d.userId, mySlot));
-      else await setTopSlot(d.sb, d.userId, filmRow(film), +v);
-      setTop(await loadTop(d.sb, d.userId));
-      d.toast(v === "0" ? "Retiré de ton top 5" : `En n° ${v} de ton top 5`);
-    } catch (e) {
-      d.toast(`Échec : ${errorText(e)}`);
-    }
-    closeMore();
-  };
 
   const share = async () => {
     try {
@@ -106,13 +88,9 @@ export function FilmPanel({ film }: { film: FilmInput }) {
   return (
     <>
       <div className="film-actions">
-        <button type="button" className="btn primary" onClick={() => setLogging(true)}>
-          <Journal />
-          Ajouter au journal
-        </button>
-        <button type="button" className="btn" aria-pressed={isSeen} onClick={() => (isSeen ? d.unmarkSeen(film) : d.markSeen(film))}>
+        <button type="button" className={isSeen ? "btn" : "btn primary"} aria-pressed={isSeen} onClick={() => (isSeen ? d.unmarkSeen(film) : d.markSeen(film))}>
           {isSeen ? <Check /> : <Eye />}
-          {isSeen ? "Vu" : "Marquer vu"}
+          {isSeen ? "Vu" : "Je l'ai vu"}
         </button>
         {!isSeen ? (
           <button type="button" className="btn" aria-pressed={inWl} onClick={() => d.toggleWatchlist(film)}>
@@ -120,26 +98,14 @@ export function FilmPanel({ film }: { film: FilmInput }) {
             Watchlist
           </button>
         ) : null}
+        <button type="button" className="btn" aria-pressed={copies.length > 0} onClick={() => setCopy("new")} title={copies.length ? "Tu possèdes ce film : ajouter un autre exemplaire" : "Ajouter à ma collection"}>
+          <Disc />
+          {copies.length ? "En disque" : "Disque"}
+        </button>
         <span className="rate">
           {rating ? "Ta note" : "Noter"}
           <Stars value={rating} onChange={(v) => d.markSeen(film, v)} />
         </span>
-        <button type="button" className="btn icon" aria-pressed={isFav} aria-label="Coup de cœur" title="Coup de cœur" onClick={() => d.toggleFavorite(film)}>
-          <Heart className="fillable" />
-        </button>
-        <button type="button" className="btn icon" aria-label="Ajouter à une liste" title="Ajouter à une liste" onClick={() => setListing(true)}>
-          <List />
-        </button>
-        <button
-          type="button"
-          className="btn icon"
-          aria-pressed={copies.length > 0}
-          aria-label={copies.length ? "Ajouter un autre exemplaire à ma collection" : "Ajouter à ma collection"}
-          title={copies.length ? "Tu possèdes ce film : ajouter un autre exemplaire" : "Ajouter à ma collection"}
-          onClick={() => setCopy("new")}
-        >
-          <Disc />
-        </button>
         <details
           className="more-menu"
           ref={more}
@@ -155,21 +121,21 @@ export function FilmPanel({ film }: { film: FilmInput }) {
             <Dots />
           </summary>
           <div className="menu">
-            <label>
-              Top 5
-              <select value={mySlot ?? 0} onChange={(e) => pickSlot(e.target.value)} aria-label="Place dans ton top 5">
-                <option value={0}>—</option>
-                {[1, 2, 3, 4, 5].map((n) => {
-                  const occ = top.find((t) => t.slot === n);
-                  return (
-                    <option key={n} value={n}>
-                      n° {n}
-                      {occ && occ.tmdb_id !== film.id ? ` (remplace ${occ.films?.title ?? "un film"})` : ""}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
+            <button
+              type="button"
+              onClick={() => {
+                closeMore();
+                setLogging(true);
+              }}
+            >
+              Ajouter au journal, avec la date <Journal />
+            </button>
+            <button type="button" aria-pressed={isFav} onClick={() => (closeMore(), d.toggleFavorite(film))}>
+              {isFav ? "Retirer des coups de cœur" : "Coup de cœur"} <Heart className="fillable" />
+            </button>
+            <button type="button" onClick={() => (closeMore(), setListing(true))}>
+              Ajouter à une liste <List />
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -187,7 +153,7 @@ export function FilmPanel({ film }: { film: FilmInput }) {
           </div>
         </details>
       </div>
-      {inLists || copies.length || mySlot ? (
+      {inLists || copies.length ? (
         <div className="film-sub">
           {inLists ? (
             <button type="button" onClick={() => setListing(true)}>
@@ -204,11 +170,6 @@ export function FilmPanel({ film }: { film: FilmInput }) {
                   {c.edition ? ` (${c.edition})` : ""}
                 </button>
               ))}
-            </span>
-          ) : null}
-          {mySlot ? (
-            <span>
-              N° <b>{mySlot}</b> de ton top 5
             </span>
           ) : null}
         </div>

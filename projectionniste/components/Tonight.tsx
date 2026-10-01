@@ -189,6 +189,20 @@ export function Tonight() {
     if (!ctx) run.current++;
   }, [ctx]);
 
+  // une phrase venue de la barre de recherche (?envie=…) est lancée tout de suite
+  const fromUrl = useRef(false);
+  useEffect(() => {
+    if (!ctx || fromUrl.current) return;
+    const q = new URLSearchParams(location.search).get("envie");
+    if (!q) return;
+    fromUrl.current = true;
+    history.replaceState(null, "", location.pathname);
+    setText(q);
+    ask(q);
+    document.getElementById("tonight-title")?.scrollIntoView({ block: "start" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctx]);
+
   if (!ctx) return null;
   const envies = ENVIES.filter((e) => (e.k === "possede" ? unseenOwned > 0 : e.k === "watchlist" ? d.watchlist.size > 0 : true));
 

@@ -85,17 +85,6 @@ export function DiaryRow({
           </button>
         </div>
         {e.review ? <ReviewText text={e.review} spoilers={e.spoilers} /> : null}
-        {e.review ? (
-          <p className="review-foot">
-            {e.review_public ? (
-              <Link href={`/critique/${e.id}`} className="link-quiet">
-                Critique publique · j'aime et commentaires
-              </Link>
-            ) : (
-              <span className="dim">Critique privée</span>
-            )}
-          </p>
-        ) : null}
       </div>
     </li>
   );

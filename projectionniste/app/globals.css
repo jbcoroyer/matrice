@@ -1354,3 +1354,10 @@ button.spine { border: 0; font: inherit; cursor: pointer; text-align: inherit }
 .teaser-n { font-size: 14px; color: var(--text-2) }
 .teaser-n a { color: var(--text); font-weight: 600 }
 @media (max-width: 900px) { .salles-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) } .teaser-list { grid-template-columns: minmax(0, 1fr) } }
+
+/* Journal : l'année d'abord, le reste derrière « Plus de filtres » */
+.more-filters { display: inline-block }
+.more-filters > summary { list-style: none; cursor: pointer; font-size: 14px; color: var(--text-2) }
+.more-filters > summary::-webkit-details-marker { display: none }
+.more-filters[open] > summary { margin-bottom: 10px }
+.filterbar.inner { margin-top: 0 }

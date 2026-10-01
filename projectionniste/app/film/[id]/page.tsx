@@ -8,10 +8,8 @@ import { FilmHistory, FilmPanel } from "@/components/FilmPanel";
 import { FilmDoors } from "@/components/Doors";
 import { FilmSets } from "@/components/SetLinks";
 import { TrailMark } from "@/components/Trail";
-import { FilmReviews } from "@/components/Reviews";
 import { SeenBadge } from "@/components/SeenBadge";
 import { TitleDuo } from "@/components/TitleDuo";
-import { FilmViewers } from "@/components/Viewers";
 import { GENRE_FR } from "@/lib/genres";
 import { runtime, truncate, yearOf } from "@/lib/format";
 import { img } from "@/lib/tmdb";
@@ -143,7 +141,6 @@ export default async function FilmPage({ params }: Props) {
           {m.tagline ? <p className="tagline-f">{m.tagline}</p> : null}
           {m.overview ? <p className="overview">{m.overview}</p> : <p className="note">Pas encore de résumé en français.</p>}
         </div>
-        <FilmViewers tmdbId={m.id} />
       </div>
 
       <FilmHistory film={film} />
@@ -213,7 +210,6 @@ export default async function FilmPage({ params }: Props) {
         </section>
       ) : null}
 
-      <FilmReviews tmdbId={m.id} />
 
     </article>
   );

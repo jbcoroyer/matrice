@@ -30,7 +30,8 @@ export function LogDialog({
   const [liked, setLiked] = useState(entry ? entry.liked : favorites.has(film.id));
   const [review, setReview] = useState(entry?.review || "");
   const [spoilers, setSpoilers] = useState(entry?.spoilers || false);
-  const [reviewPublic, setReviewPublic] = useState(entry ? entry.review_public : true);
+  // les critiques restent privées : Filmable n'a plus de lecture publique
+  const reviewPublic = false;
   const [tags, setTags] = useState<string[]>(entry?.tags || []);
   const [tagDraft, setTagDraft] = useState("");
   const [known, setKnown] = useState<string[]>(tagCache || []);
@@ -149,10 +150,6 @@ export function LogDialog({
           <div className="form-row">
             <label className="check">
               <input type="checkbox" checked={spoilers} onChange={(e) => setSpoilers(e.target.checked)} /> Contient des spoilers
-            </label>
-            <label className="check">
-              <input type="checkbox" checked={!reviewPublic} onChange={(e) => setReviewPublic(!e.target.checked)} /> Critique privée{" "}
-              <span className="dim">(sinon visible de tous sur la fiche du film)</span>
             </label>
           </div>
         ) : null}

@@ -142,9 +142,9 @@ function PosterWall() {
   );
 }
 
-/** Pages lisibles sans compte : collection partagée, liste, critique, profil public, ensembles, fiche film, personne, studio. */
+/** Pages lisibles sans compte : collection partagée, liste, parcours, fiche film, personne, studio. */
 export const isPublicPath = (path: string) =>
-  path.startsWith("/c/") || path === "/ensembles" || /^\/(listes|critique|u|ensembles)\/[^/]+$/.test(path) || /^\/(film|personne|studio)\/\d+$/.test(path);
+  path.startsWith("/c/") || /^\/(listes|ensembles)\/[^/]+$/.test(path) || /^\/(film|personne|studio)\/\d+$/.test(path);
 
 /** Tout le site passe par ici : sans compte connecté, on affiche l'écran de connexion. */
 export function AuthGate({ children }: { children: React.ReactNode }) {

@@ -18,6 +18,10 @@ const nextConfig = {
       { source: "/reglages", destination: "/parametres", permanent: true },
       // Parcours : les rayons, les cycles et le catalogue au même endroit ; la watchlist est l'onglet « À voir » du Journal
       { source: "/ensembles", destination: "/parcours", permanent: true },
+      // le social est retiré : critiques publiques et profils publics
+      { source: "/u/:handle", destination: "/decouvrir", permanent: true },
+      { source: "/critique/:id", destination: "/decouvrir", permanent: true },
+      { source: "/bilan", destination: "/portrait?vue=annee", permanent: true },
       { source: "/watchlist", destination: "/journal?onglet=avoir", permanent: true },
       { source: "/compte", destination: "/parametres", permanent: true },
     ];
