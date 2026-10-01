@@ -71,7 +71,7 @@ export default function Page() {
         <h2>Combien de temps</h2>
         <p>
           Tant que ton compte existe. Quand tu le supprimes, tes données et tes photos sont effacées immédiatement de la base. Des copies de sauvegarde de l'hébergeur peuvent subsister pendant une durée
-          limitée avant d'être écrasées : <Fill v="[durée de rétention des sauvegardes à préciser selon l'offre d'hébergement]" />.
+          limitée avant d'être écrasées : <Fill v={LEGAL.backups} />.
         </p>
       </section>
 

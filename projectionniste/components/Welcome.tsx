@@ -81,7 +81,7 @@ function VisToday() {
 }
 
 /**
- * Présentation de Filmable à la première connexion : quelques cartes (ce que fait l'appli), puis l'import
+ * Présentation de Fillmography à la première connexion : quelques cartes (ce que fait l'appli), puis l'import
  * de Letterboxd, qu'on peut remettre à plus tard. Se rouvre depuis Paramètres.
  */
 export function Welcome() {
@@ -162,7 +162,7 @@ export function Welcome() {
               <h2 id="welcome-title" tabIndex={-1} ref={head}>
                 Vois et <span>possède</span> les films qui comptent.
               </h2>
-              <p className="welcome-lede">Filmable est ton carnet de cinéma : ce que tu as vu, ce que tu possèdes, et par quoi continuer. Voilà comment ça marche.</p>
+              <p className="welcome-lede">Fillmography est ton carnet de cinéma : ce que tu as vu, ce que tu possèdes, et par quoi continuer. Voilà comment ça marche.</p>
               <ul className="ob-cards">
                 {FEATURES.map((f) => (
                   <li key={f.k} className="ob-feature">

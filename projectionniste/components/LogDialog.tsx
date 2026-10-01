@@ -30,7 +30,7 @@ export function LogDialog({
   const [liked, setLiked] = useState(entry ? entry.liked : favorites.has(film.id));
   const [review, setReview] = useState(entry?.review || "");
   const [spoilers, setSpoilers] = useState(entry?.spoilers || false);
-  // les critiques restent privées : Filmable n'a plus de lecture publique
+  // les critiques restent privées : Fillmography n'a plus de lecture publique
   const reviewPublic = false;
   const [tags, setTags] = useState<string[]>(entry?.tags || []);
   const [tagDraft, setTagDraft] = useState("");

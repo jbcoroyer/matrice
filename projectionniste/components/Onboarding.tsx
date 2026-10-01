@@ -15,7 +15,7 @@ const ONBOARD_KEY = "projo.v5.onboard";
 const WALL = 18;
 
 /**
- * Premier lancement : la valeur avant la saisie. On coche quelques films qu'on connaît, et Filmable
+ * Premier lancement : la valeur avant la saisie. On coche quelques films qu'on connaît, et Fillmography
  * montre aussitôt un chemin (le cinéaste le plus présent, ce qu'il en reste à voir).
  */
 export function Onboarding() {
@@ -59,7 +59,7 @@ export function Onboarding() {
       <h2 id="onboard-title">
         Marque ce que <span>tu connais</span>
       </h2>
-      <p className="onboard-lede">Clique les films que tu as déjà vus. Filmable te montre aussitôt par où continuer.</p>
+      <p className="onboard-lede">Clique les films que tu as déjà vus. Fillmography te montre aussitôt par où continuer.</p>
       <div className="onboard-wall" role="group" aria-label="Films que tu connais">
         {films.data
           ? wall.map((m) => {

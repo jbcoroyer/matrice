@@ -49,7 +49,7 @@ lendemain, pas à chaque visite ; elle se recalcule dès qu'un film est vu.
   aujourd'hui : regardé, cherché, noté, en salles ou non), sans les films déjà vus. « Tous les
   classements » mène à `/decouvrir/populaires`.
 - **Ce soir ?** (`Tonight`, `lib/ask.ts`) : de quoi choisir un film, de trois façons.
-  - **Une phrase** dans une barre : « Un film dans le style de Scorsese, mafia, après 2010 ». Filmable
+  - **Une phrase** dans une barre : « Un film dans le style de Scorsese, mafia, après 2010 ». Fillmography
     la lit lui-même (pas d'IA extérieure) : genres, thèmes (mots-clés TMDB), pays, époques (« après
     2010 », « années 80 », « avant 1980 », « récent », « classique »), durées (« moins de 2 h »,
     « court »), « dans ma watchlist », « possédé », cinéastes (« dans le style de… » = ses films
@@ -97,7 +97,7 @@ profil). Planches de départ : `design/collection/`.
 
 **Page Collection** (`app/collection/page.tsx`, `lib/shelf.ts`) : une vidéothèque, pas un tableau.
 - En tête : « Ma cinémathèque », une phrase (« 187 films, 203 exemplaires »), **Ajouter** et un menu ⋯
-  (Ajouter plusieurs disques, Partager, Mes parcours, Je cherche un disque). Une ligne rappelle les prêts s'il y en a. **Ajouter plusieurs disques** : un film par ligne, avec année et support facultatifs (« Heat (1995) — 4K »), Filmable retrouve chaque film, on confirme.
+  (Ajouter plusieurs disques, Partager, Mes parcours, Je cherche un disque). Une ligne rappelle les prêts s'il y en a. **Ajouter plusieurs disques** : un film par ligne, avec année et support facultatifs (« Heat (1995) — 4K »), Fillmography retrouve chaque film, on confirme.
 - Jusqu'à 12 films : tout est de face (l'affiche dans le cadre de sa matière), sans aucun outil.
 - Au-delà : **Dernières entrées** de face, puis **l'étagère** : une seule, continue, un dos par
   exemplaire dont la **couleur de l'affiche monte à mi-hauteur** (possédé) ou **remplit tout le dos avec
@@ -149,7 +149,7 @@ seule page ; l'ancien « rayon » (posséder) et « cycle » (voir) sont réunis
 
 ## Écran d'accueil (`components/AuthScreen.tsx`)
 
-Mur d'affiches du moment incliné et assombri, grand mot-marque « **Film**able », **une promesse**
+Mur d'affiches du moment incliné et assombri, grand mot-marque « **Fill**mography », **une promesse**
 (« Vois et *possède* les films qui comptent »), une phrase qui explique les parcours colorés, trois
 parcours lisibles sans compte (Palmes d'or, Nouvelle Vague, Studio Ghibli), et le formulaire dans une
 carte en verre. Pas de liste de fonctions : la promesse d'abord.
@@ -162,7 +162,7 @@ carte en verre. Pas de liste de fonctions : la promesse d'abord.
 - **Mes chiffres** (`/portrait`, menu de l'avatar) : deux vues, *Depuis toujours* (chiffres, répartition
   des notes, **highlights** : réalisateur, acteur, genre, époque les plus vus, film le mieux noté) et
   *Une année* (le bilan, mois par mois). Liens vers les films vus, les parcours et les chiffres de la
-  collection (`/collection/registre`). Plus de Top 5 ni de profil public : Filmable est un carnet privé.
+  collection (`/collection/registre`). Plus de Top 5 ni de profil public : Fillmography est un carnet privé.
 
 ## Premier lancement et pages vides (`components/ui.tsx`)
 

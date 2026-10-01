@@ -10,15 +10,17 @@ Cases à cocher dans l'ordre. **[moi]** = fait par Claude dans le code ; **[toi]
 - [x] Dépôt trié : l'ancien outil est dans `archives/`, l'application dans `projectionniste/`
 
 ## 1. Choisir le nom et le domaine
-- [ ] **[toi]** Lancer `node scripts/domaines.mjs` (depuis `projectionniste/`) pour voir quels noms en .com sont libres ; coller le résultat à Claude
+- [x] Nom retenu : **Fillmography** (mot-marque « **Fill**mography »)
+- [ ] **[toi]** Vérifier que fillmography.com est libre : `node scripts/domaines.mjs fillmography` (depuis `projectionniste/`) ; sinon, voir les autres noms
+- [ ] ~~Lancer `node scripts/domaines.mjs`~~ (depuis `projectionniste/`) pour voir quels noms en .com sont libres ; coller le résultat à Claude
 - [ ] **[toi]** Vérifier la marque du nom retenu sur le site de l'INPI (base des marques) et dans les stores (App Store, Google Play)
 - [ ] **[toi]** Acheter le domaine .com (registrar de ton choix) et activer la protection de la vie privée (masquer tes coordonnées dans le Whois)
 - [ ] **[toi]** Faire le logo en SVG ; **[moi]** l'intégrer (icônes PNG 192/512, icône iPhone, image de partage) et changer le nom dans `lib/brand.ts`
 
 ## 2. Compléter les informations légales
-- [ ] **[toi]** Donner à Claude : prénom et nom (ou raison sociale), adresse postale, adresse email de contact
+- [x] Identité de l'éditeur (Jean-Baptiste Coroyer, entrepreneur individuel, adresse, email), hébergeurs et région (Irlande) renseignés dans `lib/brand.ts`
   - Particulier non professionnel : tu peux ne pas publier ton adresse si tu la communiques à l'hébergeur, qui la garde en cas de demande de justice. Les mentions légales le permettent.
-- [ ] **[moi]** Remplacer les champs entre crochets dans `lib/brand.ts` (ils sont surlignés sur les pages légales tant qu'ils ne sont pas remplis)
+- [ ] **[toi]** Quand le changement d'activité (éditeur de logiciel) est enregistré, me le dire : je mets à jour le statut dans `lib/brand.ts`. Une fois le domaine choisi, je renseigne `BRAND.url`.
 - [ ] **[toi]** Faire relire les trois pages par un juriste ou une personne compétente avant l'ouverture publique (ce ne sont pas des conseils juridiques)
 - [ ] **[toi]** Ajouter le **logo TMDB** dans le pied de page (fichier fourni par TMDB, https://www.themoviedb.org/about/logos-attribution) : exigence de leur licence
 

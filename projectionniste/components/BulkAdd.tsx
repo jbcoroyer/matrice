@@ -39,7 +39,7 @@ function parseLine(line: string, fallback: Format): { query: string; year: numbe
   return { query: t.replace(/[—–\-|]+$/, "").trim(), year, format };
 }
 
-/** Ajouter plusieurs disques d'un coup : un film par ligne, Filmable retrouve chacun et tu confirmes. */
+/** Ajouter plusieurs disques d'un coup : un film par ligne, Fillmography retrouve chacun et tu confirmes. */
 export function BulkAdd({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const { sb, userId, toast, refreshOwned, owned } = useProfile();
   const ref = useRef<HTMLDialogElement>(null);

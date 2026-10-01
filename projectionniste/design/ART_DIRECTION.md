@@ -1,4 +1,4 @@
-# Direction artistique — Filmable, « salle obscure »
+# Direction artistique — Fillmography, « salle obscure »
 
 Validée par le propriétaire du projet le 29/09/2026, à partir de ses références
 (`design/references/`) et d'une planche de style. Une première piste « Nouvelle Vague »
@@ -6,7 +6,7 @@ Validée par le propriétaire du projet le 29/09/2026, à partir de ses référe
 
 | Question | Choix |
 |---|---|
-| Nom | **Filmable** — mot-marque seul, « **Film**able » (gras + léger), pas de pictogramme |
+| Nom | **Fillmography** — mot-marque seul, « **Fill**mography » (gras + léger), pas de pictogramme |
 | Ambiance | **Sombre d'abord** ; le clair existe, secondaire |
 | Accent | **Crème / ivoire**, utilisé très rarement |
 | Typographie | **Sans-serif géométrique douce** (Urbanist) |

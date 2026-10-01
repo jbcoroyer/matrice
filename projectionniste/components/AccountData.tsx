@@ -9,7 +9,7 @@ import { useProfile } from "./ProfileProvider";
 
 const WORD = "SUPPRIMER";
 
-/** Mes données : exporter tout ce que Filmable garde sur toi, ou supprimer le compte (définitif). */
+/** Mes données : exporter tout ce que Fillmography garde sur toi, ou supprimer le compte (définitif). */
 export function AccountData() {
   const { sb, userId, account, toast } = useProfile();
   const [busy, setBusy] = useState<"json" | "csv" | null>(null);
@@ -21,8 +21,8 @@ export function AccountData() {
     try {
       const data = await collectData(sb, userId, account?.email ?? null);
       const day = new Date().toISOString().slice(0, 10);
-      if (kind === "json") download(`filmable-donnees-${day}.json`, JSON.stringify(data, null, 2), "application/json");
-      else download(`filmable-journal-${day}.csv`, journalCsv(data.journal), "text/csv;charset=utf-8");
+      if (kind === "json") download(`fillmography-donnees-${day}.json`, JSON.stringify(data, null, 2), "application/json");
+      else download(`fillmography-journal-${day}.csv`, journalCsv(data.journal), "text/csv;charset=utf-8");
       toast(kind === "json" ? "Export téléchargé : toutes tes données" : "Export téléchargé : ton journal");
     } catch (e) {
       toast(`Échec de l'export : ${errorText(e)}`);
@@ -34,7 +34,7 @@ export function AccountData() {
   return (
     <>
       <p className="note">
-        Tout ce que Filmable garde sur toi t'appartient. Tu peux le récupérer à tout moment : un fichier complet (films vus, notes, journal, listes, collection, parcours) et ton journal en tableau
+        Tout ce que Fillmography garde sur toi t'appartient. Tu peux le récupérer à tout moment : un fichier complet (films vus, notes, journal, listes, collection, parcours) et ton journal en tableau
         (CSV).
       </p>
       <div className="row-actions">

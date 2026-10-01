@@ -101,7 +101,7 @@ function IdeaCard({ idea, n, total, onNext, end, link, own }: { idea: Idea; n: n
 }
 
 /**
- * « Ce soir ? » : on dit ce qu'on veut (une phrase), ou on choisit une envie. Filmable montre ce qu'il a compris
+ * « Ce soir ? » : on dit ce qu'on veut (une phrase), ou on choisit une envie. Fillmography montre ce qu'il a compris
  * sous forme d'étiquettes qu'on peut retirer, puis un film à la fois.
  */
 export function Tonight() {

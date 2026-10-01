@@ -1,4 +1,4 @@
-# Filmable
+# Fillmography
 
 Journal de cinéma, critiques, listes et collection, avec import Letterboxd. Next.js 15, rendu serveur des fiches, clé TMDB cachée côté serveur,
 Supabase pour les comptes et les données. Direction artistique : voir `design/`.
@@ -87,7 +87,7 @@ acteurs, genres) sont réappris à partir des notes. Un nouvel import met à jou
 
 ## Découvrir sans note prédite
 
-Filmable ne prédit pas de note. Découvrir propose peu de films, chacun avec une raison qu'on peut
+Fillmography ne prédit pas de note. Découvrir propose peu de films, chacun avec une raison qu'on peut
 vérifier : la suite d'un cycle, le cinéaste de ton dernier film, un film possédé jamais vu, un
 film qui attend dans ta watchlist, un anniversaire de sortie, ou un coup de cœur écrit à la main
 (`lib/picks.ts`). Les chemins mènent à des ensembles (un cinéaste, une sélection proche des années

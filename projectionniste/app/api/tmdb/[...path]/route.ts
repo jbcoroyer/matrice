@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ path
   const p = path.join("/");
   if (!isAllowed(p)) return NextResponse.json({ error: "Ressource non disponible." }, { status: 404 });
 
-  // un autre site ne peut pas utiliser ce relais : seules les pages de Filmable l'appellent
+  // un autre site ne peut pas utiliser ce relais : seules les pages de Fillmography l'appellent
   const site = req.headers.get("sec-fetch-site");
   if (site === "cross-site") return refuse(403, "Accès refusé.");
   const origin = req.headers.get("origin");

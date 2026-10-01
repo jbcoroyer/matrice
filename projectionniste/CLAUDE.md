@@ -1,4 +1,4 @@
-# Filmable — consignes pour Claude
+# Fillmography — consignes pour Claude
 
 App Next.js 15 (App Router) + Supabase + proxy TMDB. Interface et contenus en français.
 

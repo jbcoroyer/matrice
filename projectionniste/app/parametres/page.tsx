@@ -180,7 +180,7 @@ function Settings() {
         {sec(
           "presentation",
           "Présentation",
-          "Les quelques écrans qui expliquent Filmable, et l'import de ton Letterboxd.",
+          "Les quelques écrans qui expliquent Fillmography, et l'import de ton Letterboxd.",
           <button type="button" className="btn" onClick={openWelcome}>
             Revoir la présentation
           </button>,

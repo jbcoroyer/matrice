@@ -12,7 +12,7 @@ function apply(m: ThemeMode) {
   else delete document.documentElement.dataset.theme;
 }
 
-/** Thème mémorisé dans le navigateur ; Filmable est pensé sombre d'abord. */
+/** Thème mémorisé dans le navigateur ; Fillmography est pensé sombre d'abord. */
 export function useTheme(): [ThemeMode, (m: ThemeMode) => void] {
   const [mode, setMode] = useState<ThemeMode>("dark");
   useEffect(() => {

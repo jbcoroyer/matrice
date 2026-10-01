@@ -1,4 +1,4 @@
-// Découvrir : ce que Filmable te propose, et pourquoi.
+// Découvrir : ce que Fillmography te propose, et pourquoi.
 // Aucune note prédite : chaque proposition s'appuie sur un fait vérifiable (ton dernier film,
 // un cycle en cours, ta collection, un anniversaire) ou sur une sélection écrite à la main.
 // Les tirages sont déterministes (graine = jour + compte) : la page change chaque jour, pas à chaque visite.

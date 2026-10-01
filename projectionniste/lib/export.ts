@@ -34,7 +34,7 @@ export async function collectData(sb: SupabaseClient, userId: string, email: str
   const profile = mine ? { nom_affiche: mine.display_name ?? null, reglages: mine.settings ?? {}, gouts_appris: mine.taste ?? null } : null;
   return {
     exporte_le: new Date().toISOString(),
-    application: "Filmable",
+    application: "Fillmography",
     compte: { id: userId, email },
     profil: profile,
     films,
