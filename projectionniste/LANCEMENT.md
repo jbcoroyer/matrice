@@ -28,7 +28,7 @@ Cases à cocher dans l'ordre. **[moi]** = fait par Claude dans le code ; **[toi]
 - [ ] **[toi]** Créer un projet Supabase de production, **région Union européenne**
 - [ ] **[toi]** SQL Editor : exécuter dans l'ordre tous les fichiers de `supabase/migrations/` (le dernier : `20261002100000_account_deletion.sql`)
 - [ ] **[toi]** Authentication → URL Configuration : adresse du site en ligne dans *Site URL* et dans *Redirect URLs* (`https://ton-domaine.com/**`)
-- [ ] **[toi]** Authentication → SMTP : brancher un vrai service d'envoi d'emails (Resend, Brevo…) : l'envoi par défaut de Supabase est très limité
+- [ ] **[toi]** Authentication → SMTP : brancher un service d'envoi d'emails (Resend recommandé, il faut le domaine) ; coller les trois modèles français de `supabase/emails/` ; pas à pas dans `supabase/emails/README.md`. Sans domaine : désactiver « Confirm email » le temps d'une bêta de proches
 - [ ] **[toi]** Authentication → Providers → Email : garder la confirmation par email activée
 - [ ] **[toi]** Ne jamais copier la clé `service_role` / secret dans le projet ni dans Vercel
 
