@@ -47,7 +47,7 @@ réponses en cache.
    anonymes ne servent plus qu'aux anciennes sessions : on peut les désactiver une fois tous les
    comptes créés.
 3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/` (les plus récents :
-   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`, `20261001100000_retire_social`).
+   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`, `20261001100000_retire_social`, `20261001120000_profile_self_insert`).
 
 Il faut un compte (email + mot de passe) pour utiliser l'appli ; sans session, tout le site
 affiche l'écran de connexion. Les données de chacun (états des films, journal, critiques, listes,
