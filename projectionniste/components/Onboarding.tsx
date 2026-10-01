@@ -11,7 +11,7 @@ import { DoorCard, useDiscoverCtx } from "./Doors";
 import { Check } from "./icons";
 import { useProfile } from "./ProfileProvider";
 
-const ONBOARD_KEY = "projo.v4.onboard";
+const ONBOARD_KEY = "projo.v5.onboard";
 const WALL = 18;
 
 /**
