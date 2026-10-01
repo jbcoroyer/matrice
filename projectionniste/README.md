@@ -7,19 +7,15 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil : « Aujourd'hui » (une proposition avec sa raison, trois par jour), reprise de l'exploration, populaires du moment (classement du jour TMDB), « Ce soir ? » (une phrase libre comme « dans le style de Scorsese, mafia, après 2010 », des envies, des exemples), trois chemins (un cinéaste, une sélection proche, un écart) ; `/decouvrir/populaires` : classements TMDB |
-| `/watchlist` | Ta watchlist, dans l'ordre d'ajout (le plus récent d'abord), filtres et tris |
+| `/decouvrir` | Accueil : « Aujourd'hui » (une proposition avec sa raison, trois par jour), reprise de ton parcours, populaires du moment (classement du jour TMDB), « Ce soir ? » (une phrase libre comme « dans le style de Scorsese, mafia, après 2010 », des envies, des exemples) ; guide « Marque ce que tu connais » pour un compte neuf ; `/decouvrir/populaires` : classements TMDB |
+| `/parcours` | Tes parcours (cinéaste, mouvement, palmarès, saga, saison : ce que tu as vu et possédé, le prochain film, le disque à chercher), trois chemins, le catalogue ; `/ensembles/[clé]` : un parcours, lisible sans compte |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
-| `/critique/[id]` | Une critique publique : j'aime et commentaires ; lisible sans compte |
-| `/bilan` | Bilan de l'année : visionnages par mois, notes, meilleurs films, genres, époques, cinéastes, acteurs, moments |
-| `/collection` | Ta cinémathèque physique : dernières entrées de face, étagère continue (un dos par exemplaire, intercalaires, index), une seule recherche (titre, cinéaste, 4K, scellé, prêté, pas vu…), feuille de chaque film avec ses exemplaires, « Tu cherches » ; `/collection/registre` pour les chiffres |
-| `/ensembles` | Catalogue de rayons et cycles (mouvements, cinémas du monde, palmarès, studios, sagas) ; `/ensembles/[clé]` : un ensemble, à posséder (rayon) ou à voir (cycle) |
+| `/collection` | Ta cinémathèque physique : dernières entrées de face, étagère continue (un dos par exemplaire coloré à mi-hauteur s'il est possédé, en entier s'il est aussi vu), ajout de plusieurs disques, une seule recherche (titre, cinéaste, 4K, scellé, prêté, pas vu…), feuille de chaque film avec ses exemplaires, « Tu cherches » ; `/collection/registre` pour les chiffres |
 | `/c/[code]` | Cinémathèque partagée, lisible sans compte (jamais tes films vus ni tes prêts) |
-| `/journal` | Journal daté ; onglets « Films vus » et « Cycles » (les ensembles que tu décides de voir, en programme de cinémathèque) |
-| `/film/[id]` | Fiche (lisible sans compte) : ta note, note TMDB et moyenne des membres, actions (journal, vu, watchlist, note, coup de cœur, liste, collection, top 5), synopsis, « Qui l'a vu », casting et réalisation en photos, générique, studios, critiques |
+| `/journal` | Journal daté ; onglets « Journal », « Films vus » et « À voir » (la watchlist, dans l'ordre d'ajout) |
+| `/film/[id]` | Fiche (lisible sans compte) : ta note et la note TMDB, trois gestes (vu, watchlist, disque), les étoiles, un menu Plus (journal daté, coup de cœur, liste, partage), synopsis, « Où aller ensuite », casting et réalisation en photos, générique, studios |
 | `/personne/[id]` | Biographie et filmographie (lisible sans compte) |
-| `/u/[pseudo]` | Profil public : nom, présentation, top 5, listes publiques, critiques publiques |
 | `/studio/[id]` | Studio : logo et films, triés par popularité, date ou note |
 | `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
 | Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal, Bilan, Paramètres (`/parametres`), déconnexion ; sur mobile aussi Mes listes |
@@ -51,7 +47,7 @@ réponses en cache.
    anonymes ne servent plus qu'aux anciennes sessions : on peut les désactiver une fois tous les
    comptes créés.
 3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/` (les plus récents :
-   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`).
+   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`, `20261001100000_retire_social`).
 
 Il faut un compte (email + mot de passe) pour utiliser l'appli ; sans session, tout le site
 affiche l'écran de connexion. Les données de chacun (états des films, journal, critiques, listes,

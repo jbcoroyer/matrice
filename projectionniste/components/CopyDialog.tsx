@@ -32,7 +32,7 @@ export function CopyDialog({
   /** ajout en série : « Enregistrer et en ajouter un autre » */
   onNext?: () => void;
 }) {
-  const { sb, userId, toast, refreshOwned } = useProfile();
+  const { sb, userId, toast, refreshOwned, parcoursNote } = useProfile();
   const ref = useRef<HTMLDialogElement>(null);
   const [format, setFormat] = useState<Format>(item?.format ?? lastFormat());
   const [packaging, setPackaging] = useState<Packaging>(item?.packaging ?? "standard");
@@ -100,6 +100,7 @@ export function CopyDialog({
         localStorage.setItem(LAST_FORMAT, format);
       } catch {}
       toast(item ? "Exemplaire modifié" : `« ${film.title} » ajouté à ta collection`);
+      if (!item) parcoursNote(film.id, "owned");
       refreshOwned();
       onSaved();
       onClose();

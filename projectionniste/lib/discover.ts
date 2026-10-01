@@ -377,6 +377,11 @@ export async function buildDoors(ctx: Ctx, seenFilms: SeenLite[], avoidDirector:
   const used = new Set<string>(skip);
   const add = (d: Door | null) => d && !used.has(d.key) && (out.push(d), used.add(d.key), true);
 
+  // ce mois-ci : une sélection de saison (frissons en octobre, Noël en décembre, Palmes d'or en mai…)
+  const month = new Date().getMonth() + 1;
+  const season = EDITORIAL.find((e) => e.months?.includes(month) && e.films && !used.has(e.key));
+  if (season) add(await editorialDoor(season, ctx, "entry", () => season.description, "Ce mois-ci").catch(() => null));
+
   if (ctx.seen.size >= 5) {
     const recent = await recentViews(ctx.sb, ctx.userId).catch(() => [] as Recent[]);
     add(await directorDoor(ctx, recent, avoidDirector).catch(() => null));
@@ -416,6 +421,8 @@ export async function buildDoors(ctx: Ctx, seenFilms: SeenLite[], avoidDirector:
     families.add(e.family);
   }
 
+  // trois portes au plus : la sélection de saison remplace d'abord la porte « proche »
+  while (out.length > 3) out.splice(Math.max(out.findIndex((d) => d.kind === "near"), 0), 1);
   if (out.length) store.set(DOORS_KEY, { key, doors: out } satisfies DoorsCache);
   return out;
 }
@@ -539,4 +546,37 @@ export async function filmDoors(
     });
   }
   return out.slice(0, 3);
+}
+
+/** Un premier chemin à partir de quelques films cochés : le cinéaste le plus présent, et ce qu'il reste de lui. */
+export async function firstDoor(ctx: Ctx): Promise<Door | null> {
+  const ids = [...ctx.seen].slice(0, 12);
+  if (!ids.length) return null;
+  const facts = await filmFacts(ids, () => {});
+  const tally = new Map<number, { name: string; n: number }>();
+  for (const id of ids)
+    for (const [pid, name] of facts.get(id)?.d ?? []) {
+      const t = tally.get(pid) ?? { name, n: 0 };
+      t.n++;
+      tally.set(pid, t);
+    }
+  for (const [pid, t] of [...tally.entries()].sort((a, b) => b[1].n - a[1].n).slice(0, 4)) {
+    const films = await directed(pid).catch(() => []);
+    if (films.length < 3) continue;
+    const next = nextIn(films, ctx.seen);
+    const k = films.filter((m) => ctx.seen.has(m.id)).length;
+    if (!next || !k) continue;
+    return {
+      key: `director-${pid}`,
+      kind: "director",
+      kicker: "Un cinéaste",
+      title: t.name,
+      why: `Tu as déjà vu ${k} de ses ${films.length} films.`,
+      href: `/ensembles/${personKey(pid, "director")}`,
+      next: doorNext(next),
+      nextLabel: "Et ensuite",
+      still: stillOf(films, next),
+    };
+  }
+  return null;
 }

@@ -236,7 +236,7 @@ export function Tonight() {
           placeholder="Un film dans le style de Scorsese, mafia, après 2010…"
           onChange={(e) => setText(e.target.value)}
         />
-        <button type="submit" className="btn primary" disabled={busy || !text.trim()}>
+        <button type="submit" className="btn primary" disabled={!text.trim()}>
           Chercher
         </button>
       </form>

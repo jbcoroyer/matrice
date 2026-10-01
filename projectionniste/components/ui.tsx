@@ -114,53 +114,6 @@ export function StartActions() {
   );
 }
 
-const ONBOARD_KEY = "projo.v3.onboard";
-
-/** Premier lancement (aucun film vu, noté ni en watchlist) : trois gestes pour démarrer. */
-export function Onboarding() {
-  const { empty } = useProfile();
-  const [hidden, setHidden] = useState(true);
-  useEffect(() => setHidden(store.get(ONBOARD_KEY, false)), []);
-  if (!empty || hidden) return null;
-  return (
-    <section className="onboard" aria-labelledby="onboard-title">
-      <p className="label">Pour commencer</p>
-      <h2 id="onboard-title">
-        Bienvenue sur <span>Filmable</span>
-      </h2>
-      <ol className="onboard-steps">
-        <li>
-          <b>Importe ton Letterboxd</b>
-          <p>Notes, journal, critiques, watchlist et listes sont repris d'un coup, sans rien ressaisir.</p>
-          <Link className="btn primary" href="/parametres#import">
-            Importer
-          </Link>
-        </li>
-        <li>
-          <b>Ou journalise un premier film</b>
-          <p>Le dernier que tu as vu : la date, ta note, une critique si tu veux. Le journal nourrit ton bilan de l'année.</p>
-          <button type="button" className="btn" onClick={openQuickLog}>
-            Journaliser un film
-          </button>
-        </li>
-        <li>
-          <b>Note ce que tu connais</b>
-          <p>Ouvre un film que tu as vu et donne-lui une note : ton profil et ton bilan de l'année se construisent au fil de tes visionnages.</p>
-        </li>
-      </ol>
-      <button
-        type="button"
-        className="link-btn quiet"
-        onClick={() => {
-          store.set(ONBOARD_KEY, true);
-          setHidden(true);
-        }}
-      >
-        Masquer ce guide
-      </button>
-    </section>
-  );
-}
 
 /** Lien de retour en haut des pages secondaires. */
 export function BackLink({ href = "/decouvrir", label = "Découvrir" }: { href?: string; label?: string }) {

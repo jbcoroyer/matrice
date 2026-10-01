@@ -319,3 +319,21 @@ export function parcoursState(films: { tmdb_id: number; release_date?: string | 
   const toOwn = films.find((f) => seen.has(f.tmdb_id) && !owned.has(f.tmdb_id)) ?? films.find((f) => !owned.has(f.tmdb_id));
   return { total: films.length, seenN, ownedN, bothN, toSee: toSee ? label(toSee) : null, toOwn: toOwn ? { ...label(toOwn), known: seen.has(toOwn.tmdb_id) } : null };
 }
+
+/** Après un film vu ou un disque ajouté : où en est le parcours suivi qui le contient (le plus avancé), et la suite. */
+export async function parcoursAfter(sb: SupabaseClient, tmdbId: number, seen: Set<number>, owned: { has(id: number): boolean }) {
+  const rows = check(await sb.from("film_set_items").select("set_id").eq("tmdb_id", tmdbId).is("removed_at", null)) as { set_id: string }[];
+  if (!rows.length) return null;
+  const ids = new Set(rows.map((r) => r.set_id));
+  const sets = (await mySets(sb)).filter((x) => ids.has(x.id) && x.follows.some((f) => !f.archived_at));
+  if (!sets.length) return null;
+  const items = await setItems(sb, sets.map((x) => x.id));
+  let best: { key: string; title: string; st: ReturnType<typeof parcoursState>; score: number } | null = null;
+  for (const r of followedAll(sets, items)) {
+    if (!r.films.some((f) => f.tmdb_id === tmdbId)) continue;
+    const st = parcoursState(r.films, seen, owned);
+    const score = st.seenN + st.ownedN;
+    if (!best || score > best.score) best = { key: r.set.key, title: r.set.title, st, score };
+  }
+  return best;
+}

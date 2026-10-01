@@ -22,7 +22,7 @@ export function LogDialog({
   onClose: () => void;
   onSaved?: (e: DiaryEntry | null) => void;
 }) {
-  const { sb, userId, seen, rated, favorites, setFilmState, toast } = useProfile();
+  const { sb, userId, seen, rated, favorites, setFilmState, toast, parcoursNote } = useProfile();
   const ref = useRef<HTMLDialogElement>(null);
   const [date, setDate] = useState(entry ? entry.watched_on || "" : today());
   const [rating, setRating] = useState<number>(entry ? entry.rating || 0 : rated.get(film.id) || 0);
@@ -81,7 +81,9 @@ export function LogDialog({
       // la note du film est celle du dernier visionnage : on ne l'écrase pas en retouchant une vieille entrée
       if (rating && !entry) patch.rating = rating;
       if (liked) patch.favorite = true;
+      const wasSeen = seen.has(film.id);
       setFilmState(film, patch);
+      if (!wasSeen) parcoursNote(film.id, "seen");
       toast(
         entry ? "Entrée du journal modifiée" : `« ${film.title} » ajouté à ton journal`,
         undefined,

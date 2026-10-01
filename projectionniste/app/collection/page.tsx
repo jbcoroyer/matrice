@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BulkAdd } from "@/components/BulkAdd";
 import { CollectionCard, Spine } from "@/components/CollectionCard";
 import { CopyDialog } from "@/components/CopyDialog";
 import { Dots, Plus, Search } from "@/components/icons";
@@ -287,6 +288,7 @@ function Collection() {
   const [finding, setFinding] = useState<FilmInput | null>(null);
   const [pickWant, setPickWant] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [bulk, setBulk] = useState(false);
   const menu = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => setArrange(store.get<Arrange>(ARRANGE_KEY, "titre")), []);
@@ -417,6 +419,9 @@ function Collection() {
               <Dots />
             </summary>
             <div className="menu">
+              <button type="button" onClick={() => (closeMenu(), setBulk(true))}>
+                Ajouter plusieurs disques
+              </button>
               <button type="button" onClick={() => (closeMenu(), setSharing(true))}>
                 Partager ma cinémathèque
               </button>
@@ -581,6 +586,7 @@ function Collection() {
           onAddCopy={() => setAdding(filmOf(opened))}
         />
       ) : null}
+      {bulk ? <BulkAdd onClose={() => setBulk(false)} onDone={loadItems} /> : null}
       {sharing ? <ShareDialog onClose={() => setSharing(false)} /> : null}
       {adding === "pick" ? <PickFilm onClose={() => setAdding(null)} onPick={(m) => setAdding(m)} /> : null}
       {adding && adding !== "pick" ? <CopyDialog film={adding} onClose={() => setAdding(null)} onSaved={loadItems} onNext={opened ? undefined : () => setAdding("pick")} /> : null}

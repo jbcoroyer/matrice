@@ -1361,3 +1361,41 @@ button.spine { border: 0; font: inherit; cursor: pointer; text-align: inherit }
 .more-filters > summary::-webkit-details-marker { display: none }
 .more-filters[open] > summary { margin-bottom: 10px }
 .filterbar.inner { margin-top: 0 }
+
+/* Accueil : une promesse, puis le formulaire */
+.auth-pitch .auth-promise { margin: 18px 0 10px; max-width: 22ch; font-size: clamp(26px, 3vw, 38px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; color: var(--text) }
+.auth-pitch .auth-promise span { font-weight: 250 }
+.auth-pitch .auth-try { margin: 18px 0 0; font-size: 14.5px; color: var(--text-2) }
+.auth-pitch .auth-try a { color: var(--text); font-weight: 600; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px }
+.auth-pitch .auth-try a:hover { text-decoration-color: var(--cream) }
+.auth-pitch .auth-import { margin: 8px 0 0; font-size: 14px; color: var(--text-3) }
+
+/* Premier lancement : cocher des films qu'on connaît */
+.onboard-lede { margin: 10px 0 0; max-width: 56ch; font-size: 16px; color: var(--text-2) }
+.onboard-wall { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 10px; margin-top: 22px }
+.ow { position: relative; display: block; aspect-ratio: 2 / 3; padding: 0; border: 0; border-radius: var(--r-sm); overflow: hidden; background: var(--bg-3); cursor: pointer; box-shadow: 0 0 0 1px var(--line); transition: transform 0.25s var(--ease), box-shadow 0.25s }
+.ow img { width: 100%; height: 100%; object-fit: cover; filter: saturate(0.55) brightness(0.8); transition: filter 0.3s }
+.ow:hover img, .ow.on img { filter: none }
+.ow:hover { transform: translateY(-3px) }
+.ow.on { box-shadow: 0 0 0 2px var(--cream) }
+.ow-check { position: absolute; right: 6px; bottom: 6px; width: 24px; height: 24px; padding: 5px; border-radius: 50%; background: var(--cream); color: var(--on-cream) }
+.onboard-door { margin-top: 26px; max-width: 520px }
+.onboard-door .label { margin-bottom: 12px }
+.onboard-hint { margin-top: 18px }
+.onboard-more { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-top: 26px }
+@media (max-width: 900px) { .onboard-wall { grid-template-columns: repeat(6, minmax(0, 1fr)) } }
+@media (max-width: 600px) { .onboard-wall { grid-template-columns: repeat(3, minmax(0, 1fr)) } .onboard-door { max-width: none } }
+.onboard h2 { font-size: clamp(34px, 4.4vw, 60px); line-height: 1; letter-spacing: -0.035em; font-weight: 700; margin: 12px 0 0 }
+.onboard h2 span { font-weight: 250 }
+
+/* Ajout de plusieurs disques */
+.dialog.bulk { width: min(640px, calc(100vw - 24px)) }
+.bulk-text { margin-top: 12px; font-family: inherit; line-height: 1.6 }
+.bulk-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; max-height: 52vh; overflow-y: auto }
+.bulk-list li { border-top: 1px solid var(--line) }
+.bulk-list li label { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer }
+.bulk-list .thumb { width: 34px; height: 51px; flex: none; border-radius: 6px; overflow: hidden; background: var(--bg-3) }
+.bulk-list .thumb img { width: 100%; height: 100%; object-fit: cover }
+.bulk-t { flex: 1; min-width: 0; font-size: 14.5px }
+.bulk-list li.miss .bulk-t { color: var(--text-3) }
+.bulk-list select { flex: none }

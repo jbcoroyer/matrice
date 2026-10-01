@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createAccount, sendReset, signIn, signUp } from "@/lib/auth";
@@ -63,9 +64,20 @@ export function AuthScreen() {
           <h1>
             Film<span>able</span>
           </h1>
-          <p>
-            Ton journal de cinéma, tes critiques, tes listes et ta collection. Importe ton historique Letterboxd en une fois.
+          <p className="auth-promise">
+            Vois et <span>possède</span> les films qui comptent.
           </p>
+          <p>
+            Un cinéaste, un mouvement, un palmarès : chaque film vu colore son dos, chaque disque sur ton étagère le remplit. Tu sais toujours ce que tu as vu, ce qu'il te manque, et par quoi continuer.
+          </p>
+          <p className="auth-try">
+            Voir un parcours sans compte : <Link href="/ensembles/palmes-d-or">Palmes d'or</Link>
+            {" · "}
+            <Link href="/ensembles/nouvelle-vague">Nouvelle Vague</Link>
+            {" · "}
+            <Link href="/ensembles/studio-10342">Studio Ghibli</Link>
+          </p>
+          <p className="auth-import">Tu viens de Letterboxd ? Importe tout ton historique en une fois.</p>
         </div>
         <div className="auth-card">
           {guest && !empty ? (

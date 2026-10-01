@@ -6,6 +6,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { listOwned, type Format } from "@/lib/collection";
 import { currentAccount, EMPTY_STATE, type Account, filmRow, loadFilmStates, loadProfile, markKnown, saveFilmState, updateProfile } from "@/lib/db";
 import { derive, type Derived } from "@/lib/profile";
+import { parcoursAfter } from "@/lib/sets";
 import { KEYS, store } from "@/lib/store";
 import { takeManualSignOut } from "@/lib/auth";
 import { SESSION_EVENT, supabase } from "@/lib/supabase";
@@ -43,6 +44,8 @@ type Ctx = Derived & {
   toggleFavorite: (m: FilmInput) => void;
   markSeen: (m: FilmInput, rating?: number) => void;
   unmarkSeen: (m: FilmInput) => void;
+  /** après un film vu ou un disque ajouté : où en est le parcours suivi qui le contient (message avec la suite) */
+  parcoursNote: (id: number, kind: "seen" | "owned") => void;
   /** modifie l'état d'un film (utilisé par le journal) ; message facultatif avec annulation */
   setFilmState: (m: FilmInput, patch: Partial<FilmState>, message?: string) => void;
   toast: (text: string, undo?: () => void, link?: { label: string; href: string }) => void;
@@ -213,13 +216,43 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     },
     [patchFilm],
   );
+  const ownedRef = useRef(owned);
+  ownedRef.current = owned;
+  const parcoursNote = useCallback(
+    (id: number, kind: "seen" | "owned") => {
+      if (!sb) return;
+      // laisse l'état se mettre à jour, puis lit où en est le parcours
+      setTimeout(async () => {
+        try {
+          const seenNow = new Set([...statesRef.current].filter(([, st]) => st.watched).map(([k]) => k));
+          if (kind === "seen") seenNow.add(id);
+          const owns = { has: (x: number) => ownedRef.current.has(x) || (kind === "owned" && x === id) };
+          const r = await parcoursAfter(sb, id, seenNow, owns);
+          if (!r) return;
+          const { st } = r;
+          const text =
+            kind === "seen"
+              ? st.toSee
+                ? `« ${r.title} » : ${st.seenN} ${st.seenN > 1 ? "vus" : "vu"} sur ${st.total}. À voir ensuite : ${st.toSee.title}`
+                : `« ${r.title} » : tout est vu (${st.total} sur ${st.total})`
+              : st.toOwn
+                ? `« ${r.title} » : ${st.ownedN} ${st.ownedN > 1 ? "possédés" : "possédé"} sur ${st.total}. Disque à chercher : ${st.toOwn.title}`
+                : `« ${r.title} » : tout est sur ton étagère (${st.total} sur ${st.total})`;
+          toast(text, undefined, { label: "Parcours", href: `/parcours?p=${r.key}` });
+        } catch {}
+      }, 600);
+    },
+    [sb, toast],
+  );
   const markSeen = useCallback(
     (m: FilmInput, rating?: number) => {
       const patch: Partial<FilmState> = { watched: true, watchlist: false };
       if (rating) patch.rating = rating;
+      const was = statesRef.current.get(m.id)?.watched;
       patchFilm(m, patch, rating ? `« ${m.title} » noté ${String(rating).replace(".", ",")}/5` : `« ${m.title} » marqué comme vu`);
+      if (!was) parcoursNote(m.id, "seen");
     },
-    [patchFilm],
+    [patchFilm, parcoursNote],
   );
   const unmarkSeen = useCallback((m: FilmInput) => patchFilm(m, { watched: false, rating: null }, `« ${m.title} » n'est plus marqué comme vu`), [patchFilm]);
   const derived = useMemo(() => derive(profile, states, titles), [profile, states, titles]);
@@ -244,6 +277,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toggleFavorite,
       markSeen,
       unmarkSeen,
+      parcoursNote,
       setFilmState: patchFilm,
       toast,
       sessionExpired,
@@ -253,7 +287,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       toasts,
       dismissToast,
     }),
-    [sessionExpired, confirm, ask, answer, derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, patchFilm, toast, toasts, dismissToast],
+    [sessionExpired, confirm, ask, answer, derived, status, error, profile, sb, userId, account, states, owned, refreshOwned, reload, toggleWatchlist, toggleFavorite, markSeen, unmarkSeen, parcoursNote, patchFilm, toast, toasts, dismissToast],
   );
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;

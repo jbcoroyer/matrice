@@ -5,7 +5,9 @@
 
 export type EditorialDef = {
   key: string;
-  family: "Mouvements" | "Cinémas du monde" | "Palmarès" | "Studios" | "Sagas";
+  family: "Mouvements" | "Cinémas du monde" | "Saisons" | "Palmarès" | "Studios" | "Sagas";
+  /** mois (1-12) où Découvrir le met en avant : « Ce mois-ci » */
+  months?: number[];
   kicker: string;
   title: string;
   description: string;
@@ -16,7 +18,7 @@ export type EditorialDef = {
   saga?: number;
 };
 
-export const FAMILIES: EditorialDef["family"][] = ["Mouvements", "Cinémas du monde", "Palmarès", "Studios", "Sagas"];
+export const FAMILIES: EditorialDef["family"][] = ["Mouvements", "Cinémas du monde", "Saisons", "Palmarès", "Studios", "Sagas"];
 
 const PALMES: [string, number][] = [
   ["Sailor et Lula", 1990], ["Barton Fink", 1991], ["Les Meilleures Intentions", 1992], ["La Leçon de piano", 1993], ["Adieu ma concubine", 1993],
@@ -169,8 +171,49 @@ export const EDITORIAL: EditorialDef[] = [
     ],
   },
   {
+    key: "frissons",
+    family: "Saisons",
+    kicker: "Octobre",
+    title: "Frissons d'octobre",
+    description: "Maisons hantées, exorcismes et nuits sans lune : quinze films qui font peur depuis un siècle, du muet à aujourd'hui.",
+    rule: "Une sélection de films d'épouvante, de 1922 à 2018.",
+    months: [10],
+    films: [
+      ["Nosferatu", 1922], ["Psycho", 1960], ["Les Yeux sans visage", 1960], ["Rosemary's Baby", 1968], ["Night of the Living Dead", 1968], ["The Exorcist", 1973],
+      ["Suspiria", 1977], ["Halloween", 1978], ["The Shining", 1980], ["The Evil Dead", 1981], ["The Thing", 1982], ["Candyman", 1992],
+      ["Ringu", 1998], ["Let the Right One In", 2008], ["Hereditary", 2018],
+    ],
+  },
+  {
+    key: "noel",
+    family: "Saisons",
+    kicker: "Décembre",
+    title: "Noël au cinéma",
+    description: "Des classiques de la veillée aux Noëls qui grincent : douze films pour les derniers jours de l'année.",
+    rule: "Une sélection de films de Noël, de 1946 à 2005.",
+    months: [12],
+    films: [
+      ["It's a Wonderful Life", 1946], ["Fanny och Alexander", 1982], ["Gremlins", 1984], ["Die Hard", 1988], ["Scrooged", 1988], ["Home Alone", 1990],
+      ["Edward Scissorhands", 1990], ["The Nightmare Before Christmas", 1993], ["Love Actually", 2003], ["Bad Santa", 2003], ["Elf", 2003], ["Joyeux Noël", 2005],
+    ],
+  },
+  {
+    key: "ete",
+    family: "Saisons",
+    kicker: "Été",
+    title: "L'Été au cinéma",
+    description: "Plages, route des vacances, chaleur qui écrase : onze films où l'été est un personnage.",
+    rule: "Une sélection de films d'été, de 1953 à 2017.",
+    months: [6, 7, 8],
+    films: [
+      ["Les Vacances de Monsieur Hulot", 1953], ["Plein soleil", 1960], ["Jaws", 1975], ["Pauline à la plage", 1983], ["Le Rayon vert", 1986], ["Stand by Me", 1986],
+      ["Do the Right Thing", 1989], ["Conte d'été", 1996], ["Y tu mamá también", 2001], ["Moonrise Kingdom", 2012], ["Call Me by Your Name", 2017],
+    ],
+  },
+  {
     key: "palmes-d-or",
     family: "Palmarès",
+    months: [5],
     kicker: "Palmarès",
     title: "Palmes d'or",
     description: "Les films récompensés par la Palme d'or au Festival de Cannes, depuis 1990.",
@@ -180,6 +223,7 @@ export const EDITORIAL: EditorialDef[] = [
   {
     key: "oscar-meilleur-film",
     family: "Palmarès",
+    months: [2, 3],
     kicker: "Palmarès",
     title: "Oscar du meilleur film",
     description: "Les films couronnés par l'Académie, depuis 1990.",

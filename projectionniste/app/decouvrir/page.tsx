@@ -7,7 +7,7 @@ import { useProfile } from "@/components/ProfileProvider";
 import { Tonight } from "@/components/Tonight";
 import { Today } from "@/components/Today";
 import { TrailLine } from "@/components/Trail";
-import { Onboarding } from "@/components/ui";
+import { Onboarding } from "@/components/Onboarding";
 import { useAsync } from "@/lib/hooks";
 import { tmdb } from "@/lib/tmdb";
 import type { Movie, Paged } from "@/lib/types";
