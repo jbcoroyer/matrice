@@ -42,17 +42,27 @@ lendemain, pas à chaque visite ; elle se recalcule dès qu'un film est vu.
   ressortir (un film possédé jamais vu, un film qui attend dans la watchlist). « Une autre idée », puis
   « C'est tout pour aujourd'hui ». Compte neuf : coups de cœur et anniversaires.
 - **Reprendre** (`TrailLine`) : si on explorait tout à l'heure, le fil « Zodiac › David Fincher › Se7en ».
+- **Populaires du moment** : six affiches, le classement **du jour** de TMDB (ce qui bouge le plus
+  aujourd'hui : regardé, cherché, noté, en salles ou non), sans les films déjà vus. « Tous les
+  classements » mène à `/decouvrir/populaires`.
+- **Ce soir ?** (`Tonight`, `lib/ask.ts`) : de quoi choisir un film, de trois façons.
+  - **Une phrase** dans une barre : « Un film dans le style de Scorsese, mafia, après 2010 ». Filmable
+    la lit lui-même (pas d'IA extérieure) : genres, thèmes (mots-clés TMDB), pays, époques (« après
+    2010 », « années 80 », « avant 1980 », « récent », « classique »), durées (« moins de 2 h »,
+    « court »), « dans ma watchlist », « possédé », cinéastes (« dans le style de… » = ses films
+    servent de repères ; « de… », « avec… » = ses films). Il montre ce qu'il a compris en **étiquettes
+    qu'on retire d'un clic** (« J'ai compris : Dans le style de Martin Scorsese × Mafia × Après 2010 × »)
+    et signale ce qu'il n'a pas compris. Trop précis : il lâche d'abord les thèmes, puis les genres, et le dit.
+  - **Quatre envies** : Moins de 1 h 40 · Possédé, pas vu · Dans ma watchlist · Un classique (masquées si
+    impossibles).
+  - **Trois exemples de phrases** tirés pour la journée (« Essaie : … »), qu'on clique.
+  - Une réponse = **un** film (photogramme, raison, fiche, watchlist), « Un autre » (3 pour une envie, 5
+    pour une phrase). Pour « dans le style de X », une ligne propose aussi un film de X lui-même.
 - **Trois chemins** (`Paths`) : des **portes** (photogramme 16:9, libellé, titre deux graisses, une
   phrase, « Et ensuite : *Se7en* · 1995 ») vers une page d'ensemble : un cinéaste que tu regardes et dont
   il te reste des films, une sélection proche des années que tu regardes, et **un écart** assumé
   (« Aucun de ces 17 films parmi les 212 que tu as vus »). Compte neuf : « Des portes d'entrée ».
-- **Ce soir ?** (`Tonight`) : quatre envies écrites (pas des pastilles) : Moins de 1 h 40 · Possédé,
-  pas vu · Dans ma watchlist · Un classique. Une envie donne **un** film (photogramme, raison, fiche,
-  watchlist), « Un autre » deux fois au plus. Les envies impossibles (rien de possédé…) sont masquées.
-- **Mouvements, pays, palmarès** : six sélections du catalogue en liste typographique, avec les
-  années et où tu en es.
-- **En salles cette semaine** : six affiches, en bas ; « Classements TMDB » mène à
-  `/decouvrir/populaires`.
+  « Tout le catalogue » mène à `/ensembles`.
 - Les anciennes humeurs redirigent vers une sélection (« Noir coréen » → Renouveau coréen) ou vers
   Découvrir. Après un film journalisé, le message propose « Et ensuite ? ».
 

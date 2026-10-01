@@ -86,7 +86,9 @@ export function Paths({ enabled, avoidDirector }: { enabled: boolean; avoidDirec
     <section className="section paths-sec" aria-labelledby="paths-title">
       <div className="sec-head">
         <h2 id="paths-title">{known ? <>Trois <span>chemins</span></> : <>Des portes <span>d'entrée</span></>}</h2>
-        <span className="aside">{known ? "à partir de ce que tu regardes" : "pour commencer quelque part"}</span>
+        <span className="aside">
+          {known ? "À partir de ce que tu regardes" : "Pour commencer quelque part"} · <Link href="/ensembles">Tout le catalogue →</Link>
+        </span>
       </div>
       {doors ? (
         <div className="paths">

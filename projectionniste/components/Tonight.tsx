@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { tonight, type Envie, type Idea } from "@/lib/discover";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { critLabel, parseAsk, runAsk, type Crit } from "@/lib/ask";
+import { localDay, seeded, shuffle, tonight, type Envie, type Idea } from "@/lib/discover";
 import { useAsync } from "@/lib/hooks";
 import { img } from "@/lib/tmdb";
 import { useDiscoverCtx } from "./Doors";
@@ -12,8 +13,8 @@ import { detail, FilmMeta } from "./Today";
 import { TitleDuo } from "./TitleDuo";
 import { ErrorLine, Loader } from "./ui";
 
-/** Trois films par envie, pas davantage : on choisit, on ne fait pas défiler. */
-const MAX = 3;
+/** Trois idées par envie, cinq pour une phrase : on choisit, on ne fait pas défiler. */
+const MAX_ENVIE = 3;
 
 const ENVIES: { k: Envie; l: string; end: string; link?: [string, string] }[] = [
   { k: "court", l: "Moins de 1 h 40", end: "Trois idées, c'est assez pour un soir." },
@@ -22,7 +23,23 @@ const ENVIES: { k: Envie; l: string; end: string; link?: [string, string] }[] = 
   { k: "classique", l: "Un classique", end: "Trois idées, c'est assez pour un soir." },
 ];
 
-function IdeaCard({ idea, n, total, onNext, envie }: { idea: Idea; n: number; total: number; onNext: () => void; envie: (typeof ENVIES)[number] }) {
+/** Des phrases qu'on peut taper telles quelles : trois par jour, pour montrer ce qui est possible. */
+const EXAMPLES = [
+  "Un film dans le style de Scorsese, mafia, après 2010",
+  "Un thriller coréen",
+  "Une comédie des années 80",
+  "Dans le style de Kubrick, science-fiction",
+  "Un polar français avant 1980",
+  "Un film d'espionnage, moins de 2 h",
+  "Un classique japonais",
+  "De Wong Kar-wai, après 1995",
+  "Une histoire de vengeance, après 2000",
+  "Un drame italien des années 60",
+];
+
+type Shown = { ideas: Idea[]; end: string; link?: [string, string]; own?: { id: number; title: string; year: string; name: string } | null };
+
+function IdeaCard({ idea, n, total, onNext, end, link, own }: { idea: Idea; n: number; total: number; onNext: () => void; end: string; link?: [string, string]; own?: Shown["own"] }) {
   const d = useProfile();
   const det = useAsync(() => detail(idea.id).catch(() => null), [idea.id]);
   const m = det.data?.id === idea.id ? det.data : null;
@@ -57,10 +74,10 @@ function IdeaCard({ idea, n, total, onNext, envie }: { idea: Idea; n: number; to
             </button>
           ) : (
             <span>
-              {envie.end}{" "}
-              {envie.link ? (
-                <Link className="link" href={envie.link[1]}>
-                  {envie.link[0]}
+              {end}{" "}
+              {link ? (
+                <Link className="link" href={link[1]}>
+                  {link[0]}
                 </Link>
               ) : null}
             </span>
@@ -69,44 +86,111 @@ function IdeaCard({ idea, n, total, onNext, envie }: { idea: Idea; n: number; to
             {n + 1} / {total}
           </span>
         </p>
+        {own && n + 1 >= total ? (
+          <p className="idea-own">
+            Pour voir un film de {own.name} lui-même :{" "}
+            <Link href={`/film/${own.id}`}>
+              <b>{own.title}</b>
+            </Link>
+            {own.year ? ` · ${own.year}` : ""}
+          </p>
+        ) : null}
       </div>
     </article>
   );
 }
 
-/** « Ce soir ? » : une envie, un film. Pas de filtres, pas de grille. */
+/**
+ * « Ce soir ? » : on dit ce qu'on veut (une phrase), ou on choisit une envie. Filmable montre ce qu'il a compris
+ * sous forme d'étiquettes qu'on peut retirer, puis un film à la fois.
+ */
 export function Tonight() {
   const d = useProfile();
   const ctx = useDiscoverCtx();
+  const [text, setText] = useState("");
   const [envie, setEnvie] = useState<Envie | null>(null);
-  const [ideas, setIdeas] = useState<Idea[] | null>(null);
+  const [crits, setCrits] = useState<Crit[] | null>(null);
+  const [unknown, setUnknown] = useState<string[]>([]);
+  const [shown, setShown] = useState<Shown | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [at, setAt] = useState(0);
+  const run = useRef(0);
+
+  const examples = useMemo(() => shuffle(EXAMPLES, seeded(`${localDay()}|exemples`)).slice(0, 3), []);
+
+  const finish = (s: Shown | null, err: unknown = null) => {
+    setShown(s);
+    setError(err);
+    setAt(0);
+    setBusy(false);
+  };
+
+  const search = async (list: Crit[], unk: string[]) => {
+    if (!ctx) return;
+    const id = ++run.current;
+    setBusy(true);
+    setEnvie(null);
+    setCrits(list);
+    setUnknown(unk);
+    if (!list.length) return finish(null);
+    try {
+      const r = await runAsk(list, ctx);
+      if (id !== run.current) return;
+      const relaxed = r.relaxed.length ? ` Sans « ${r.relaxed.join(" », « ")} » : trop peu de films le permettent.` : "";
+      finish({ ideas: r.ideas.map((x, i) => (i === 0 && relaxed ? { ...x, why: x.why + relaxed } : x)), end: "Voilà ce que j'ai trouvé. Précise ou retire une étiquette pour changer.", own: r.own });
+    } catch (e) {
+      if (id === run.current) finish(null, e);
+    }
+  };
+
+  const ask = async (phrase: string) => {
+    const t = phrase.trim();
+    if (!t || !ctx) return;
+    const id = ++run.current;
+    setBusy(true);
+    setShown(null);
+    setError(null);
+    try {
+      const p = await parseAsk(t);
+      if (id !== run.current) return;
+      await search(p.crits, p.unknown);
+    } catch (e) {
+      if (id === run.current) finish(null, e);
+    }
+  };
+
+  const pickEnvie = (k: Envie) => {
+    if (!ctx) return;
+    if (envie === k) {
+      setEnvie(null);
+      return finish(null);
+    }
+    const id = ++run.current;
+    setEnvie(k);
+    setCrits(null);
+    setUnknown([]);
+    setBusy(true);
+    setShown(null);
+    const e = ENVIES.find((x) => x.k === k)!;
+    tonight(k, ctx).then(
+      (ideas) => id === run.current && finish({ ideas: ideas.slice(0, MAX_ENVIE), end: e.end, link: e.link }),
+      (err) => id === run.current && finish(null, err),
+    );
+  };
+
+  // un film vu entre-temps sort de la liste
+  const list = (shown?.ideas ?? []).filter((x) => !d.seen.has(x.id));
+  const total = list.length;
+  const cur = Math.min(at, Math.max(total - 1, 0));
+  const unseenOwned = useMemo(() => [...d.owned.keys()].filter((id) => !d.seen.has(id)).length, [d.owned, d.seen]);
 
   useEffect(() => {
-    if (!envie || !ctx) return;
-    let alive = true;
-    setIdeas(null);
-    setError(null);
-    setAt(0);
-    tonight(envie, ctx).then(
-      (l) => alive && setIdeas(l),
-      (e) => alive && setError(e),
-    );
-    return () => {
-      alive = false;
-    };
-    // l'envie seule relance la recherche (pas un film ajouté à la watchlist)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [envie, !!ctx]);
+    if (!ctx) run.current++;
+  }, [ctx]);
 
   if (!ctx) return null;
-  const unseenOwned = [...d.owned.keys()].filter((id) => !d.seen.has(id)).length;
-  const shown = ENVIES.filter((e) => (e.k === "possede" ? unseenOwned > 0 : e.k === "watchlist" ? d.watchlist.size > 0 : true));
-  const current = ENVIES.find((e) => e.k === envie);
-  // un film vu entre-temps sort de la liste
-  const list = (ideas ?? []).filter((x) => !d.seen.has(x.id));
-  const total = Math.min(MAX, list.length);
+  const envies = ENVIES.filter((e) => (e.k === "possede" ? unseenOwned > 0 : e.k === "watchlist" ? d.watchlist.size > 0 : true));
 
   return (
     <section className="section tonight" aria-labelledby="tonight-title">
@@ -114,26 +198,97 @@ export function Tonight() {
         <h2 id="tonight-title">
           Ce <span>soir ?</span>
         </h2>
-        <span className="aside">Une envie, un film.</span>
+        <span className="aside">Dis ce que tu veux, ou choisis une envie.</span>
       </div>
-      <div className="envies" role="group" aria-label="Ton envie">
-        {shown.map((e) => (
-          <button key={e.k} type="button" aria-pressed={envie === e.k} onClick={() => setEnvie(envie === e.k ? null : e.k)}>
+
+      <form
+        className="ask"
+        role="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          ask(text);
+        }}
+      >
+        <label className="sr-only" htmlFor="ask-input">
+          Décris le film que tu cherches
+        </label>
+        <input
+          id="ask-input"
+          className="ask-input"
+          type="text"
+          value={text}
+          maxLength={200}
+          autoComplete="off"
+          placeholder="Un film dans le style de Scorsese, mafia, après 2010…"
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button type="submit" className="btn primary" disabled={busy || !text.trim()}>
+          Chercher
+        </button>
+      </form>
+
+      <div className="envies" role="group" aria-label="Une envie">
+        {envies.map((e) => (
+          <button key={e.k} type="button" aria-pressed={envie === e.k} onClick={() => pickEnvie(e.k)}>
             {e.l}
             {e.k === "possede" ? <i>{unseenOwned}</i> : e.k === "watchlist" ? <i>{d.watchlist.size}</i> : null}
           </button>
         ))}
       </div>
-      {envie && current ? (
-        error ? (
-          <ErrorLine error={error} />
-        ) : !ideas ? (
-          <Loader text="Je cherche…" />
-        ) : !list.length ? (
-          <p className="note idea-none">Rien pour cette envie pour l'instant.</p>
-        ) : (
-          <IdeaCard idea={list[Math.min(at, total - 1)]} n={Math.min(at, total - 1)} total={total} envie={current} onNext={() => setAt((x) => x + 1)} />
-        )
+      <p className="ask-try">
+        Essaie :{" "}
+        {examples.map((x, i) => (
+          <span key={x}>
+            {i ? " · " : ""}
+            <button
+              type="button"
+              className="link-btn"
+              onClick={() => {
+                setText(x);
+                ask(x);
+              }}
+            >
+              {x}
+            </button>
+          </span>
+        ))}
+      </p>
+
+      {crits ? (
+        <div className="ask-got" aria-live="polite">
+          {crits.length ? (
+            <>
+              <span className="label">J'ai compris</span>
+              {crits.map((c, i) => (
+                <button
+                  key={`${c.k}${i}`}
+                  type="button"
+                  className="tag"
+                  aria-label={`Retirer : ${critLabel(c)}`}
+                  onClick={() => search(crits.filter((_, j) => j !== i), unknown)}
+                >
+                  {critLabel(c)} <span aria-hidden="true">×</span>
+                </button>
+              ))}
+            </>
+          ) : null}
+          {unknown.length ? <span className="ask-unk">Pas compris : « {unknown.join(" », « ")} »</span> : null}
+        </div>
+      ) : null}
+
+      {busy ? (
+        <Loader text="Je cherche…" />
+      ) : error ? (
+        <ErrorLine error={error} />
+      ) : crits && !crits.length ? (
+        <p className="note idea-none">
+          Je n'ai pas reconnu de critère. Essaie un genre (thriller, comédie), une époque (années 80, après 2010), un pays (coréen, italien), un thème (mafia, vengeance) ou un
+          cinéaste (« dans le style de Kubrick »).
+        </p>
+      ) : shown && !total ? (
+        <p className="note idea-none">Rien ne correspond à tous ces critères. Retire une étiquette pour élargir.</p>
+      ) : shown ? (
+        <IdeaCard idea={list[cur]} n={cur} total={total} end={shown.end} link={shown.link} own={shown.own} onNext={() => setAt((x) => x + 1)} />
       ) : null}
     </section>
   );

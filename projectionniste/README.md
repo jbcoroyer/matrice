@@ -7,7 +7,7 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 
 | URL | Contenu |
 |---|---|
-| `/decouvrir` | Accueil : « Aujourd'hui » (une proposition avec sa raison, trois par jour), reprise de l'exploration, trois chemins (un cinéaste, une sélection proche, un écart), « Ce soir ? » (une envie, un film), portes vers le catalogue, six films en salles ; `/decouvrir/populaires` : classements TMDB |
+| `/decouvrir` | Accueil : « Aujourd'hui » (une proposition avec sa raison, trois par jour), reprise de l'exploration, populaires du moment (classement du jour TMDB), « Ce soir ? » (une phrase libre comme « dans le style de Scorsese, mafia, après 2010 », des envies, des exemples), trois chemins (un cinéaste, une sélection proche, un écart) ; `/decouvrir/populaires` : classements TMDB |
 | `/watchlist` | Ta watchlist, dans l'ordre d'ajout (le plus récent d'abord), filtres et tris |
 | `/listes` | Tes listes (importées de Letterboxd ou créées ici) |
 | `/listes/[id]` | Une liste : affiches ou détails, classement, réorganisation (glisser-déposer, flèches, n° de place), commentaires par film ; lisible sans compte si elle est publique |
