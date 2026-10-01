@@ -66,3 +66,11 @@ export async function setPassword(sb: SupabaseClient, password: string) {
   const { error } = await sb.auth.updateUser({ password });
   if (error) authError(error);
 }
+
+/** Supprime définitivement le compte et toutes ses données (fonction SQL delete_my_account), puis ferme la session. */
+export async function deleteAccount(sb: SupabaseClient) {
+  const { error } = await sb.rpc("delete_my_account");
+  if (error) authError(error);
+  manualSignOut = true;
+  await sb.auth.signOut({ scope: "local" }).catch(() => {});
+}

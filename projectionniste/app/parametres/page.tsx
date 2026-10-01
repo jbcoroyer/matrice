@@ -8,6 +8,7 @@ import { useProfile } from "@/components/ProfileProvider";
 import { ErrorLine, Loader } from "@/components/ui";
 import { setPassword, signOut } from "@/lib/auth";
 import { updateProfile } from "@/lib/db";
+import { AccountData } from "@/components/AccountData";
 import { LetterboxdImport } from "@/components/LetterboxdImport";
 import { openWelcome } from "@/components/Welcome";
 import { useTheme, type ThemeMode } from "@/lib/theme";
@@ -120,6 +121,7 @@ const SECTIONS = [
   { id: "apparence", l: "Apparence" },
   { id: "presentation", l: "Présentation" },
   { id: "compte", l: "Compte" },
+  { id: "donnees", l: "Mes données" },
 ];
 
 function Settings() {
@@ -207,6 +209,7 @@ function Settings() {
             </div>
           </>,
         )}
+        {sec("donnees", "Mes données", "Les récupérer ou supprimer ton compte.", <AccountData />)}
       </div>
     </div>
   );

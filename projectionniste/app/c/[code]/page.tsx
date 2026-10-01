@@ -1,5 +1,6 @@
 "use client";
 
+import { BRAND } from "@/lib/brand";
 import { use, useEffect, useMemo, useState } from "react";
 import { CollectionCard } from "@/components/CollectionCard";
 import { duo, ErrorLine, Loader } from "@/components/ui";
@@ -99,7 +100,7 @@ export default function PublicCollection({ params }: { params: Promise<{ code: s
         ))}
       </div>
       <p className="note" style={{ marginTop: 40 }}>
-        Partagé depuis Filmable.
+        Partagé depuis {BRAND.name}.
       </p>
     </>
   );

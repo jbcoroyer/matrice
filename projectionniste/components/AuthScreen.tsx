@@ -8,6 +8,7 @@ import { img, tmdb } from "@/lib/tmdb";
 import type { Movie, Paged } from "@/lib/types";
 import { useProfile } from "./ProfileProvider";
 import { ErrorLine } from "./ui";
+import { Wordmark } from "./Wordmark";
 
 function Field({ label, ...p }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
@@ -28,6 +29,13 @@ export function AuthScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [info, setInfo] = useState<string | null>(null);
+  // après une suppression de compte : un mot de confirmation
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("compte") === "supprime") {
+      setInfo("Ton compte et toutes tes données ont été supprimés. Merci d'être passé.");
+      history.replaceState(null, "", "/");
+    }
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +70,7 @@ export function AuthScreen() {
       <div className="wrap auth">
         <div className="auth-pitch">
           <h1>
-            Film<span>able</span>
+            <Wordmark />
           </h1>
           <p className="auth-promise">
             Vois et <span>possède</span> les films qui comptent.
@@ -104,6 +112,11 @@ export function AuthScreen() {
               value={pw}
               onChange={(e) => setPw(e.target.value)}
             />
+            {mode === "signup" ? (
+              <p className="note legal-note">
+                En créant un compte, tu acceptes les <Link href="/conditions">conditions d'utilisation</Link> et la <Link href="/confidentialite">politique de confidentialité</Link>.
+              </p>
+            ) : null}
             {sessionExpired ? <p className="status" role="status">Ta session a expiré. Reconnecte-toi pour retrouver tes données.</p> : null}
             {error ? <ErrorLine error={error} /> : null}
             {info ? <p className="status">{info}</p> : null}
@@ -156,7 +169,7 @@ function PosterWall() {
 
 /** Pages lisibles sans compte : collection partagée, liste, parcours, fiche film, personne, studio. */
 export const isPublicPath = (path: string) =>
-  path.startsWith("/c/") || /^\/(listes|ensembles)\/[^/]+$/.test(path) || /^\/(film|personne|studio)\/\d+$/.test(path);
+  path.startsWith("/c/") || ["/mentions-legales", "/confidentialite", "/conditions"].includes(path) || /^\/(listes|ensembles)\/[^/]+$/.test(path) || /^\/(film|personne|studio)\/\d+$/.test(path);
 
 /** Tout le site passe par ici : sans compte connecté, on affiche l'écran de connexion. */
 export function AuthGate({ children }: { children: React.ReactNode }) {

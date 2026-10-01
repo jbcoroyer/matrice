@@ -199,3 +199,16 @@ carte en verre. Pas de liste de fonctions : la promesse d'abord.
 - **Recherche** : si TMDB ne répond pas, les suggestions, la page de résultats et la fenêtre
   « Quel film ? » disent que la recherche est indisponible et proposent **Réessayer**.
   Échap ferme les suggestions où que soit le focus.
+
+## Mes données, pages légales, identité (`components/AccountData.tsx`, `components/Legal.tsx`, `lib/brand.ts`)
+
+- **Mes données** (Paramètres) : « Exporter toutes mes données » (JSON : journal, listes, collection, parcours, profil) et
+  « Exporter mon journal » (CSV). Zone « Supprimer mon compte » en bas, séparée par un filet (pas de rouge criard) :
+  la fenêtre liste ce qui disparaît, demande de taper **SUPPRIMER**, efface les photos puis appelle `delete_my_account()`
+  (cascade sur toutes les tables), vide le stockage local et renvoie vers `/?compte=supprime`.
+- **Pages légales** : `/mentions-legales`, `/confidentialite`, `/conditions`, lisibles sans compte, liées dans le pied de page et
+  à l'inscription. Mise en page `LegalPage` : colonne étroite, titres en deux graisses, listes sobres. Tout ce qui reste à
+  renseigner est écrit entre crochets et surligné (`Fill`) tant que `LEGAL` n'est pas complété.
+- **Identité** : le nom, le slogan, l'URL et les informations légales vivent dans `lib/brand.ts` (une seule source ; changer le
+  nom = changer ce fichier + le composant `Wordmark` pour la coupure en deux graisses). Le proxy TMDB est plafonné par IP
+  (`lib/ratelimit.ts`) et refuse les appels d'autres sites.

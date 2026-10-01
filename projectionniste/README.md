@@ -18,6 +18,8 @@ Supabase pour les comptes et les données. Direction artistique : voir `design/`
 | `/personne/[id]` | Biographie et filmographie (lisible sans compte) |
 | `/studio/[id]` | Studio : logo et films, triés par popularité, date ou note |
 | `/recherche?q=` | Films et personnes (suggestions instantanées dans la barre, raccourci `/`) |
+| `/parametres` | Nom affiché, import Letterboxd, apparence, présentation, compte, **Mes données** (exporter en JSON et CSV, supprimer le compte) |
+| `/mentions-legales`, `/confidentialite`, `/conditions` | Pages légales, lisibles sans compte |
 | Menu profil (icône en haut à droite) | Mon profil (`/portrait`), Journal, Bilan, Paramètres (`/parametres`), déconnexion ; sur mobile aussi Mes listes |
 
 Dans le site, on peut ajouter / retirer un film de la watchlist (bouton + sur chaque affiche), le mettre en favori,
@@ -47,7 +49,7 @@ réponses en cache.
    anonymes ne servent plus qu'aux anciennes sessions : on peut les désactiver une fois tous les
    comptes créés.
 3. SQL Editor : exécuter, dans l'ordre, chaque fichier de `supabase/migrations/` (les plus récents :
-   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`, `20261001100000_retire_social`, `20261001120000_profile_self_insert`).
+   `20260930100000_watchlist_order`, `20260930110000_collection_editions`, `20260930120000_film_sets`, `20261001100000_retire_social`, `20261001120000_profile_self_insert`, `20261002100000_account_deletion`).
 
 Il faut un compte (email + mot de passe) pour utiliser l'appli ; sans session, tout le site
 affiche l'écran de connexion. Les données de chacun (états des films, journal, critiques, listes,
@@ -65,6 +67,10 @@ Les réglages et goûts appris ne sont lisibles que par leur propriétaire (fonc
 Dans Supabase, Authentication → URL Configuration : Site URL `http://localhost:3000` (puis l'URL
 du site en ligne) et `http://localhost:3000/**` dans Redirect URLs, pour les liens de confirmation
 et de réinitialisation du mot de passe.
+
+## Avant de publier
+
+La liste complète des étapes (nom de domaine, informations légales, Supabase de production, Vercel, contrôles) est dans [`LANCEMENT.md`](LANCEMENT.md). `node scripts/domaines.mjs` vérifie des noms en .com ; le nom et les informations légales sont dans `lib/brand.ts`.
 
 ## Déployer (Vercel)
 

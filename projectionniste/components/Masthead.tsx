@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/lib/auth";
+import { BRAND } from "@/lib/brand";
+import { Wordmark } from "./Wordmark";
 import { isPublicPath } from "./AuthScreen";
 import { Compass, Disc, Journal, Path, Plus, Search } from "./icons";
 import { JournalButton, openQuickLog } from "./QuickLog";
@@ -23,8 +25,8 @@ function isCurrent(path: string, href: string) {
 
 function Brand() {
   return (
-    <Link href="/decouvrir" className="brand" aria-label="Filmable, accueil">
-      Film<span>able</span>
+    <Link href="/decouvrir" className="brand" aria-label={`${BRAND.name}, accueil`}>
+      <Wordmark />
     </Link>
   );
 }

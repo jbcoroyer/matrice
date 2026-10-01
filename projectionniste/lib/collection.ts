@@ -210,6 +210,17 @@ export async function uploadPhoto(sb: SupabaseClient, userId: string, file: File
   return path;
 }
 
+/** Supprime toutes les photos d'exemplaires d'un compte (avant la suppression du compte). */
+export async function removeAllPhotos(sb: SupabaseClient, userId: string) {
+  for (let i = 0; i < 20; i++) {
+    const { data } = await sb.storage.from(BUCKET).list(userId, { limit: 100 });
+    const names = (data ?? []).map((f) => `${userId}/${f.name}`);
+    if (!names.length) return;
+    await sb.storage.from(BUCKET).remove(names);
+    if (names.length < 100) return;
+  }
+}
+
 export async function removePhoto(sb: SupabaseClient, path: string) {
   await sb.storage.from(BUCKET).remove([path]);
 }

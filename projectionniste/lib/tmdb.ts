@@ -51,7 +51,7 @@ export function tmdb<T = any>(path: string, params: Params = {}, { cache = true,
   if (cache && memo.has(url)) return memo.get(url) as Promise<T>;
 
   const run = limit(async () => {
-    // jusqu'à 3 essais : réseau coupé, TMDB surchargé (429) ou en panne passagère (5xx)
+    // jusqu'à 4 essais : réseau coupé, TMDB surchargé (429, avec le délai demandé par le serveur) ou en panne passagère (5xx)
     for (let attempt = 0; ; attempt++) {
       let r: Response | null = null;
       try {
@@ -60,8 +60,9 @@ export function tmdb<T = any>(path: string, params: Params = {}, { cache = true,
         if (signal?.aborted) throw new ApiError(0, "Requête annulée.");
       }
       const retryable = !r || r.status === 429 || r.status === 502 || r.status === 503 || r.status === 504;
-      if (retryable && attempt < 2) {
-        await sleep(500 * 2 ** attempt + Math.random() * 250);
+      if (retryable && attempt < 3) {
+        const asked = r?.status === 429 || r?.status === 503 ? +(r.headers.get("retry-after") || 0) : 0;
+        await sleep(asked ? Math.min(asked, 20) * 1000 + Math.random() * 400 : 500 * 2 ** attempt + Math.random() * 250);
         continue;
       }
       if (!r) throw new ApiError(0, "Connexion impossible. Vérifie ta connexion internet.");

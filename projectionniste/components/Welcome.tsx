@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { updateProfile } from "@/lib/db";
 import { store } from "@/lib/store";
 import { LetterboxdImport } from "./LetterboxdImport";
+import { Wordmark } from "./Wordmark";
 import { useProfile } from "./ProfileProvider";
 
 const FLAG = "projo.intro.v1";
@@ -145,7 +146,7 @@ export function Welcome() {
       <div className="welcome-in">
         <header className="welcome-top">
           <span className="brand">
-            Film<span>able</span>
+            <Wordmark />
           </span>
           {i < LAST ? (
             <button type="button" className="link-btn quiet" onClick={() => finish()}>
