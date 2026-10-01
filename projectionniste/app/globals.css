@@ -1293,7 +1293,7 @@ button.spine { border: 0; font: inherit; cursor: pointer; text-align: inherit }
 .idea-n { margin-left: auto; font-size: 13px; color: var(--text-3); font-variant-numeric: tabular-nums }
 
 
-.salles-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px }
+.salles-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 16px }
 
 @media (max-width: 900px) {
   .today-in { min-height: 560px }
@@ -1331,3 +1331,26 @@ button.spine { border: 0; font: inherit; cursor: pointer; text-align: inherit }
 .set-next:hover b { text-decoration: underline; text-decoration-color: var(--cream); text-underline-offset: 4px }
 .retro-next { margin: 0 0 14px; font-size: 14.5px; color: var(--text-2) }
 .retro-next a:hover b { text-decoration: underline; text-decoration-color: var(--cream); text-underline-offset: 4px }
+
+/* Parcours : la page qui réunit ce qu'on suit, où continuer et le catalogue */
+.parcours-head h1 { font-size: clamp(40px, 5vw, 68px); letter-spacing: -0.04em; line-height: 1; margin: 6px 0 0 }
+.parcours-head h1 span { font-weight: 250 }
+.parcours-head .lede { max-width: 62ch; margin: 18px 0 0 }
+.parcours-head .lede b { color: var(--text); font-weight: 600 }
+.parcours-none { max-width: 60ch; margin-top: 28px }
+.parcours-grid .rayon.parcours { min-width: min(420px, 100%) }
+.parcours-next { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 28px; font-size: 14.5px; color: var(--text-2) }
+.parcours-next li { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap }
+.parcours-next b { color: var(--text); font-weight: 600 }
+.parcours-next a:hover b { text-decoration: underline; text-decoration-color: var(--cream); text-underline-offset: 4px }
+.catalogue-sec .cat-fam { margin-top: 28px }
+.catalogue-sec .cat-fam .sec-head { margin-bottom: 14px }
+.teaser-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 36px }
+.teaser-list li { display: flex; flex-direction: column; gap: 4px; padding: 14px 0 16px; border-top: 1px solid var(--line) }
+.teaser-t { font-size: clamp(20px, 1.9vw, 26px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1 }
+.teaser-t span { font-weight: 250 }
+.teaser-t:hover { text-decoration: underline; text-decoration-color: var(--cream); text-underline-offset: 5px }
+.teaser-list .dim { font-size: 13px; font-variant-numeric: tabular-nums }
+.teaser-n { font-size: 14px; color: var(--text-2) }
+.teaser-n a { color: var(--text); font-weight: 600 }
+@media (max-width: 900px) { .salles-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) } .teaser-list { grid-template-columns: minmax(0, 1fr) } }

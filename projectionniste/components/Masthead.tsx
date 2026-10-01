@@ -5,16 +5,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { signOut } from "@/lib/auth";
 import { isPublicPath } from "./AuthScreen";
-import { Bookmark, Compass, Disc, Journal, List, Plus, Search } from "./icons";
+import { Compass, Disc, Journal, Path, Plus, Search } from "./icons";
 import { JournalButton, openQuickLog } from "./QuickLog";
 import { useProfile } from "./ProfileProvider";
 import { SearchBox } from "./SearchBox";
 
 const RUBRIQUES = [
   { href: "/decouvrir", label: "Découvrir", icon: Compass },
+  { href: "/parcours", label: "Parcours", icon: Path },
   { href: "/journal", label: "Journal", icon: Journal },
-  { href: "/watchlist", label: "Watchlist", icon: Bookmark },
-  { href: "/listes", label: "Listes", icon: List },
   { href: "/collection", label: "Collection", icon: Disc },
 ];
 
@@ -52,7 +51,7 @@ function ProfileMenu() {
   }, [open]);
 
   const name = profile?.owner || account?.email?.split("@")[0] || "";
-  const mine = ["/portrait", "/bilan", "/parametres"].includes(path);
+  const mine = ["/portrait", "/bilan", "/listes", "/parametres"].includes(path);
   const item = (href: string, label: string) => (
     <Link role="menuitem" href={href} aria-current={path === href ? "page" : undefined}>
       {label}
@@ -61,7 +60,7 @@ function ProfileMenu() {
 
   return (
     <div className="pmenu" ref={box}>
-      <button type="button" className={`avatar${mine ? " on" : ""}`} aria-haspopup="menu" aria-expanded={open} aria-label="Mon profil" onClick={() => setOpen((o) => !o)}>
+      <button type="button" className={`avatar${mine ? " on" : ""}`} aria-haspopup="menu" aria-expanded={open} aria-label="Mon compte" onClick={() => setOpen((o) => !o)}>
         {name ? name[0].toUpperCase() : "?"}
       </button>
       {open ? (
@@ -70,10 +69,8 @@ function ProfileMenu() {
             <b>{name}</b>
             <span>{account?.email}</span>
           </div>
-          {item("/portrait", "Mon profil")}
-          {item("/journal", "Journal")}
-          <span className="only-mobile">{item("/listes", "Mes listes")}</span>
-          {item("/bilan", "Bilan de l'année")}
+          {item("/portrait", "Mes chiffres")}
+          {item("/listes", "Mes listes")}
           {item("/parametres", "Paramètres")}
           <hr />
           <button
@@ -147,8 +144,8 @@ export function TabBar() {
   const path = usePathname();
   const { status } = useProfile();
   if (status !== "ready") return null;
-  // Découvrir · Journal · + · Watchlist · Collection (Listes est dans le menu du profil, la recherche dans l'en-tête)
-  const tabs = RUBRIQUES.filter((r) => r.href !== "/listes");
+  // Découvrir · Parcours · + · Journal · Collection (les listes et les chiffres sont dans le menu du profil, la recherche dans l'en-tête)
+  const tabs = RUBRIQUES;
   const link = (t: (typeof tabs)[number]) => (
     <Link key={t.href} href={t.href} aria-current={isCurrent(path, t.href) ? "page" : undefined}>
       <t.icon />

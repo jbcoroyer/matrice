@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Rayons } from "@/components/Rayons";
 import { CollectionCard, Spine } from "@/components/CollectionCard";
 import { CopyDialog } from "@/components/CopyDialog";
 import { Dots, Plus, Search } from "@/components/icons";
@@ -288,7 +287,6 @@ function Collection() {
   const [finding, setFinding] = useState<FilmInput | null>(null);
   const [pickWant, setPickWant] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [rayon, setRayon] = useState<string | null>(null);
   const menu = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => setArrange(store.get<Arrange>(ARRANGE_KEY, "titre")), []);
@@ -304,12 +302,13 @@ function Collection() {
     loadWants();
   }, [loadItems, loadWants]);
 
-  // l'adresse suit ce qui est ouvert : ?film=… (feuille), ?rayon=… ; le retour du navigateur fonctionne
+  // l'adresse suit ce qui est ouvert : ?film=… (feuille) ; le retour du navigateur fonctionne
   useEffect(() => {
     const read = () => {
       const p = new URLSearchParams(location.search);
       setOpenId(+(p.get("film") || 0) || null);
-      setRayon(p.get("rayon"));
+      // les rayons ont rejoint les parcours
+      if (p.get("rayon")) location.replace(`/parcours?p=${p.get("rayon")}`);
     };
     read();
     window.addEventListener("popstate", read);
@@ -352,7 +351,6 @@ function Collection() {
   const results = useMemo(() => (all && searching ? all.filter((e) => matches(e, query, seen)) : []), [all, query, searching, seen]);
   const shelf = useMemo(() => (all ? planks(all, total >= ARRANGE_FROM ? arrange : "titre") : []), [all, arrange, total]);
   const loans = useMemo(() => (all ?? []).flatMap((e) => e.copies.filter((c) => c.lent_to).map((c) => ({ e, c }))), [all]);
-  const ownedIds = useMemo(() => new Set((all ?? []).map((e) => e.tmdb_id)), [all]);
   const opened = openId && all ? all.find((e) => e.tmdb_id === openId) ?? null : null;
 
   const pickArrange = (a: Arrange) => {
@@ -425,9 +423,12 @@ function Collection() {
               <Link href="/collection/registre" onClick={closeMenu}>
                 Registre de la collection
               </Link>
-              <Link href="/ensembles" onClick={closeMenu}>
-                Ouvrir un rayon
+              <Link href="/parcours" onClick={closeMenu}>
+                Mes parcours
               </Link>
+              <button type="button" onClick={() => (closeMenu(), setPickWant(true))}>
+                Je cherche un disque
+              </button>
             </div>
           </details>
         </div>
@@ -570,9 +571,7 @@ function Collection() {
         </>
       )}
 
-      {all ? <Rayons owned={ownedIds} onOpen={(id) => (all.some((e) => e.tmdb_id === id) ? openFilm(id) : undefined)} highlight={rayon} /> : null}
-
-      {wants && (total || wants.length) ? (
+      {wants && wants.length ? (
         <Wanted wants={wants} onFound={(w) => setFinding({ id: w.tmdb_id, title: w.films?.title ?? "Film", release_date: w.films?.release_date ?? undefined, poster_path: w.films?.poster_path })} onRemove={removeWanted} onAdd={() => setPickWant(true)} />
       ) : null}
 

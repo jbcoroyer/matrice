@@ -61,7 +61,7 @@ function DoorsSkeleton() {
 }
 
 /** « Trois chemins » : un cinéaste, une sélection proche, un écart ; ou trois portes d'entrée pour un compte qui débute. */
-export function Paths({ enabled, avoidDirector }: { enabled: boolean; avoidDirector: number | null }) {
+export function Paths({ enabled, avoidDirector, skip = [] }: { enabled: boolean; avoidDirector: number | null; skip?: string[] }) {
   const ctx = useDiscoverCtx();
   const [doors, setDoors] = useState<Door[] | null>(null);
   const known = (ctx?.seen.size ?? 0) >= 5;
@@ -71,7 +71,7 @@ export function Paths({ enabled, avoidDirector }: { enabled: boolean; avoidDirec
     let alive = true;
     (async () => {
       const seenFilms = known ? await loadSeenFilms(ctx.sb).catch(() => []) : [];
-      return buildDoors(ctx, seenFilms, avoidDirector);
+      return buildDoors(ctx, seenFilms, avoidDirector, skip);
     })().then(
       (l) => alive && setDoors(l),
       () => alive && setDoors([]),
@@ -79,16 +79,15 @@ export function Paths({ enabled, avoidDirector }: { enabled: boolean; avoidDirec
     return () => {
       alive = false;
     };
-  }, [ctx, enabled, avoidDirector, known]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctx, enabled, avoidDirector, known, skip.join(",")]);
 
   if (doors && !doors.length) return null;
   return (
     <section className="section paths-sec" aria-labelledby="paths-title">
       <div className="sec-head">
         <h2 id="paths-title">{known ? <>Trois <span>chemins</span></> : <>Des portes <span>d'entrée</span></>}</h2>
-        <span className="aside">
-          {known ? "À partir de ce que tu regardes" : "Pour commencer quelque part"} · <Link href="/ensembles">Tout le catalogue →</Link>
-        </span>
+        <span className="aside">{known ? "À partir de ce que tu regardes" : "Pour commencer quelque part"}</span>
       </div>
       {doors ? (
         <div className="paths">

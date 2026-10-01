@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import { FilmGrid } from "@/components/FilmGrid";
 import Link from "next/link";
-import { EmptyState, ErrorLine, ProfileGate, SecHead, SkeletonGrid } from "@/components/ui";
+import { EmptyState, ErrorLine, SkeletonGrid } from "@/components/ui";
 import { GENRE_OPTIONS, genreIds } from "@/lib/genres";
 import { useWatchlistMovies } from "@/lib/hooks";
 
-function Watchlist() {
+/** Les films à voir, dans l'ordre où on les a ajoutés (onglet « À voir » du Journal). */
+export function WatchlistView() {
   const [genre, setGenre] = useState(0);
   const [sort, setSort] = useState<"added" | "first" | "short" | "recent" | "old">("added");
   const wl = useWatchlistMovies(sort === "short");
@@ -24,8 +25,7 @@ function Watchlist() {
   const error = wl.error;
 
   return (
-    <section className="section">
-      <SecHead as="h1" title="Watchlist" aside="Dans l'ordre où tu les as ajoutés" />
+    <section className="watchlist-view">
       <div className="filterbar">
         <label>
           Genre
@@ -68,7 +68,7 @@ function Watchlist() {
           actions={
             <>
               <Link className="btn primary" href="/decouvrir">
-                Parcourir les tendances
+                Voir les idées du jour
               </Link>
               <Link className="btn ghost" href="/parametres#import">
                 Importer mon Letterboxd
@@ -80,15 +80,5 @@ function Watchlist() {
         </EmptyState>
       )}
     </section>
-  );
-}
-
-export default function Page() {
-  return (
-    <div>
-      <ProfileGate>
-        <Watchlist />
-      </ProfileGate>
-    </div>
   );
 }

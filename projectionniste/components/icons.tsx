@@ -41,6 +41,9 @@ export const Disc = (p: P) => (
 export const Compass = (p: P) => (
   <svg {...base} {...p}><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5z" /></svg>
 );
+export const Path = (p: P) => (
+  <svg {...base} {...p}><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="6" r="2.2" /><path d="M8 17c6-1 2-6 5-8 1.3-.9 3-1 3.7-1.7" /></svg>
+);
 export const Dots = (p: P) => (
   <svg {...base} {...p} fill="currentColor" stroke="none"><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
 );

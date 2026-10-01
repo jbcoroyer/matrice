@@ -16,6 +16,9 @@ const nextConfig = {
       { source: "/salles", destination: "/decouvrir", permanent: true },
       { source: "/decouvrir/salles", destination: "/decouvrir", permanent: true },
       { source: "/reglages", destination: "/parametres", permanent: true },
+      // Parcours : les rayons, les cycles et le catalogue au même endroit ; la watchlist est l'onglet « À voir » du Journal
+      { source: "/ensembles", destination: "/parcours", permanent: true },
+      { source: "/watchlist", destination: "/journal?onglet=avoir", permanent: true },
       { source: "/compte", destination: "/parametres", permanent: true },
     ];
   },

@@ -282,3 +282,40 @@ export function followedIn(sets: MySet[], items: SetItem[], mode: Mode) {
     .filter((x): x is NonNullable<typeof x> => !!x)
     .sort((a, b) => b.follow.started_at.localeCompare(a.follow.started_at));
 }
+
+/** Les parcours suivis (comme rayon, comme cycle, ou les deux), avec leurs films comptés : sortis et non exclus. */
+export function followedAll(sets: MySet[], items: SetItem[]) {
+  return sets
+    .map((s) => {
+      const fs = s.follows.filter((f) => !f.archived_at);
+      if (!fs.length) return null;
+      const ex = new Set(s.exclusions.map((x) => x.tmdb_id));
+      const films = items.filter((i) => i.set_id === s.id && !ex.has(i.tmdb_id) && !upcoming({ release_date: i.release_date ?? undefined }));
+      return { set: s, follows: fs, films };
+    })
+    .filter((x): x is NonNullable<typeof x> => !!x)
+    .sort((a, b) => b.follows[0].started_at.localeCompare(a.follows[0].started_at));
+}
+
+export type Parcours = ReturnType<typeof followedAll>[number];
+
+/** Suit un parcours en entier : à voir (cycle) et à posséder (rayon). */
+export async function followBoth(sb: SupabaseClient, def: SetDef, films: SetFilm[], have: Mode[]) {
+  for (const mode of ["watch", "own"] as Mode[]) if (!have.includes(mode)) await follow(sb, def, films, mode);
+}
+
+export async function unfollowAll(sb: SupabaseClient, setId: string, have: Mode[]) {
+  for (const mode of have) await unfollow(sb, setId, mode);
+}
+
+/** Où tu en es : vus, possédés, le prochain film à voir et le disque à chercher. */
+export function parcoursState(films: { tmdb_id: number; release_date?: string | null; films: { title: string; release_date: string | null } | null }[], seen: Set<number>, owned: { has(id: number): boolean }) {
+  const label = (f: (typeof films)[number]) => ({ id: f.tmdb_id, title: f.films?.title ?? "Film", year: (f.release_date || f.films?.release_date || "").slice(0, 4) });
+  const seenN = films.filter((f) => seen.has(f.tmdb_id)).length;
+  const ownedN = films.filter((f) => owned.has(f.tmdb_id)).length;
+  const bothN = films.filter((f) => seen.has(f.tmdb_id) && owned.has(f.tmdb_id)).length;
+  const toSee = films.find((f) => !seen.has(f.tmdb_id));
+  // le disque à chercher : d'abord un film que tu connais déjà et n'as pas
+  const toOwn = films.find((f) => seen.has(f.tmdb_id) && !owned.has(f.tmdb_id)) ?? films.find((f) => !owned.has(f.tmdb_id));
+  return { total: films.length, seenN, ownedN, bothN, toSee: toSee ? label(toSee) : null, toOwn: toOwn ? { ...label(toOwn), known: seen.has(toOwn.tmdb_id) } : null };
+}

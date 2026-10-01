@@ -160,7 +160,7 @@ function generators(ctx: Ctx, recent: Recent[], dates: Map<number, string>, day:
           id: next.tmdb_id,
           kind: "cycle",
           kicker: "Ton cycle",
-          why: [["« " + c.set.title + " »", `/journal?onglet=cycles&cycle=${c.set.key}`], ` : ${done} ${done > 1 ? "séances" : "séance"} sur ${c.films.length}. La suivante :`],
+          why: [["« " + c.set.title + " »", `/parcours?p=${c.set.key}`], ` : ${done} ${done > 1 ? "séances" : "séance"} sur ${c.films.length}. La suivante :`],
         };
       }
       return null;
@@ -198,7 +198,7 @@ function generators(ctx: Ctx, recent: Recent[], dates: Map<number, string>, day:
       const oldest = [...dates.entries()].filter(([id]) => fresh(id, ex)).sort((a, b) => a[1].localeCompare(b[1])).slice(0, 12);
       if (!oldest.length) return null;
       const [id, at] = shuffle(oldest, r)[0];
-      return { id, kind: "watchlist", kicker: "Dans ta watchlist", why: [`Il t'attend depuis ${ago(at)}.`], more: ["Ta watchlist", "/watchlist"] };
+      return { id, kind: "watchlist", kicker: "Dans ta watchlist", why: [`Il t'attend depuis ${ago(at)}.`], more: ["Ta watchlist", "/journal?onglet=avoir"] };
     },
 
     // sorti il y a 25, 30, 40, 50 ou 60 ans, cette semaine
@@ -365,15 +365,16 @@ type DoorsCache = { key: string; doors: Door[] };
  * Trois chemins : un cinéaste que tu suis déjà, une sélection proche de ce que tu regardes,
  * et un écart assumé vers ce que tu ne regardes jamais. Sans historique : trois portes d'entrée.
  */
-export async function buildDoors(ctx: Ctx, seenFilms: SeenLite[], avoidDirector: number | null): Promise<Door[]> {
+export async function buildDoors(ctx: Ctx, seenFilms: SeenLite[], avoidDirector: number | null, skip: string[] = []): Promise<Door[]> {
   const day = localDay();
-  const key = `${day}|${ctx.userId}|${ctx.seen.size}`;
+  const key = `${day}|${ctx.userId}|${ctx.seen.size}|${skip.join(",")}`;
   const cached = store.get<DoorsCache | null>(DOORS_KEY, null);
   if (cached?.key === key && cached.doors.length) return cached.doors;
 
   const r = seeded(`${day}|${ctx.userId}|doors`);
   const out: Door[] = [];
-  const used = new Set<string>();
+  // les parcours déjà suivis ne sont pas reproposés
+  const used = new Set<string>(skip);
   const add = (d: Door | null) => d && !used.has(d.key) && (out.push(d), used.add(d.key), true);
 
   if (ctx.seen.size >= 5) {

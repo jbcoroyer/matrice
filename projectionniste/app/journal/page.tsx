@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { DiaryList } from "@/components/DiaryEntries";
 import { useProfile } from "@/components/ProfileProvider";
-import { Cycles } from "@/components/Cycles";
+import { WatchlistView } from "@/components/WatchlistView";
+import { useRouter } from "next/navigation";
 import { WatchedFilms } from "@/components/WatchedFilms";
 import { EmptyState, ErrorLine, Loader, ProfileGate, SecHead, StartActions } from "@/components/ui";
 import { JournalButton } from "@/components/QuickLog";
@@ -22,11 +23,14 @@ function Journal() {
   const { sb, userId } = useProfile();
   // filtres de départ venus d'un lien (bilan de l'année) : ?etiquette=…&annee=…
   const [filter, setFilter] = useState<DiaryFilter | null>(null);
-  const [tab, setTab] = useState<"journal" | "vus" | "cycles">("journal");
+  const [tab, setTab] = useState<"journal" | "vus" | "avoir">("journal");
+  const router = useRouter();
   useEffect(() => {
     const q = new URLSearchParams(location.search);
     const o = q.get("onglet");
-    if (o === "vus" || o === "cycles") setTab(o);
+    if (o === "vus" || o === "avoir") setTab(o);
+    // les cycles ont rejoint les parcours
+    if (o === "cycles") router.replace(q.get("cycle") ? `/ensembles/${q.get("cycle")}` : "/parcours");
     setFilter({ tag: q.get("etiquette") || undefined, year: +(q.get("annee") || 0) || undefined });
   }, []);
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null);
@@ -61,7 +65,7 @@ function Journal() {
     return () => window.removeEventListener(DIARY_EVENT, refresh);
   }, [refresh]);
 
-  // l'onglet est dans l'adresse (?onglet=vus|cycles) : un lien y mène directement
+  // l'onglet est dans l'adresse (?onglet=vus|avoir) : un lien y mène directement
   const pick = (t: typeof tab) => {
     setTab(t);
     history.replaceState({}, "", t === "journal" ? location.pathname : `?onglet=${t}`);
@@ -108,16 +112,16 @@ function Journal() {
           <button type="button" role="radio" aria-checked={tab === "vus"} onClick={() => pick("vus")}>
             Films vus
           </button>
-          <button type="button" role="radio" aria-checked={tab === "cycles"} onClick={() => pick("cycles")}>
-            Cycles
+          <button type="button" role="radio" aria-checked={tab === "avoir"} onClick={() => pick("avoir")}>
+            À voir
           </button>
         </div>
         <JournalButton className="in-page" />
       </div>
       {tab === "vus" ? (
         <WatchedFilms />
-      ) : tab === "cycles" ? (
-        <Cycles />
+      ) : tab === "avoir" ? (
+        <WatchlistView />
       ) : (
         <>
       <div className="filterbar">

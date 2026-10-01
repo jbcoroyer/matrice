@@ -19,7 +19,7 @@ const MAX_ENVIE = 3;
 const ENVIES: { k: Envie; l: string; end: string; link?: [string, string] }[] = [
   { k: "court", l: "Moins de 1 h 40", end: "Trois idées, c'est assez pour un soir." },
   { k: "possede", l: "Possédé, pas vu", end: "Les autres attendent sur ton étagère.", link: ["Ta collection", "/collection"] },
-  { k: "watchlist", l: "Dans ma watchlist", end: "Le reste de ta watchlist t'attend.", link: ["Ta watchlist", "/watchlist"] },
+  { k: "watchlist", l: "Dans ma watchlist", end: "Le reste de ta watchlist t'attend.", link: ["Ta watchlist", "/journal?onglet=avoir"] },
   { k: "classique", l: "Un classique", end: "Trois idées, c'est assez pour un soir." },
 ];
 

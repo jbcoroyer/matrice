@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { errorText } from "@/lib/errors";
 import { frDate, plural } from "@/lib/format";
-import { countable, follow, markCompleted, mySet, personKey, resolveDef, resolveFilms, setExcluded, syncSet, unfollow, upcoming, type Mode, type MySet, type Role, type SetDef, type SetFilm } from "@/lib/sets";
+import { countable, followBoth, markCompleted, mySet, personKey, resolveDef, resolveFilms, setExcluded, syncSet, unfollowAll, upcoming, type Mode, type MySet, type Role, type SetDef, type SetFilm } from "@/lib/sets";
 import { img } from "@/lib/tmdb";
 import type { Ranked } from "@/lib/types";
 import { nextIn } from "@/lib/discover";
@@ -20,34 +20,32 @@ const DAY = 86400000;
 const EDITORIAL_REV = +new Date("2026-09-30T13:50:00Z");
 const ROLE_TAB: Record<Role, string> = { director: "Réalisation", main: "Rôles principaux", all: "Toute la filmographie" };
 
-/** Où vit chaque intention : le rayon dans la Collection, le cycle dans le Journal. */
-export const modeHref = (mode: Mode, key: string) => (mode === "own" ? `/collection?rayon=${key}` : `/journal?onglet=cycles&cycle=${key}`);
+/** Où retrouver un parcours suivi. */
+export const modeHref = (_mode: Mode, key: string) => `/parcours?p=${key}`;
 
-/** Une ligne de la page d'ensemble : « Dans ta collection : 4 sur 13 », avec son geste. */
-function ModeLine({ mode, done, total, followed, completedAt, busy, onFollow, onStop, setKey }: {
-  mode: Mode; done: number; total: number; followed: boolean; completedAt: string | null; busy: boolean; onFollow: () => void; onStop: () => void; setKey: string;
+/** « Ton parcours : 9 vus sur 13, 4 possédés » et le seul geste : suivre, ou ne plus suivre. */
+function ParcoursLine({ seenN, ownedN, total, followed, busy, onFollow, onStop, setKey }: {
+  seenN: number; ownedN: number; total: number; followed: boolean; busy: boolean; onFollow: () => void; onStop: () => void; setKey: string;
 }) {
-  const own = mode === "own";
   return (
     <div className="set-mode">
-      <p className="label">{own ? "Dans ta collection" : "Dans ton parcours"}</p>
+      <p className="label">Ton parcours</p>
       <p className="set-count">
-        <b>{done}</b> <span>sur {total}</span> {own ? "possédé" + (done > 1 ? "s" : "") : "vu" + (done > 1 ? "s" : "")}
+        <b>{seenN}</b> <span>sur {total} vus</span> · <b>{ownedN}</b> <span>possédé{ownedN > 1 ? "s" : ""}</span>
       </p>
-      {completedAt ? <p className="set-done">{own ? "Rayon complet" : "Cycle achevé"} · {frDate(completedAt.slice(0, 10), { month: "long", year: "numeric" })}</p> : null}
       <div className="row-actions">
         {followed ? (
           <>
-            <Link className="btn" href={modeHref(mode, setKey)}>
-              {own ? "Voir le rayon" : "Voir le cycle"}
+            <Link className="btn" href={`/parcours?p=${setKey}`}>
+              Voir dans mes parcours
             </Link>
             <button type="button" className="link-btn quiet" disabled={busy} onClick={onStop}>
-              {own ? "Fermer le rayon" : "Arrêter le cycle"}
+              Ne plus suivre
             </button>
           </>
         ) : (
-          <button type="button" className={own ? "btn primary" : "btn"} disabled={busy || !total} onClick={onFollow}>
-            {own ? "Ouvrir un rayon" : "Commencer le cycle"}
+          <button type="button" className="btn primary" disabled={busy || !total} onClick={onFollow}>
+            Suivre ce parcours
           </button>
         )}
       </div>
@@ -125,7 +123,7 @@ export function SetView({ setKey }: { setKey: string }) {
       <section className="gate">
         <h1>Ensemble introuvable</h1>
         <p className="note">Ce lien ne correspond à aucun ensemble de films.</p>
-        <Link className="btn primary" href="/ensembles">
+        <Link className="btn primary" href="/parcours">
           Voir le catalogue
         </Link>
       </section>
@@ -146,8 +144,8 @@ export function SetView({ setKey }: { setKey: string }) {
             <img src={img(cover, "w780")} alt="" />
           </div>
         ) : null}
-        <Link href="/ensembles" className="back">
-          ← Rayons et cycles
+        <Link href="/parcours" className="back">
+          ← Parcours
         </Link>
         <p className="label">{def.kicker}</p>
         <h1>
@@ -181,20 +179,16 @@ export function SetView({ setKey }: { setKey: string }) {
 
         {signedIn && films ? (
           <div className="set-modes">
-            <ModeLine
-              mode="own" setKey={setKey} done={owned} total={counted.length} followed={!!fol("own")} completedAt={fol("own")?.completed_at ?? null} busy={busy}
-              onFollow={() => act(() => follow(d.sb!, def, films, "own"), `Rayon « ${def.title} » ouvert dans ta collection`)}
-              onStop={() => mine && act(() => unfollow(d.sb!, mine.id, "own"), `Rayon « ${def.title} » fermé`)}
-            />
-            <ModeLine
-              mode="watch" setKey={setKey} done={seenN} total={counted.length} followed={!!fol("watch")} completedAt={fol("watch")?.completed_at ?? null} busy={busy}
-              onFollow={() => act(() => follow(d.sb!, def, films, "watch"), `Cycle « ${def.title} » commencé dans ton journal`)}
-              onStop={() => mine && act(() => unfollow(d.sb!, mine.id, "watch"), `Cycle « ${def.title} » arrêté`)}
+            <ParcoursLine
+              setKey={setKey} seenN={seenN} ownedN={owned} total={counted.length} busy={busy}
+              followed={!!mine?.follows.some((f) => !f.archived_at)}
+              onFollow={() => act(() => followBoth(d.sb!, def, films, mine?.follows.filter((f) => !f.archived_at).map((f) => f.mode) ?? []), `Parcours « ${def.title} » suivi : tu le retrouves dans Parcours`)}
+              onStop={() => mine && act(() => unfollowAll(d.sb!, mine.id, mine.follows.filter((f) => !f.archived_at).map((f) => f.mode)), `Parcours « ${def.title} » arrêté`)}
             />
           </div>
         ) : !signedIn && d.status !== "loading" ? (
           <p className="note">
-            <Link className="link" href="/">Crée un compte</Link> pour ouvrir un rayon (les posséder) ou commencer un cycle (les voir).
+            <Link className="link" href="/">Crée un compte</Link> pour suivre ce parcours : ce que tu as vu, ce que tu possèdes, et la suite.
           </p>
         ) : null}
       </header>
@@ -210,7 +204,7 @@ export function SetView({ setKey }: { setKey: string }) {
             </button>
           ) : null}
         </div>
-        {adjust ? <p className="note">« Ne pas compter » retire un film du rayon et du cycle (un caméo, un film introuvable…).</p> : null}
+        {adjust ? <p className="note">« Ne pas compter » retire un film du parcours (un caméo, un film introuvable…).</p> : null}
         {!films ? (
           <Loader text="Recherche des films…" />
         ) : !films.length ? (
