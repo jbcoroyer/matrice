@@ -559,7 +559,7 @@ function Collection() {
                         </span>
                       ) : null}
                       {p.copies.map(({ e, c }) => (
-                        <Spine key={c.id} entry={e} copy={c} onOpen={() => openFilm(e.tmdb_id)} />
+                        <Spine key={c.id} entry={e} copy={c} seen={seen.has(e.tmdb_id)} onOpen={() => openFilm(e.tmdb_id)} />
                       ))}
                     </Fragment>
                   ))}

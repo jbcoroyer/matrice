@@ -97,6 +97,8 @@ profil). Planches de départ : `design/collection/`.
   (Partager, Registre, Ouvrir un rayon). Une ligne rappelle les prêts s'il y en a.
 - Jusqu'à 12 films : tout est de face (l'affiche dans le cadre de sa matière), sans aucun outil.
 - Au-delà : **Dernières entrées** de face, puis **l'étagère** : une seule, continue, un dos par
+  exemplaire dont la **couleur de l'affiche monte à mi-hauteur** (possédé) ou **remplit tout le dos avec
+  un petit œil** (possédé et vu), comme les rayons ; un dos par
   exemplaire, rangée par **ordre alphabétique des titres** (sans l'article : « Le Mépris » à M),
   des **intercalaires** (lettre du titre, du réalisateur, décennie ou année d'entrée) et un index
   des lettres. « Ranger par » (Titre, Réalisateur, Année, Entrée) apparaît à partir de 30 films.

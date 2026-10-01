@@ -234,7 +234,10 @@ export function CollectionCard({
   );
 }
 
-/** Dos de boîtier pour la vue Étagère : la tranche prend la couleur de l'affiche. */
+/**
+ * Dos de boîtier pour la vue Étagère. Il est possédé (il est sur l'étagère) : la couleur de l'affiche monte
+ * jusqu'à mi-hauteur ; vu en plus, elle remplit tout le dos, avec un petit œil. Même logique que les rayons.
+ */
 export function Spine({ entry, copy, seen, onOpen }: { entry: Entry; copy: CollectionItem; seen?: boolean; onOpen?: () => void }) {
   const [a, b] = splitTitle(entry.film.title);
   // une seule étagère pour tous les formats : même dos, même taille, on ne fait pas de différence
@@ -247,7 +250,9 @@ export function Spine({ entry, copy, seen, onOpen }: { entry: Entry; copy: Colle
       </span>
     );
   }
-  const label = [`${entry.film.title} (${year(entry)})`, formatLabel(copy.format), packagingLabel(copy.packaging), copy.edition].filter(Boolean).join(" · ");
+  const label = [`${entry.film.title} (${year(entry)})`, formatLabel(copy.format), packagingLabel(copy.packaging), copy.edition, seen ? "vu" : "pas encore vu"].filter(Boolean).join(" · ");
+  const poster = entry.film.poster_path ? ({ "--p": `url(${img(entry.film.poster_path, "w185")})` } as React.CSSProperties) : undefined;
+  const cls = `spine fill ${seen ? "full seen" : "half"}`;
   const inner = (
     <>
       <span className="t">
@@ -255,20 +260,20 @@ export function Spine({ entry, copy, seen, onOpen }: { entry: Entry; copy: Colle
         {b ? <span> {b}</span> : null}
       </span>
       <span className="y">{year(entry).slice(2)}</span>
-      <i className={`dot${seen === false ? "" : " off"}`} />
+      {seen ? <Eye className="rs-eye" aria-hidden="true" /> : null}
     </>
   );
   if (onOpen)
     return (
       <span className="slot">
-        <button type="button" className="spine" title={label} aria-label={label} onClick={onOpen}>
+        <button type="button" className={cls} style={poster} title={label} aria-label={label} onClick={onOpen}>
           {inner}
         </button>
       </span>
     );
   return (
     <span className="slot">
-      <Link href={`/film/${entry.tmdb_id}`} className="spine" title={label}>
+      <Link href={`/film/${entry.tmdb_id}`} className={cls} style={poster} title={label}>
         {inner}
       </Link>
     </span>

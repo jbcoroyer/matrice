@@ -582,8 +582,13 @@ textarea { background: var(--bg-2); border: 1px solid var(--line-2); border-radi
 .spine .t { flex: 1; margin: 0 0 12px; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
 .spine .t b, .spine .t span { font-weight: 500 }
 .spine .y { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: rgb(243 239 230 / 0.6) }
-.spine .dot { width: 9px; height: 9px; margin-top: 6px; border-radius: 50%; border: 1.3px dashed rgb(243 239 230 / 0.8) }
-.spine .dot.off { visibility: hidden }
+/* la couleur de l'affiche monte dans le dos : à moitié si possédé, en entier si vu aussi (comme les rayons) */
+.spine .t, .spine .y, .spine .rs-eye { position: relative; z-index: 1 }
+.spine .rs-eye { flex: none; width: 13px; height: 13px; margin-top: 6px; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.6)) }
+.spine.fill::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100%; background: var(--p, var(--bg-4)) center / cover; filter: saturate(1.25) }
+.spine.fill::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100%; background: linear-gradient(to right, rgb(8 8 10 / 0.55), rgb(8 8 10 / 0.15) 60%, rgb(8 8 10 / 0.5)) }
+.spine.half::before, .spine.half::after { height: 50% }
+.spine.fill .y { color: rgb(243 239 230 / 0.8) }
 .spine.loan { background: none; border: 1.5px dashed var(--line-2); box-shadow: none; color: var(--text-3); justify-content: center }
 .spine.loan .t { font-size: 12.5px; flex: none; margin: 0 }
 .spine.loan:hover { transform: none }
