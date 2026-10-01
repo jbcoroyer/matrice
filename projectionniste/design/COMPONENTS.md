@@ -206,9 +206,17 @@ carte en verre. Pas de liste de fonctions : la promesse d'abord.
   « Exporter mon journal » (CSV). Zone « Supprimer mon compte » en bas, séparée par un filet (pas de rouge criard) :
   la fenêtre liste ce qui disparaît, demande de taper **SUPPRIMER**, efface les photos puis appelle `delete_my_account()`
   (cascade sur toutes les tables), vide le stockage local et renvoie vers `/?compte=supprime`.
-- **Pages légales** : `/mentions-legales`, `/confidentialite`, `/conditions`, lisibles sans compte, liées dans le pied de page et
-  à l'inscription. Mise en page `LegalPage` : colonne étroite, titres en deux graisses, listes sobres. Tout ce qui reste à
+- **Pages légales** : `/mentions-legales`, `/confidentialite`, `/conditions`, lisibles sans compte, liées sous le formulaire de
+  l'écran d'accueil, à l'inscription et dans Paramètres → À propos (avec la mention TMDB). Il n'y a plus de pied de page. Mise en page `LegalPage` : colonne étroite, titres en deux graisses, listes sobres. Tout ce qui reste à
   renseigner est écrit entre crochets et surligné (`Fill`) tant que `LEGAL` n'est pas complété.
 - **Identité** : le nom, le slogan, l'URL et les informations légales vivent dans `lib/brand.ts` (une seule source ; changer le
   nom = changer ce fichier + le composant `Wordmark` pour la coupure en deux graisses). Le proxy TMDB est plafonné par IP
   (`lib/ratelimit.ts`) et refuse les appels d'autres sites.
+
+## Mobile (retours d'essai sur téléphone)
+- **Accueil** : le formulaire est visible sans défiler (promesse, puis carte de connexion) ; l'argumentaire, les parcours
+  ouverts et les liens légaux passent dessous.
+- **Journal** : pas de bouton « Journaliser » dans la page (le « + » de la barre d'onglets suffit) ; onglets sur toute la largeur ;
+  chaque entrée tient sur deux lignes (titre, puis année · note · Modifier).
+- **Populaires** : une rangée qui défile (38 % de largeur) au lieu de quatre colonnes minuscules.
+- **Ce soir ?** : champ et bouton sur une ligne ; **Mes chiffres** : trois colonnes alignées.

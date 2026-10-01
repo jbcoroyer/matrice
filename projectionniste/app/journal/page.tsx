@@ -8,7 +8,6 @@ import { WatchlistView } from "@/components/WatchlistView";
 import { useRouter } from "next/navigation";
 import { WatchedFilms } from "@/components/WatchedFilms";
 import { EmptyState, ErrorLine, Loader, ProfileGate, SecHead, StartActions } from "@/components/ui";
-import { JournalButton } from "@/components/QuickLog";
 import { DIARY_EVENT, diaryIndex, listEntries, type DiaryEntry, type DiaryFilter } from "@/lib/diary";
 
 const PAGE = 100;
@@ -116,7 +115,6 @@ function Journal() {
             À voir
           </button>
         </div>
-        <JournalButton className="in-page" />
       </div>
       {tab === "vus" ? (
         <WatchedFilms />

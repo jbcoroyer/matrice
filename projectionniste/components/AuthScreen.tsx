@@ -69,23 +69,32 @@ export function AuthScreen() {
       <PosterWall />
       <div className="wrap auth">
         <div className="auth-pitch">
-          <h1>
-            <Wordmark />
-          </h1>
-          <p className="auth-promise">
-            Vois et <span>possède</span> les films qui comptent.
-          </p>
-          <p>
-            Un cinéaste, un mouvement, un palmarès : chaque film vu colore son dos, chaque disque sur ton étagère le remplit. Tu sais toujours ce que tu as vu, ce qu'il te manque, et par quoi continuer.
-          </p>
-          <p className="auth-try">
-            Voir un parcours sans compte : <Link href="/ensembles/palmes-d-or">Palmes d'or</Link>
-            {" · "}
-            <Link href="/ensembles/nouvelle-vague">Nouvelle Vague</Link>
-            {" · "}
-            <Link href="/ensembles/studio-10342">Studio Ghibli</Link>
-          </p>
-          <p className="auth-import">Tu viens de Letterboxd ? Importe tout ton historique en une fois.</p>
+          <div className="auth-head">
+            <h1>
+              <Wordmark />
+            </h1>
+            <p className="auth-promise">
+              Vois et <span>possède</span> les films qui comptent.
+            </p>
+          </div>
+          <div className="auth-more">
+            <p>
+              Un cinéaste, un mouvement, un palmarès : chaque film vu colore son dos, chaque disque sur ton étagère le remplit. Tu sais toujours ce que tu as vu, ce qu'il te manque, et par quoi continuer.
+            </p>
+            <p className="auth-try">
+              Voir un parcours sans compte : <Link href="/ensembles/palmes-d-or">Palmes d'or</Link>
+              {" · "}
+              <Link href="/ensembles/nouvelle-vague">Nouvelle Vague</Link>
+              {" · "}
+              <Link href="/ensembles/studio-10342">Studio Ghibli</Link>
+            </p>
+            <p className="auth-import">Tu viens de Letterboxd ? Importe tout ton historique en une fois.</p>
+            <nav className="auth-legal" aria-label="Informations légales">
+              <Link href="/mentions-legales">Mentions légales</Link>
+              <Link href="/confidentialite">Confidentialité</Link>
+              <Link href="/conditions">Conditions</Link>
+            </nav>
+          </div>
         </div>
         <div className="auth-card">
           {guest && !empty ? (

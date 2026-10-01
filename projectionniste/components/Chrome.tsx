@@ -83,13 +83,3 @@ export function ConfirmHost() {
     </dialog>
   );
 }
-
-export function FooterStats() {
-  const { status, seen, rated, watchlist } = useProfile();
-  if (status !== "ready") return <span />;
-  return (
-    <span>
-      {seen.size.toLocaleString("fr-FR")} films vus · {rated.size.toLocaleString("fr-FR")} notes · {watchlist.size.toLocaleString("fr-FR")} en watchlist
-    </span>
-  );
-}

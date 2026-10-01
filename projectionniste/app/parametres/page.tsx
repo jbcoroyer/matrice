@@ -122,6 +122,7 @@ const SECTIONS = [
   { id: "presentation", l: "Présentation" },
   { id: "compte", l: "Compte" },
   { id: "donnees", l: "Mes données" },
+  { id: "apropos", l: "À propos" },
 ];
 
 function Settings() {
@@ -210,6 +211,21 @@ function Settings() {
           </>,
         )}
         {sec("donnees", "Mes données", "Les récupérer ou supprimer ton compte.", <AccountData />)}
+        {sec(
+          "apropos",
+          "À propos",
+          null,
+          <>
+            <p className="note">
+              Données et images des films : <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a>. Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.
+            </p>
+            <nav className="foot-links" aria-label="Informations légales">
+              <Link href="/mentions-legales">Mentions légales</Link>
+              <Link href="/confidentialite">Confidentialité</Link>
+              <Link href="/conditions">Conditions</Link>
+            </nav>
+          </>,
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import Link from "next/link";
 import "@fontsource-variable/urbanist";
 import { AuthGate } from "@/components/AuthScreen";
-import { ConfirmHost, FooterStats, SessionBanner, Toaster } from "@/components/Chrome";
+import { ConfirmHost, SessionBanner, Toaster } from "@/components/Chrome";
 import { Masthead, TabBar } from "@/components/Masthead";
 import { Welcome } from "@/components/Welcome";
 import { Wordmark } from "@/components/Wordmark";
@@ -47,22 +46,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="wrap" id="main">
             <AuthGate>{children}</AuthGate>
           </main>
-          <footer className="wrap">
-            <div className="foot">
-              <span>
-                <span className="brand">
-                  <Wordmark />
-                </span>
-                Données et images : <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a>. Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.
-              </span>
-              <nav className="foot-links" aria-label="Informations légales">
-                <Link href="/mentions-legales">Mentions légales</Link>
-                <Link href="/confidentialite">Confidentialité</Link>
-                <Link href="/conditions">Conditions</Link>
-              </nav>
-              <FooterStats />
-            </div>
-          </footer>
           <TabBar />
           <QuickLogHost />
           <Toaster />

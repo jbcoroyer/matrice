@@ -233,7 +233,7 @@ export function Tonight() {
           value={text}
           maxLength={200}
           autoComplete="off"
-          placeholder="Un film dans le style de Scorsese, mafia, après 2010…"
+          placeholder="Décris ce que tu veux voir…"
           onChange={(e) => setText(e.target.value)}
         />
         <button type="submit" className="btn primary" disabled={!text.trim()}>
