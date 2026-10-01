@@ -27,6 +27,18 @@ Sur le téléphone, ouvre `http://192.168.1.23:3000` (ton adresse), crée ou ouv
 
 L'icône apparaît, et l'appli s'ouvre plein écran, sans barre d'adresse. C'est ce que verront aussi les testeurs de la bêta.
 
+### Android en HTTPS (installation complète)
+
+Sur Android, Chrome ne propose « Installer l'application » (plein écran) que pour une adresse en `https`. En `http` il crée
+seulement un raccourci. Pour un essai complet, ouvre un tunnel HTTPS temporaire vers ton PC (gratuit, sans compte) :
+
+```powershell
+winget install Cloudflare.cloudflared
+cloudflared tunnel --url http://localhost:3000
+```
+Il affiche une adresse `https://….trycloudflare.com` : ouvre-la sur le téléphone. Elle change à chaque lancement
+(réinstalle l'appli si besoin). `npm run dev` doit tourner dans l'autre terminal.
+
 ## 1. Android : l'appli native (Android Studio)
 
 À installer une fois : **Android Studio** (developer.android.com/studio). Au premier lancement, laisse-le télécharger le SDK.
